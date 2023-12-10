@@ -1,0 +1,3 @@
+# Ignore python files that are not supposed to be in the repo
+.env
+
