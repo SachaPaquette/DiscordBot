@@ -37,4 +37,5 @@ async def play(ctx, url):
     await ctx.send("playing")
 
 
+# Gets the token from the .env file and
 bot.run(os.getenv("TOKEN"))  # gets the token from the .env file
