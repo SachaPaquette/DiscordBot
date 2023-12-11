@@ -35,13 +35,15 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 class SongSession:
-    def __init__(self, guild, path, ctx):
+    def __init__(self, guild, url, ctx):
         self.guild = guild
-        self.path = path
-        self.voice_client = ctx.voice_client
+        self.path = url
+        vc = ctx.voice_client
+        self.voice_client = vc
+        self.queue = []  # Initialize the queue attribute
 
-    def stop(self):
-        self.voice_client.stop()
+    def stop(self, vc):
+        vc.stop()
 
     def pause(self):
         self.voice_client.pause()
@@ -55,137 +57,146 @@ class SongSession:
     def display_queue(self):
         return self.queue
 
-    def add_to_queue(self, youtube_source):
+    def add_to_queue(self, youtube_source, vc):
         source = YTDLSource.from_url(youtube_source)
         self.queue.append(source)
-        if self.voice_client.is_playing():
+        print(f"Added {source} to the queue.")
+        print(f"Queue is now: {self.queue}")
+        print(f"is playing: {vc.is_playing()}")
+        if not vc.is_playing():
+            self.play_next(vc)
+
+    def play(self, source, options, vc):
+        try:
+            vc.play(discord.FFmpegPCMAudio(source, **options))
+        except Exception as e:
+            print(f"Error: {e}")
             return
-
-    def play(self, source, options):
-        self.voice_client.play(discord.FFmpegPCMAudio(source, **options))
-
-    def play_next(self):
-        if len(self.queue) > 0:
-            self.play(self.queue.pop(0))
-
-
-intents = discord.Intents.default()
-intents.message_content = True
-
-client = discord.Client(intents=intents)
-bot = commands.Bot(command_prefix="!", intents=intents)
+        
+    def play_next(self, vc):
+        # If there are no more songs in the queue, disconnect the bot
+        if len(self.queue) == 0:
+            print("No more songs in queue.")
+            return
+        # Otherwise, get the next song and play it
+        next_source = self.queue.pop(0)
+        self.play(next_source, {}, vc)  # Adjust the options as needed
+        print(f"Playing {next_source}")
 
 
-@bot.event
-async def on_ready():
-    print(f"Logged in as {bot.user}")
+class Bot(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.intents = discord.Intents.default()
+        self.intents.message_content = True
+        self.client = discord.Client(intents=self.intents)
+        self.bot = commands.Bot(command_prefix="!", intents=self.intents)
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"Logged in as ")
 
-@bot.command()
-async def health(ctx):
-    await ctx.send("I am alive!")
+    @commands.command()
+    async def health(self, ctx):
+        await ctx.send("I am alive!")
 
-
-@bot.command()  # command prefix
-async def join(ctx):
-    channel = ctx.author.voice.channel  # gets the channel of the user
-    await channel.connect()  # joins the voice channel
-
-
-@bot.command()
-async def leave(ctx):
-    await ctx.voice_client.disconnect()  # leaves the voice channel
-
-
-@bot.command()
-async def ping(ctx, username):  # function to ping someone in the server
-    await ctx.send(f"@{username}")
-
-
-async def joinChannel(ctx):
-    try:
+    @commands.command()
+    async def join(self, ctx):
         channel = ctx.author.voice.channel
-    except Exception as e:
-        await ctx.send(ctx.author.mention + " is not in a voice channel.")
-        return False
-    vc = ctx.voice_client
-    if vc is None:
         await channel.connect()
-    return True
+
+    @commands.command()
+    async def leave(self, ctx):
+        await ctx.voice_client.disconnect()
+
+    @commands.command()
+    async def ping(self, ctx, username):
+        # check if there is a @ in the username
+        if "@" in username:
+            await ctx.send(f"{username}")
+        else:
+            await ctx.send(f"@{username}")
 
 
-ytdl_format_options = {
-    "format": "bestaudio/best",
-    "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
-    "restrictfilenames": True,
-    "noplaylist": True,
-    "nocheckcertificate": True,
-    "ignoreerrors": False,
-    "logtostderr": False,
-    "quiet": True,
-    "no_warnings": True,
-    "default_search": "auto",
-    "source_address": "0.0.0.0",  # bind to ipv4 since ipv6 addresses cause issues sometimes
-}
-ffmpeg_options = {"options": "-vn"}
+    @commands.command()
+    async def skip(self, queue, ctx):
+        if len(queue) > 0:
+            next_source = queue.pop(0)
+            self.play(next_source, {}, ctx.voice_client)  # Adjust the options as needed
+            
+            
+    async def joinChannel(self, ctx):
+        try:
+            channel = ctx.author.voice.channel
+        except Exception as e:
+            await ctx.send(ctx.author.mention + " is not in a voice channel.")
+            return False
 
-ytdl = YoutubeDL(ytdl_format_options)
-
-
-def endSong(guild, path):
-    os.remove(path)
-
-
-async def get_youtube_dl_output(url):
-    import subprocess
-
-    process = await asyncio.create_subprocess_exec(
-        "youtube-dl", url, "--verbose", stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
-    return stdout.decode() + stderr.decode()
-
-
-@bot.command()
-async def play(ctx, url):
-    try:
-        SongSession(ctx.guild, url, ctx)
-        # Join the voice channel of the user who requested the song
-        data = await joinChannel(ctx)
-        # Check if the user is in a voice channel
-        if data is False:
-            return
-        # Create the stream options
-        YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
-        # Create the FFMPEG options
-        FFMPEG_OPTIONS = {
-            "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-            "options": "-vn",
-        }
-        # Get the info of the song from the url
-        with YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info(url, download=False)
-
-        # Get the url of the song
-        URL = info["url"]
-        #   Get the voice client
         vc = ctx.voice_client
-        # Check if the bot is already playing a song
-        if vc.is_playing():
-            # Add the song to the queue
-            SongSession.add_to_queue(URL)
-        SongSession.play(URL, FFMPEG_OPTIONS)
+        if vc and vc.channel == channel:
+            return True  # Bot is already in the correct channel, no need to reconnect
 
+        if vc:
+            await vc.move_to(channel)
+        else:
+            await channel.connect()
+
+        return True
+
+
+    @commands.command()
+    async def play(self, ctx, url):
+        try:
+            session = SongSession(ctx.guild, url, ctx)  # Create an instance of SongSession
+            data = await self.joinChannel(ctx)  # Use the instance to call joinChannel
+            if data is False:
+                return
+
+            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+            FFMPEG_OPTIONS = {
+                "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+                "options": "-vn",
+            }
+
+            with YoutubeDL(YDL_OPTIONS) as ydl:
+                info = ydl.extract_info(url, download=False)
+            URL = info["url"]
+            vc = ctx.voice_client
+            if vc.is_playing():
+                session.add_to_queue(URL, vc)  # Use the instance to add to the queue
+                await ctx.send(f"Added {info['title']} to the queue.")
+            else:
+                session.play(URL, FFMPEG_OPTIONS, vc)  # Use the instance to play the song
+
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred: {e}")
+            await self.leave(ctx)
+
+
+
+async def main():
+    token = os.environ.get("DISCORD_TOKEN")  # Get the token from the .env file
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.Bot(command_prefix="!", intents=intents)
+    await bot.add_cog(Bot(bot))  # Await the coroutine
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        await bot.start(token)
     except Exception as e:
         print(f"Error: {e}")
-        await ctx.send(f"An error occurred: {e}")
-        await leave(ctx)
+        exit()
 
-
-def main():
-    token = os.environ.get("DISCORD_TOKEN")  # Get the token from the .env file
-    bot.run(token)  # Run the bot
-
-
+# Run the main coroutine
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"Error: {e}")
+        exit()
+
+
