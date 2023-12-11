@@ -156,15 +156,21 @@ class Bot(commands.Cog):
 
 
 async def main():
-    token = os.environ.get("DISCORD_TOKEN")  # Get the token from the .env file
+    # Get the token from the .env file
+    token = os.environ.get("DISCORD_TOKEN")  
+    # Create an instance of the bot
     intents = discord.Intents.default()
+    # Make sure the bot can read messages
     intents.message_content = True
+    # Create the command prefix and pass in the intents parameter 
     bot = commands.Bot(command_prefix="!", intents=intents)
-    await bot.add_cog(Bot(bot))  # Await the coroutine
-
+    # Await the coroutine
+    await bot.add_cog(Bot(bot))  
+    # Create a new event loop
     loop = asyncio.new_event_loop()
+    # Set the event loop
     asyncio.set_event_loop(loop)
-
+    # Start the bot
     try:
         await bot.start(token)
     except Exception as e:
