@@ -12,71 +12,12 @@ from dotenv import load_dotenv
 import asyncio
 from Commands.help import CustomHelpCommand
 from Commands.ytdl import YTDLSource
+from Commands.music import SongSession
 load_dotenv()
 
 
         
 
-
-
-class SongSession:
-    def __init__(self, guild,  ctx) -> None:
-        self.guild = guild
-        
-        vc = ctx.voice_client
-        self.voice_client = vc
-        self.queue = []  # Initialize the queue attribute
-
-    def stop(self, vc):
-        vc.stop()
-
-    def pause(self):
-        self.voice_client.pause()
-
-    def resume(self):
-        self.voice_client.resume()
-
-    def is_playing(self):
-        return self.voice_client.is_playing()
-
-    def display_queue(self):
-        return self.queue
-
-    async def add_to_queue(self, youtube_source, vc):
-        # Add the source to the queue
-        self.queue.append(youtube_source)
-        print(f"Added {youtube_source} to the queue.")
-        print(f"Queue is now: {self.queue}")
-        print(f"is playing: {vc.is_playing()}")
-        # Check if the bot is playing something
-        if not vc.is_playing():
-            # If not, play the next song
-            self.play_next(vc)
-
-    def play(self, source, options, vc):
-        def after_playing(error):
-            if error:
-                print(f"Error: {error}")
-            else:
-                self.play_next(vc)
-                
-        try:
-            # Play the source 
-            vc.play(discord.FFmpegPCMAudio(source, **options), after=after_playing)
-        except Exception as e:
-            print(f"Error: {e}")
-            return
-        
-    def play_next(self, vc):
-        # If there are no more songs in the queue, disconnect the bot
-        if len(self.queue) == 0:
-            print("No more songs in queue.")
-            # Disconnect the bot
-            vc.stop()
-        
-        # Otherwise, get the next song and play it
-        next_source = self.queue.pop(0)
-        self.play(next_source, {}, vc)  # Play the next song
         
      
 
@@ -184,13 +125,11 @@ class Bot(commands.Cog):
                 "options": "-vn",
             }
 
-            with YoutubeDL(YDL_OPTIONS) as ydl:
-                info = ydl.extract_info(url, download=False)
-            URL = info["url"]
+            URL, song_title = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)  # Use the classmethod to get the URL
             vc = ctx.voice_client
             if vc.is_playing():
-                await self.session.add_to_queue(URL, vc)  # Use the instance to add to the queue
-                await ctx.send(f"Added {info['title']} to the queue.")
+                await self.session.add_to_queue(URL,song_title, vc)  # Use the instance to add to the queue
+                await ctx.send(f"Added {song_title} to the queue.")
             else:
                 self.session.play(URL, FFMPEG_OPTIONS, vc)  # Use the instance to play the song
 
@@ -199,7 +138,21 @@ class Bot(commands.Cog):
             await ctx.send(f"An error occurred: {e}")
             await self.leave(ctx)
 
-
+    @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
+    async def queue(self, ctx):
+        # Get the voice client
+        vc = ctx.voice_client
+        # Check if the bot is playing something
+        if vc is None or not vc.is_playing():
+            await ctx.send("No music is currently playing.")
+            return
+        # Check if the queue is empty
+        if len(self.session.queue) == 0:
+            await ctx.send("No more songs in the queue.")
+            return
+        # Get the queue from the instance
+        queue = self.session.display_queue()
+        await ctx.send(f"Queue: {queue}")
 
 
 async def main():
