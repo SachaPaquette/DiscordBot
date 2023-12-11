@@ -122,19 +122,15 @@ async def play(ctx, url):
             "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
             "options": "-vn",
         }
-        voice = get(client.voice_clients, guild=ctx.guild)
 
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(url, download=False)
         URL = info["url"]
 
-        print(f"url {URL}")
-        print(f"voice {voice}")
-        discord.FFmpegPCMAudio(
-            URL,
-            **FFMPEG_OPTIONS,
-        )
-        await ctx.send("Bot is playing")
+        vc = ctx.voice_client
+        if vc.is_playing():
+            vc.stop()
+        vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
 
     except Exception as e:
         print(f"Error: {e}")
