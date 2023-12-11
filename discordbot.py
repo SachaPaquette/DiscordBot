@@ -16,11 +16,6 @@ from Commands.music import SongSession
 load_dotenv()
 
 
-        
-
-        
-     
-
 class Bot(commands.Cog):
     def __init__(self, bot):
         self.intents = discord.Intents.default()
@@ -30,14 +25,11 @@ class Bot(commands.Cog):
         self.session = None  # Create an instance of SongSession
 
         self.help_command = CustomHelpCommand()
-        
+
     @commands.Cog.listener()
     async def on_ready(self):
         await self.bot.change_presence(activity=discord.Game(name="!help"))
 
-
-                
-    
     @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
         # Send a message that the bot is alive as a health check
@@ -65,11 +57,10 @@ class Bot(commands.Cog):
         else:
             await ctx.send(f"@{username}")
 
-
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
     async def skip(self, ctx):
         vc = ctx.voice_client
-        
+
         if vc is None or not vc.is_playing():
             await ctx.send("No music is currently playing to skip.")
             return
@@ -86,36 +77,41 @@ class Bot(commands.Cog):
 
         await ctx.send("Skipped to the next song.")
 
-
-        
-            
-            
     async def joinChannel(self, ctx):
+        # Check if the user is in a voice channel
         try:
+            # Get the voice channel of the user who sent the command
             channel = ctx.author.voice.channel
         except Exception as e:
+            # Send a message that the user is not in a voice channel
             await ctx.send(ctx.author.mention + " is not in a voice channel.")
+            # Return False to indicate that the user is not in a voice channel
             return False
 
+        # Create a voice client variable
         vc = ctx.voice_client
+        # Check if the bot is already in the correct channel
         if vc and vc.channel == channel:
             return True  # Bot is already in the correct channel, no need to reconnect
-
+        # Check if the bot is already in a channel
         if vc:
+            # Move the bot to the correct channel
             await vc.move_to(channel)
         else:
+            # Connect to the voice channel
             await channel.connect()
-
+        # Return True to indicate that the bot is in the correct channel
         return True
-
 
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
         try:
             if not self.session:
-                self.session = SongSession(ctx.guild, ctx)  # Create an instance of SongSession
-            
-            data = await self.joinChannel(ctx)  # Use the instance to call joinChannel
+                # Create an instance of SongSession
+                self.session = SongSession(ctx.guild, ctx)
+
+            # Use the instance to call joinChannel
+            data = await self.joinChannel(ctx)
             if data is False:
                 return
 
@@ -125,13 +121,16 @@ class Bot(commands.Cog):
                 "options": "-vn",
             }
 
-            URL, song_title = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)  # Use the classmethod to get the URL
+            # Use the classmethod to get the URL
+            URL, song_title = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
             vc = ctx.voice_client
             if vc.is_playing():
-                await self.session.add_to_queue(URL,song_title, vc)  # Use the instance to add to the queue
+                # Use the instance to add to the queue
+                await self.session.add_to_queue(URL, song_title, vc)
                 await ctx.send(f"Added {song_title} to the queue.")
             else:
-                self.session.play(URL, FFMPEG_OPTIONS, vc)  # Use the instance to play the song
+                # Use the instance to play the song
+                self.session.play(URL, FFMPEG_OPTIONS, vc)
 
         except Exception as e:
             print(f"Error: {e}")
@@ -152,20 +151,22 @@ class Bot(commands.Cog):
             return
         # Get the queue from the instance
         queue = self.session.display_queue()
+
+        # Send a message with the queue
         await ctx.send(f"Queue: {queue}")
 
 
 async def main():
     # Get the token from the .env file
-    token = os.environ.get("DISCORD_TOKEN")  
+    token = os.environ.get("DISCORD_TOKEN")
     # Create an instance of the bot
     intents = discord.Intents.default()
     # Make sure the bot can read messages
     intents.message_content = True
-    # Create the command prefix and pass in the intents parameter 
+    # Create the command prefix and pass in the intents parameter
     bot = commands.Bot(command_prefix="!", intents=intents)
     # Await the coroutine
-    await bot.add_cog(Bot(bot))  
+    await bot.add_cog(Bot(bot))
     # Create a new event loop
     loop = asyncio.new_event_loop()
     # Set the event loop
@@ -184,5 +185,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         exit()
-
-
