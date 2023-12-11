@@ -34,6 +34,41 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return filename
 
 
+class SongSession:
+    def __init__(self, guild, path, ctx):
+        self.guild = guild
+        self.path = path
+        self.voice_client = ctx.voice_client
+
+    def stop(self):
+        self.voice_client.stop()
+
+    def pause(self):
+        self.voice_client.pause()
+
+    def resume(self):
+        self.voice_client.resume()
+
+    def is_playing(self):
+        return self.voice_client.is_playing()
+
+    def display_queue(self):
+        return self.queue
+
+    def add_to_queue(self, youtube_source):
+        source = YTDLSource.from_url(youtube_source)
+        self.queue.append(source)
+        if self.voice_client.is_playing():
+            return
+
+    def play(self, source, options):
+        self.voice_client.play(discord.FFmpegPCMAudio(source, **options))
+
+    def play_next(self):
+        if len(self.queue) > 0:
+            self.play(self.queue.pop(0))
+
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -114,23 +149,32 @@ async def get_youtube_dl_output(url):
 @bot.command()
 async def play(ctx, url):
     try:
+        SongSession(ctx.guild, url, ctx)
+        # Join the voice channel of the user who requested the song
         data = await joinChannel(ctx)
+        # Check if the user is in a voice channel
         if data is False:
             return
+        # Create the stream options
         YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+        # Create the FFMPEG options
         FFMPEG_OPTIONS = {
             "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
             "options": "-vn",
         }
-
+        # Get the info of the song from the url
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(url, download=False)
-        URL = info["url"]
 
+        # Get the url of the song
+        URL = info["url"]
+        #   Get the voice client
         vc = ctx.voice_client
+        # Check if the bot is already playing a song
         if vc.is_playing():
-            vc.stop()
-        vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+            # Add the song to the queue
+            SongSession.add_to_queue(URL)
+        SongSession.play(URL, FFMPEG_OPTIONS)
 
     except Exception as e:
         print(f"Error: {e}")
