@@ -14,6 +14,7 @@ import asyncio
 load_dotenv()
 
 
+
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
@@ -24,20 +25,20 @@ class YTDLSource(discord.PCMVolumeTransformer):
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, lambda: ytdl.extract_info(url, download=False)
-        )
-        if "entries" in data:
-            # take first item from a playlist
-            data = data["entries"][0]
-        filename = data["title"] if stream else ytdl.prepare_filename(data)
-        return filename
+        YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url, download=False)
+        URL = info["url"] 
+        print(URL)
+        return URL
+        
+
 
 
 class SongSession:
-    def __init__(self, guild, url, ctx):
+    def __init__(self, guild,  ctx) -> None:
         self.guild = guild
-        self.path = url
+        
         vc = ctx.voice_client
         self.voice_client = vc
         self.queue = []  # Initialize the queue attribute
@@ -57,17 +58,20 @@ class SongSession:
     def display_queue(self):
         return self.queue
 
-    def add_to_queue(self, youtube_source, vc):
-        source = YTDLSource.from_url(youtube_source)
-        self.queue.append(source)
-        print(f"Added {source} to the queue.")
+    async def add_to_queue(self, youtube_source, vc):
+        # Add the source to the queue
+        self.queue.append(youtube_source)
+        print(f"Added {youtube_source} to the queue.")
         print(f"Queue is now: {self.queue}")
         print(f"is playing: {vc.is_playing()}")
+        # Check if the bot is playing something
         if not vc.is_playing():
+            # If not, play the next song
             self.play_next(vc)
 
     def play(self, source, options, vc):
         try:
+            # Play the source 
             vc.play(discord.FFmpegPCMAudio(source, **options))
         except Exception as e:
             print(f"Error: {e}")
@@ -78,6 +82,7 @@ class SongSession:
         if len(self.queue) == 0:
             print("No more songs in queue.")
             return
+        
         # Otherwise, get the next song and play it
         next_source = self.queue.pop(0)
         self.play(next_source, {}, vc)  # Adjust the options as needed
@@ -91,7 +96,7 @@ class Bot(commands.Cog):
         self.intents.message_content = True
         self.client = discord.Client(intents=self.intents)
         self.bot = commands.Bot(command_prefix="!", intents=self.intents)
-
+        self.session = None  # Create an instance of SongSession
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"Logged in as ")
@@ -119,10 +124,26 @@ class Bot(commands.Cog):
 
 
     @commands.command()
-    async def skip(self, queue, ctx):
-        if len(queue) > 0:
-            next_source = queue.pop(0)
-            self.play(next_source, {}, ctx.voice_client)  # Adjust the options as needed
+    async def skip(self, ctx):
+        vc = ctx.voice_client
+        
+        if vc is None or not vc.is_playing():
+            await ctx.send("No music is currently playing to skip.")
+            return
+
+        if len(self.session.queue) == 0:
+            await ctx.send("No more songs in the queue to skip.")
+            return
+
+        # Stop the current playing song
+        self.session.stop(vc)
+
+        # Play the next song in the queue
+        await self.session.play_next(vc)
+
+        await ctx.send("Skipped to the next song.")
+
+        
             
             
     async def joinChannel(self, ctx):
@@ -147,7 +168,9 @@ class Bot(commands.Cog):
     @commands.command()
     async def play(self, ctx, url):
         try:
-            session = SongSession(ctx.guild, url, ctx)  # Create an instance of SongSession
+            if not self.session:
+                self.session = SongSession(ctx.guild, ctx)  # Create an instance of SongSession
+            
             data = await self.joinChannel(ctx)  # Use the instance to call joinChannel
             if data is False:
                 return
@@ -163,10 +186,10 @@ class Bot(commands.Cog):
             URL = info["url"]
             vc = ctx.voice_client
             if vc.is_playing():
-                session.add_to_queue(URL, vc)  # Use the instance to add to the queue
+                await self.session.add_to_queue(URL, vc)  # Use the instance to add to the queue
                 await ctx.send(f"Added {info['title']} to the queue.")
             else:
-                session.play(URL, FFMPEG_OPTIONS, vc)  # Use the instance to play the song
+                self.session.play(URL, FFMPEG_OPTIONS, vc)  # Use the instance to play the song
 
         except Exception as e:
             print(f"Error: {e}")
