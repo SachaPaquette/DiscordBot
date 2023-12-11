@@ -70,9 +70,15 @@ class SongSession:
             self.play_next(vc)
 
     def play(self, source, options, vc):
+        def after_playing(error):
+            if error:
+                print(f"Error: {error}")
+            else:
+                self.play_next(vc)
+                
         try:
             # Play the source 
-            vc.play(discord.FFmpegPCMAudio(source, **options))
+            vc.play(discord.FFmpegPCMAudio(source, **options), after=after_playing)
         except Exception as e:
             print(f"Error: {e}")
             return
@@ -81,40 +87,78 @@ class SongSession:
         # If there are no more songs in the queue, disconnect the bot
         if len(self.queue) == 0:
             print("No more songs in queue.")
-            return
+            # Disconnect the bot
+            vc.stop()
         
         # Otherwise, get the next song and play it
         next_source = self.queue.pop(0)
-        self.play(next_source, {}, vc)  # Adjust the options as needed
-        print(f"Playing {next_source}")
+        self.play(next_source, {}, vc)  # Play the next song
+        
+class CustomHelpCommand(commands.HelpCommand):
+    def get_command_signature(self, command):
+        return f"!{command.qualified_name} {command.signature}"
 
+    async def send_bot_help(self, mapping):
+        embed = self.context.bot.embed_template()
+        embed.description = "Type `!help command` for more info on a command."
+
+        for cog, commands in mapping.items():
+            if cog:
+                cog_name = cog.qualified_name
+                cog_commands = [self.get_command_signature(c) for c in commands]
+                embed.add_field( value="\n".join(cog_commands), inline=False)
+            else:
+                other_commands = [self.get_command_signature(c) for c in commands]
+                embed.add_field(value="\n".join(other_commands), inline=False)
+
+        embed.set_footer(text="You can also type !help category for more info on a category.")
+        await self.get_destination().send(embed=embed)
+
+        
+    async def send_command_help(self, command):
+        embed = self.context.bot.embed_template()
+        embed.title = f"Command Help: {command.qualified_name}"
+        embed.description = command.help or "No help available."
+
+        await self.get_destination().send(embed=embed)       
 
 class Bot(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
         self.intents = discord.Intents.default()
         self.intents.message_content = True
         self.client = discord.Client(intents=self.intents)
         self.bot = commands.Bot(command_prefix="!", intents=self.intents)
         self.session = None  # Create an instance of SongSession
+
+        self.help_command = CustomHelpCommand()
+        
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"Logged in as ")
+        await self.bot.change_presence(activity=discord.Game(name="!help"))
 
-    @commands.command()
+
+                
+    
+    @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
+        # Send a message that the bot is alive as a health check
         await ctx.send("I am alive!")
 
     @commands.command()
     async def join(self, ctx):
+        # Get the voice channel of the user who sent the command
         channel = ctx.author.voice.channel
+        # Connect to the voice channel
         await channel.connect()
 
-    @commands.command()
+    @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
+        # Send a message that the bot is leaving
+        await ctx.send("Leaving voice channel.")
+        # Disconnect the bot from the voice channel
         await ctx.voice_client.disconnect()
 
-    @commands.command()
+    @commands.command(name='ping', brief='Ping a user.', usage='<username>', help='This command pings a user.')
     async def ping(self, ctx, username):
         # check if there is a @ in the username
         if "@" in username:
@@ -123,7 +167,7 @@ class Bot(commands.Cog):
             await ctx.send(f"@{username}")
 
 
-    @commands.command()
+    @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
     async def skip(self, ctx):
         vc = ctx.voice_client
         
@@ -139,9 +183,10 @@ class Bot(commands.Cog):
         self.session.stop(vc)
 
         # Play the next song in the queue
-        await self.session.play_next(vc)
+        self.session.play_next(vc)
 
         await ctx.send("Skipped to the next song.")
+
 
         
             
@@ -165,7 +210,7 @@ class Bot(commands.Cog):
         return True
 
 
-    @commands.command()
+    @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
         try:
             if not self.session:
@@ -195,6 +240,7 @@ class Bot(commands.Cog):
             print(f"Error: {e}")
             await ctx.send(f"An error occurred: {e}")
             await self.leave(ctx)
+
 
 
 
