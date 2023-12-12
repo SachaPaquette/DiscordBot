@@ -177,3 +177,29 @@ class Bot(commands.Cog):
 
         # Send a message with the queue
         await ctx.send(f"Queue: {queue}")
+        
+    @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
+    async def pause(self, ctx):
+        try:
+            vc = ctx.voice_client
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing to pause.")
+                return
+            self.session.pause(vc)
+            await ctx.send("Paused the current song.")
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to pause the song: {e}")
+    
+    @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
+    async def resume(self, ctx):
+        try:
+            vc = ctx.voice_client
+            if vc is None or not vc.is_paused():
+                await ctx.send("No music is currently paused to resume.")
+                return
+            self.session.resume(vc)
+            await ctx.send("Resumed the current song.")
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to resume the song: {e}")

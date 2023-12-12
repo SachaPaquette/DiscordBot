@@ -30,13 +30,16 @@ class SongSession:
         self.skipped = False  # Initialize the skipped attribute
 
     def stop(self, vc):
+        # Stop the song audio
         vc.stop()
 
-    def pause(self):
-        self.voice_client.pause()
+    def pause(self, vc):
+        # Pause the song audio
+        vc.pause()
 
-    def resume(self):
-        self.voice_client.resume()
+    def resume(self, vc):
+        # Resume the song audio
+        vc.resume()
 
     def is_playing(self):
         return self.voice_client.is_playing()
