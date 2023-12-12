@@ -86,19 +86,23 @@ class Bot(commands.Cog):
 
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
     async def skip(self, ctx):
-        vc = ctx.voice_client
-        
-        if vc is None or not vc.is_playing():
-            await ctx.send("No music is currently playing to skip.")
-            return
+        try:
+            vc = ctx.voice_client
+            
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing to skip.")
+                return
 
-        if len(self.session.queue) == 0:
-            await ctx.send("No more songs in the queue to skip.")
-            return
-        
-        self.session.skip(vc)
-        await ctx.send("Skipped to the next song.")
-
+            if len(self.session.queue) == 0:
+                await ctx.send("No more songs in the queue to skip.")
+                return
+            
+            self.session.skip(vc)
+            await ctx.send("Skipped to the next song.")
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to skip the song: {e}")
+            
     async def joinChannel(self, ctx):
         # Check if the user is in a voice channel
         try:

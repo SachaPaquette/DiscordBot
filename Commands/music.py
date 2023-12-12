@@ -75,26 +75,15 @@ class SongSession:
         except Exception as e:
             print(f"Error: {e}")
             return
-        
-    def play(self, source, vc):
+            
+    def play(self, source, vc, after=None):
         try:
-            def after_playing(error):
-                if error:
-                    print(f"Error: {error}")
-                else:
-                    if not self.skipped:
-                        # Play the next song in the queue
-                        self.play_next(vc)        
-            try:
-                # Play the source 
-                vc.play(discord.FFmpegPCMAudio(source, **conf.FFMPEG_OPTIONS), after=lambda e: after_playing(e))
-
-            except Exception as e:
-                print(f"Error: {e}")
-                return
+            # Play the source 
+            vc.play(discord.FFmpegPCMAudio(source, **conf.FFMPEG_OPTIONS), after=after)
         except Exception as e:
             print(f"Error: {e}")
             return
+
         
     #TODO fix this
     def play_next(self, vc):
@@ -104,7 +93,7 @@ class SongSession:
                 print("No more songs in queue or song was skipped.")
                 # Disconnect the bot
                 vc.stop()
-                return
+                
 
             # Get the next song from the queue 
             next_song = self.queue.pop(0)
@@ -112,9 +101,9 @@ class SongSession:
             next_source = next_song["source"]
             # Get the title of the next song
             next_title = next_song["title"]
-            
+
             # Play the next song
-            self.play(next_source, vc)
+            self.play(next_source, vc, after=self.after_playing)
             
             # Reset the skipped flag to False
             self.skipped = False
@@ -126,6 +115,15 @@ class SongSession:
             print(f"Error: {e}")
             return
 
-        
-        
-        
+    def after_playing(self, error, vc):
+        if error:
+            print(f"Error: {error}")
+        else:
+            if not self.skipped:
+                # Play the next song in the queue
+                self.play_next(vc)
+
+
+            
+            
+            
