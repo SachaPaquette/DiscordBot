@@ -131,6 +131,16 @@ class Bot(commands.Cog):
 
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
+        """
+        Play a song.
+
+        Parameters:
+        - ctx (discord.ext.commands.Context): The context of the command.
+        - url (str): The URL of the song to be played.
+
+        Returns:
+        None
+        """
         try:
             if not self.session:
                 # Create an instance of SongSession
@@ -162,6 +172,17 @@ class Bot(commands.Cog):
 
     @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
     async def queue(self, ctx):
+        """
+        Display the queue.
+
+        This command displays the current queue of songs in the bot's session.
+
+        Parameters:
+        - ctx (Context): The context object representing the invocation context of the command.
+
+        Returns:
+        None
+        """
         # Get the voice client
         vc = ctx.voice_client
         # Check if the bot is playing something
@@ -178,8 +199,19 @@ class Bot(commands.Cog):
         # Send a message with the queue
         await ctx.send(f"Queue: {queue}")
         
+        
+        
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
     async def pause(self, ctx):
+        """
+        Pauses the current song.
+
+        Parameters:
+        - ctx (Context): The context of the command.
+
+        Returns:
+        None
+        """
         try:
             vc = ctx.voice_client
             if vc is None or not vc.is_playing():
@@ -191,8 +223,22 @@ class Bot(commands.Cog):
             print(f"Error: {e}")
             await ctx.send(f"An error occurred when trying to pause the song: {e}")
     
+    
     @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
     async def resume(self, ctx):
+        """
+        Resumes the current song.
+
+        This command is used to resume the current song if it is paused.
+        If there is no music currently paused, it will display a message indicating that.
+        If an error occurs while trying to resume the song, it will display an error message.
+
+        Parameters:
+        - ctx (Context): The context object representing the invocation context of the command.
+
+        Returns:
+        - None
+        """
         try:
             vc = ctx.voice_client
             if vc is None or not vc.is_paused():
