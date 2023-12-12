@@ -21,7 +21,8 @@ class Bot(commands.Cog):
         self.intents.message_content = True
         self.client = discord.Client(intents=self.intents)
         self.bot = commands.Bot(command_prefix="!", intents=self.intents)
-        self.session = None  # Create an instance of SongSession
+        # Create an instance of SongSession
+        self.session = None  
 
         self.help_command = CustomHelpCommand()
 
@@ -34,20 +35,47 @@ class Bot(commands.Cog):
         # Send a message that the bot is alive as a health check
         await ctx.send("I am alive!")
 
-    @commands.command()
+    @commands.command(name='join', brief='Join the voice channel.', usage='', help='This command makes the bot join the voice channel.')
     async def join(self, ctx):
-        # Get the voice channel of the user who sent the command
-        channel = ctx.author.voice.channel
-        # Connect to the voice channel
-        await channel.connect()
+        try:
+            # Get the voice channel of the user who sent the command
+            channel = ctx.author.voice.channel
+        except AttributeError:
+            await ctx.send(ctx.author.mention + " is not in a voice channel.")
+            return
+        try:
+            # Create a voice client variable
+            vc = ctx.voice_client
+            # Check if the bot is already in the correct channel
+            if vc and vc.channel == channel:
+                await ctx.send("I'm already in your channel.")
+                return
 
+            # Check if the bot is already in a channel
+            if vc:
+                # Move the bot to the correct channel
+                await vc.move_to(channel)
+            else:
+                # Connect to the voice channel
+                await channel.connect()
+            # Return True to indicate that the bot is in the correct channel
+            await ctx.send(f"Joined {channel}")
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to join the channel: {e}")
+            
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
-        # Send a message that the bot is leaving
-        await ctx.send("Leaving voice channel.")
-        # Disconnect the bot from the voice channel
-        await ctx.voice_client.disconnect()
-
+        try:
+            
+            # Send a message that the bot is leaving
+            await ctx.send("Leaving voice channel.")
+            # Disconnect the bot from the voice channel
+            await ctx.voice_client.disconnect()
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to leave the channel: {e}")
+            
     @commands.command(name='ping', brief='Ping a user.', usage='<username>', help='This command pings a user.')
     async def ping(self, ctx, username):
         # check if there is a @ in the username
@@ -117,7 +145,7 @@ class Bot(commands.Cog):
             vc = ctx.voice_client
             if vc.is_playing():
                 # Use the instance to add to the queue
-                await self.session.add_to_queue(URL, song_title, vc)
+                self.session.add_to_queue(URL, song_title, vc)
                 await ctx.send(f"Added {song_title} to the queue.")
             else:
                 # Use the instance to play the song

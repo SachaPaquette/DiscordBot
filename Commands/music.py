@@ -49,7 +49,7 @@ class SongSession:
         return self.title_queue
         #return self.title_queue
 
-    async def add_to_queue(self, youtube_source, title, vc):
+    def add_to_queue(self, youtube_source, title, vc):
         try:
             
             # Add the source and title to the queue as a dictionary
@@ -61,7 +61,7 @@ class SongSession:
             # Check if the bot is playing something
             if not vc.is_playing():
                 # If not, play the next song
-                await self.play_next(vc)
+                self.play_next(vc)
         except Exception as e:
             print(f"Error: {e}")
             return
@@ -75,6 +75,7 @@ class SongSession:
         except Exception as e:
             print(f"Error: {e}")
             return
+        
     def play(self, source, vc):
         try:
             def after_playing(error):
@@ -94,6 +95,8 @@ class SongSession:
         except Exception as e:
             print(f"Error: {e}")
             return
+        
+    #TODO fix this
     def play_next(self, vc):
         try:
             # Check if there are no more songs in the queue or it was skipped
