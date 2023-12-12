@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import asyncio
 from Commands.help import CustomHelpCommand
 from Commands.ytdl import YTDLSource
+from Config.config import conf
 load_dotenv()
 
 
@@ -26,6 +27,7 @@ class SongSession:
         self.voice_client = vc
         self.queue = []  # Initialize the queue attribute
         self.title_queue = []
+        self.skipped = False  # Initialize the skipped attribute
 
     def stop(self, vc):
         vc.stop()
@@ -41,43 +43,86 @@ class SongSession:
 
     def display_queue(self):
         # Return the queue of song titles
+        # return only the titles in the queue list
+        for song in self.queue:
+            self.title_queue.append(song["title"])
         return self.title_queue
+        #return self.title_queue
 
-    async def add_to_queue(self, youtube_source,title, vc):
-        # Add the source to the queue
-        self.queue.append(youtube_source)
-        self.title_queue.append(title)
-
-        print(f"Queue is now: {self.title_queue}")
-        print(f"is playing: {vc.is_playing()}")
-        # Check if the bot is playing something
-        if not vc.is_playing():
-            # If not, play the next song
-            self.play_next(vc)
-
-    def play(self, source, options, vc):
-        def after_playing(error):
-            if error:
-                print(f"Error: {error}")
-            else:
-                self.play_next(vc)
-                
+    async def add_to_queue(self, youtube_source, title, vc):
         try:
-            # Play the source 
-            vc.play(discord.FFmpegPCMAudio(source, **options), after=after_playing)
+            
+            # Add the source and title to the queue as a dictionary
+            song_info = {"source": youtube_source, "title": title}
+            self.queue.append(song_info)
+            print(f"Queue is now: {self.queue}")
+            print(f"is playing: {vc.is_playing()}")
+
+            # Check if the bot is playing something
+            if not vc.is_playing():
+                # If not, play the next song
+                await self.play_next(vc)
         except Exception as e:
             print(f"Error: {e}")
             return
-        
+                
+    def skip(self, vc):
+        try:
+            
+            print("Skipping song.")
+            self.skipped = True  # Set the skipped flag to True
+            self.play_next(vc)  # Play the next song
+        except Exception as e:
+            print(f"Error: {e}")
+            return
+    def play(self, source, vc):
+        try:
+            def after_playing(error):
+                if error:
+                    print(f"Error: {error}")
+                else:
+                    if not self.skipped:
+                        # Play the next song in the queue
+                        self.play_next(vc)        
+            try:
+                # Play the source 
+                vc.play(discord.FFmpegPCMAudio(source, **conf.FFMPEG_OPTIONS), after=lambda e: after_playing(e))
+
+            except Exception as e:
+                print(f"Error: {e}")
+                return
+        except Exception as e:
+            print(f"Error: {e}")
+            return
     def play_next(self, vc):
-        # If there are no more songs in the queue, disconnect the bot
-        if len(self.queue) == 0:
-            print("No more songs in queue.")
-            # Disconnect the bot
-            vc.stop()
+        try:
+            # Check if there are no more songs in the queue or it was skipped
+            if len(self.queue) == 0 or self.skipped:
+                print("No more songs in queue or song was skipped.")
+                # Disconnect the bot
+                vc.stop()
+                return
+
+            # Get the next song from the queue 
+            next_song = self.queue.pop(0)
+            # Get the source of the next song
+            next_source = next_song["source"]
+            # Get the title of the next song
+            next_title = next_song["title"]
+            
+            # Play the next song
+            self.play(next_source, vc)
+            
+            # Reset the skipped flag to False
+            self.skipped = False
+            
+            print(f"Removed {next_title} from the queue.")
+            print(f"Queue is now: {self.queue}")
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return
+
         
-        # Otherwise, get the next song and play it
-        next_source = self.queue.pop(0)
-        self.play(next_source, {}, vc)  # Play the next song
-        self.title_queue.pop(0) # Remove the song title from the queue
+        
         

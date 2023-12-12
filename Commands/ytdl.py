@@ -13,10 +13,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
-        
+        # Set the options for YoutubeDL
         YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+        # Create a YoutubeDL instance with the options 
         with YoutubeDL(YDL_OPTIONS) as ydl:
+            # Extract the info from the URL
             info = ydl.extract_info(url, download=False)
+        # Get the URL of the song
         URL = info["url"] 
-        print(URL)
+        # Return the URL and the title of the song
         return URL, info['title']
