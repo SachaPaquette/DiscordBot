@@ -1,23 +1,10 @@
 import discord
-from discord.ext import commands
-from discord.utils import get
-from discord.voice_client import VoiceClient
-import youtube_dl
-from yt_dlp import YoutubeDL
-
 import nacl
-import os
 from dotenv import load_dotenv
-import asyncio
-from Commands.help import CustomHelpCommand
-from Commands.ytdl import YTDLSource
 from Config.config import conf
+
+# Load the .env file
 load_dotenv()
-
-
-        
-
-
 
 class SongSession:
     def __init__(self, guild,  ctx) -> None:
@@ -71,10 +58,10 @@ class SongSession:
                 
     def skip(self, vc):
         try:
-            
-            print("Skipping song.")
-            self.skipped = True  # Set the skipped flag to True
-            self.play_next(vc)  # Play the next song
+            # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
+            self.skipped = True  
+            # Play the next song
+            self.play_next(vc)  
         except Exception as e:
             print(f"Error: {e}")
             return
@@ -86,25 +73,41 @@ class SongSession:
         except Exception as e:
             print(f"Error: {e}")
             return
-
         
-    #TODO fix this
-    def play_next(self, vc):
+        
+    def check_queue_skipped_status(self, vc):
+        # Check if the queue is empty or if the song was skipped
+        if len(self.queue) == 0 or self.skipped:
+            print("No more songs in queue or song was skipped.")
+            # Stop the song's audio
+            vc.stop()
+    def get_next_song(self):
         try:
-            # Check if there are no more songs in the queue or it was skipped
-            if len(self.queue) == 0 or self.skipped:
-                print("No more songs in queue or song was skipped.")
-                # Disconnect the bot
-                vc.stop()
-                
-
-            # Get the next song from the queue 
+            # Get the next song from the queue
             next_song = self.queue.pop(0)
             # Get the source of the next song
             next_source = next_song["source"]
             # Get the title of the next song
             next_title = next_song["title"]
-
+            
+            # Return the source and title of the next song
+            if next_source and next_title:
+                return next_source, next_title
+        except Exception as e:
+            print(f"Error: {e}")
+            return None, None
+    def play_next(self, vc):
+        try:
+            # Check if the queue is empty or if the song was skipped
+            self.check_queue_skipped_status(vc)
+            
+            # Get the next song from the queue
+            next_source, next_title = self.get_next_song()
+            
+            # Check if the source and title are valid
+            if next_source is None or next_title is None:
+                return
+            
             # Play the next song
             self.play(next_source, vc, after=self.after_playing)
             
@@ -119,9 +122,11 @@ class SongSession:
             return
 
     def after_playing(self, error, vc):
+        # Check if there was an error playing the song
         if error:
             print(f"Error: {error}")
         else:
+            # Check if the skipped flag is False (if it is, the song ended naturally and was not skipped)
             if not self.skipped:
                 # Play the next song in the queue
                 self.play_next(vc)
