@@ -17,18 +17,36 @@ from Commands.bot import Bot
 load_dotenv()
 
 
-def create_bot():
-    # Create an instance of the bot
-    intents = discord.Intents.default()
-    # Make sure the bot can read messages
-    intents.message_content = True
-    # Create the command prefix and pass in the intents parameter
-    bot = commands.Bot(command_prefix="!", intents=intents)
-    return bot
+async def create_bot():
+    try:
+        # Create an instance of the bot
+        intents = discord.Intents.default()
+        # Make sure the bot can read messages
+        intents.message_content = True
+        # Create the command prefix and pass in the intents parameter
+        bot = commands.Bot(command_prefix="!", intents=intents)
+        # Change the status of the bot
+        return bot
+    except discord.DiscordException as e:
+        print(f"Discord Exception: {e}")
+        raise
+    except commands.CommandError as e:
+        print(f"Command Error: {e}")
+        raise
+
+        
 async def main():
     # Get the token from the .env file
     token = os.environ.get("DISCORD_TOKEN")
-    bot = create_bot()
+    # Check if the token exists
+    if not token:
+        print("No token found.")
+        exit()
+    
+    bot = await create_bot()
+    if bot is None:
+        print("No bot found.")
+        exit()
     # Await the coroutine
     await bot.add_cog(Bot(bot))
     # Create a new event loop

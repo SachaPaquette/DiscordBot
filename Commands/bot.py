@@ -12,6 +12,7 @@ import asyncio
 from Commands.help import CustomHelpCommand
 from Commands.ytdl import YTDLSource
 from Commands.music import SongSession
+from Commands.ErrorHandling.handling import CommandErrorHandler
 load_dotenv()
 
 
@@ -142,20 +143,28 @@ class Bot(commands.Cog):
         None
         """
         try:
+            # Check if the URL is valid (i.e. it is a YouTube URL)
+            if not CommandErrorHandler.check_url_correct(url):
+                await ctx.send("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+                return
+            # Check if the bot is already in the correct channel
             if not self.session:
                 # Create an instance of SongSession
                 self.session = SongSession(ctx.guild, ctx)
 
-            # Use the instance to call joinChannel
-            data = await self.joinChannel(ctx)
-            if data is False:
+            # Check if the bot is already in the correct channel
+            if await self.joinChannel(ctx) is False:
                 return
-
-            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+   
             
-
-            # Use the classmethod to get the URL
+            # Get the URL and the title of the song
             URL, song_title = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            
+            # This will return False if the URL or song_title is invalid
+            if not CommandErrorHandler.check_url_song_correct(URL, song_title): 
+                await ctx.send("No song found.")
+                return
+            
             vc = ctx.voice_client
             if vc.is_playing():
                 # Use the instance to add to the queue
