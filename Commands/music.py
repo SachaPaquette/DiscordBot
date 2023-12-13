@@ -32,13 +32,19 @@ class SongSession:
         return self.voice_client.is_playing()
 
     def display_queue(self):
+        # Clear the title queue
+        self.title_queue.clear()
         # Return the queue of song titles
         # return only the titles in the queue list
         for song in self.queue:
             self.title_queue.append(song["title"])
         return self.title_queue
-        #return self.title_queue
-
+        
+    def clear_queue(self):
+        # Clear the queue
+        self.queue.clear()
+        self.title_queue.clear()
+        
     def add_to_queue(self, youtube_source, title, vc):
         try:
             

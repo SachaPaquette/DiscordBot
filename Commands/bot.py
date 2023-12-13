@@ -208,7 +208,32 @@ class Bot(commands.Cog):
         # Send a message with the queue
         await ctx.send(f"Queue: {queue}")
         
-        
+    @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
+    async def clear(self, ctx):
+        """
+        Clear the queue.
+
+        This command clears the queue of songs in the bot's session.
+
+        Parameters:
+        - ctx (Context): The context object representing the invocation context of the command.
+
+        Returns:
+        None
+        """
+        # Get the voice client
+        vc = ctx.voice_client
+        # Check if the bot is playing something
+        if vc is None or not vc.is_playing():
+            await ctx.send("No music is currently playing.")
+            return
+        # Check if the queue is empty
+        if len(self.session.queue) == 0:
+            await ctx.send("No more songs in the queue to clear.")
+            return
+        # Clear the queue
+        self.session.queue.clear()
+        await ctx.send("Cleared the queue.")
         
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
     async def pause(self, ctx):
