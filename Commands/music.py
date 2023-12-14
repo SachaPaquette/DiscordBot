@@ -83,8 +83,6 @@ class SongSession:
 
     def play_next(self, vc):
         try:
-            
-            #await self.stop(vc)
             # Check if the queue is empty or if the song was skipped
             self.queue_operations.check_queue_skipped_status(vc, self.skipped)
             

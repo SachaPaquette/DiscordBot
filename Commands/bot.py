@@ -309,3 +309,24 @@ class Bot(commands.Cog):
             print(f"Error: {e}")
             await ctx.send(f"An error occurred when trying to resume the song: {e}")
             raise(f"An error occurred when trying to resume the song: {e}")
+        
+    @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
+    async def shuffle(self, ctx):
+        try:
+            # Get the voice client
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing.")
+                return
+            # Check if the queue is empty
+            if self.queue_operations.return_queue() == 0:
+                await ctx.send("No songs in the queue to suffle.")
+                return
+            # Call the queue shuffle function in QueueOperations
+            self.queue_operations.shuffle_queue()
+            await ctx.send("Suffled the queue.")
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to suffle the queue: {e}")
+            raise(f"An error occurred when trying to suffle the queue: {e}")

@@ -1,4 +1,6 @@
 from collections import deque
+# Random is used to shuffle the queue
+import random
 class QueueOperations:
     shared_queue = deque()  # Initialize the queue attribute
     def __init__(self, song_session=None):
@@ -57,7 +59,6 @@ class QueueOperations:
     
     
     def check_queue_skipped_status(self, vc, skipped_status):
-        print(f"Checking queue skipped status... {self.return_queue()}")
         # Check if the queue is empty or if the song was skipped
         if self.return_queue() == 0:
             print("No more songs in queue.")
@@ -91,3 +92,19 @@ class QueueOperations:
         except Exception as e:
             print(f"Error in the get_next_song function in queue.py: {e}")
             return None, None
+
+
+    def shuffle_queue(self):
+        try:
+            if self.return_queue() == 0:
+                print("Queue is empty.")
+                return    
+            """
+            Shuffles the queue.
+            """
+            # Shuffle the queue
+            random.shuffle(self.queue)
+        except Exception as e:
+            print(f"Error in the shuffle_queue function in queue.py: {e}")
+            return
+        
