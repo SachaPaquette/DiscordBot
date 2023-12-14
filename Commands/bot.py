@@ -233,12 +233,12 @@ class Bot(commands.Cog):
             print(f"Error: {e}")
             await ctx.send(f"An error occurred when trying to display the queue: {e}")
             raise(f"An error occurred when trying to display the queue: {e}")
+        
+        
     @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
     async def clear(self, ctx):
         """
-        Clear the queue.
-
-        This command clears the queue of songs in the bot's session.
+        This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
 
         Parameters:
         - ctx (Context): The context object representing the invocation context of the command.
@@ -310,8 +310,24 @@ class Bot(commands.Cog):
             await ctx.send(f"An error occurred when trying to resume the song: {e}")
             raise(f"An error occurred when trying to resume the song: {e}")
         
+        
     @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
     async def shuffle(self, ctx):
+        """
+        Shuffles the queue.
+
+        This command shuffles the songs in the queue. It checks if the bot is currently playing music and if there are songs in the queue.
+        If the conditions are met, it calls the shuffle_queue function in QueueOperations to shuffle the songs.
+
+        Parameters:
+        - ctx (Context): The context object representing the invocation context of the command.
+
+        Raises:
+        - Exception: If an error occurs while shuffling the queue.
+
+        Returns:
+        - None
+        """
         try:
             # Get the voice client
             vc = ctx.voice_client
