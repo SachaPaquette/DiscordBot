@@ -23,7 +23,7 @@ class QueueOperations:
         # Clear the queue
         self.queue.clear()
         
-    def add_to_queue(self, youtube_source, title, vc):
+    def add_to_queue(self, youtube_source, title, vc, song_duration, thumbnail):
         """
         Add a song to the queue.
 
@@ -37,7 +37,7 @@ class QueueOperations:
         """
         try:
             # Add the source and title to the queue as a dictionary
-            song_info = {"source": youtube_source, "title": title}
+            song_info = {"source": youtube_source, "title": title, "duration": song_duration, "thumbnail": thumbnail}
             print(f"Song info: {song_info}")
             # Append the song info to the queue
             self.queue.append(song_info)
@@ -83,15 +83,17 @@ class QueueOperations:
             # Get the source and title of the next song
             next_source = next_song.get("source")
             next_title = next_song.get("title")
+            next_song_duration = next_song.get("duration")
+            next_song_thumbnail = next_song.get("thumbnail")
             
-            if next_source is not None and next_title is not None:
-                return next_source, next_title
+            if next_source is not None and next_title is not None and next_song_duration is not None and next_song_thumbnail is not None:
+                return next_source, next_title, next_song_duration, next_song_thumbnail
             else:
                 print("Source or title is None.")
-                return None, None
+                return None, None, None, None
         except Exception as e:
             print(f"Error in the get_next_song function in queue.py: {e}")
-            return None, None
+            return None, None, None, None
 
 
     def shuffle_queue(self):

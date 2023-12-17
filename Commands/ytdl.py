@@ -19,10 +19,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
             with YoutubeDL(YDL_OPTIONS) as ydl:
                 # Extract the info from the URL
                 info = ydl.extract_info(url, download=False)
+            
             # Get the URL of the song
-            URL = info["url"] 
+            URL = info["url"]
+            song_title = info["title"] 
+            song_duration = info["duration_string"]
+            thumbnail = info["thumbnails"][0]["url"]
             # Return the URL and the title of the song
-            return URL, info['title']
+            return URL, song_title, song_duration, thumbnail 
         except Exception as e:
             print(f"Error: {e}")
             return None, None

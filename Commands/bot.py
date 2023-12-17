@@ -36,6 +36,7 @@ class Bot(commands.Cog):
         self.session = None  
         # Create an instance of QueueOperations
         self.queue_operations = QueueOperations(self.session)
+        # Create an instance of CustomHelpCommand 
         self.help_command = CustomHelpCommand()
 
     @commands.Cog.listener()
@@ -180,7 +181,7 @@ class Bot(commands.Cog):
    
             
             # Get the URL and the title of the song
-            URL, song_title = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            URL, song_title, song_duration, thumbnail = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
             
             # This will return False if the URL or song_title is invalid
             if not CommandErrorHandler.check_url_song_correct(URL, song_title): 
@@ -190,11 +191,11 @@ class Bot(commands.Cog):
             vc = ctx.voice_client
             if vc.is_playing():
                 # Use the instance to add to the queue
-                self.queue_operations.add_to_queue(URL, song_title, vc)
+                self.queue_operations.add_to_queue(URL, song_title, vc, song_duration, thumbnail)
                 await ctx.send(f"Added {song_title} to the queue.")
             else:
                 # Use the instance to play the song
-                self.session.play(URL, vc)
+                self.session.play(URL, vc, None, song_title, song_duration, thumbnail)
 
         except Exception as e:
             print(f"Error: {e}")
@@ -202,6 +203,43 @@ class Bot(commands.Cog):
             await self.leave(ctx)
             raise(f"An error occurred when trying to play the song: {e}")
 
+    @commands.command(name='nowplaying', aliases=['np'], brief='Display the current song.', usage='', help='This command displays the current song.')
+    async def nowplaying(self, ctx):
+        try:
+            # Get the voice client
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing.")
+                return
+            # Get the title of the song
+            song_title = self.session.get_song_title()
+            if song_title is None:
+                await ctx.send("No music is currently playing.")
+                return
+            # Send a message with the title of the song
+            #await ctx.send(f"Now playing: {song_title}")
+            
+            embed = discord.Embed(title="Now Playing", description=song_title, color=discord.Color.green())
+            # Add the thumbnail if available and the song duration
+            if self.session.thumbnail is not None:
+                embed.set_thumbnail(url=self.session.thumbnail)
+            if self.session.song_duration is not None:
+                embed.add_field(name="Duration", value=self.session.song_duration)
+                
+            # Add more information to the embed if available
+            if vc.source:
+                # Get the duration of the song
+                pass
+
+            # Send the embed
+            await ctx.send(embed=embed)
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send(f"An error occurred when trying to display the current song: {e}")
+            raise(f"An error occurred when trying to display the current song: {e}")
+    
+    
     @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
     async def queue(self, ctx):
         """
