@@ -29,7 +29,12 @@ class SongSession:
         Returns:
         None
         """
-        vc.stop()
+        try:
+            if vc and vc.is_playing():
+                vc.stop()   
+        except Exception as e:
+            print(f"Error at stop function in music.py: {e}")
+            return
 
     async def pause(self, vc):
         """
@@ -41,7 +46,13 @@ class SongSession:
         Returns:
         None
         """
-        vc.pause()
+        try: 
+            if vc and vc.is_playing():
+                vc.pause()
+        except Exception as e:
+            print(f"Error at pause function in music.py: {e}")
+            return
+        
 
     async def resume(self, vc):
         """
@@ -53,7 +64,12 @@ class SongSession:
         Returns:
         None
         """
-        vc.resume()
+        try:
+            if vc and vc.is_paused():
+                vc.resume()
+        except Exception as e:
+            print(f"Error at resume function in music.py: {e}")
+            return
 
     def is_playing(self):
         """
@@ -67,6 +83,15 @@ class SongSession:
 
                 
     def skip_song(self, vc):
+        """
+        Skips the current song and plays the next song.
+
+        Parameters:
+        - vc (VoiceClient): The voice client object.
+
+        Returns:
+        None
+        """
         try:
             # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
             self.skipped = True  
@@ -77,6 +102,17 @@ class SongSession:
             return
     
     def define_song_info(self, song_title, song_duration, song_thumbnail):
+        """
+        Defines the information for the current song.
+
+        Args:
+            song_title (str): The title of the song.
+            song_duration (int): The duration of the song in seconds.
+            song_thumbnail (str): The URL of the song's thumbnail.
+
+        Returns:
+            None
+        """
         # Define the current song object 
         self.current_song = song_title
         self.song_duration = song_duration
@@ -120,6 +156,16 @@ class SongSession:
             return
 
     def after_playing(self, error, vc):
+        """
+        Callback function called after a song finishes playing.
+
+        Args:
+            error (Exception): The error that occurred while playing the song, if any.
+            vc (VoiceClient): The voice client associated with the song.
+
+        Returns:
+            None
+        """
         # Check if there was an error playing the song
         if error:
             print(f"Error at after_playing function in music.py: {error}")
@@ -131,6 +177,13 @@ class SongSession:
 
 
     def get_song_title(self):
+        """
+        Returns the title of the current song.
+
+        Returns:
+            str: The title of the current song.
+            None: If there is an error retrieving the song title.
+        """
         try:
             # Return the current song
             return self.current_song
