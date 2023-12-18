@@ -78,8 +78,12 @@ class SongSession:
         Returns:
             bool: True if the bot is playing audio, False otherwise.
         """
-        return self.voice_client.is_playing()
-
+        try:
+            
+            return self.voice_client.is_playing()
+        except Exception as e:
+            print(f"Error at is_playing function in music.py: {e}")
+            return False
 
                 
     def skip_song(self, vc):
@@ -113,12 +117,18 @@ class SongSession:
         Returns:
             None
         """
-        # Define the current song object 
-        self.current_song = song_title
-        self.song_duration = song_duration
-        self.thumbnail = song_thumbnail
-        print(f"Removed {song_title} from the queue.")
-    
+        try:         
+            if song_title is None or song_duration is None or song_thumbnail is None:
+                raise Exception("Song information is None.")
+            # Define the current song object 
+            self.current_song = song_title
+            self.song_duration = song_duration
+            self.thumbnail = song_thumbnail
+            print(f"Removed {song_title} from the queue.")
+        except Exception as e:
+            print(f"Error at define_song_info function in music.py: {e}")
+            return
+        
     def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
         try:
             # Define the song information such as the title and duration 
