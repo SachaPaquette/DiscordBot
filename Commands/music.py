@@ -75,13 +75,18 @@ class SongSession:
         except Exception as e:
             print(f"Error while trying to skip song in music.py: {e}")
             return
-            
+    
+    def define_song_info(self, song_title, song_duration, song_thumbnail):
+        # Define the current song object 
+        self.current_song = song_title
+        self.song_duration = song_duration
+        self.thumbnail = song_thumbnail
+        print(f"Removed {song_title} from the queue.")
+    
     def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
         try:
-            # Give the song title to the SongSession object
-            self.current_song = song_title
-            self.song_duration = song_duration
-            self.thumbnail = thumbnail
+            # Define the song information such as the title and duration 
+            self.define_song_info(song_title, song_duration, thumbnail)
             # Play the source 
             vc.play(discord.FFmpegPCMAudio(source, **conf.FFMPEG_OPTIONS), after=after)
         except Exception as e:
@@ -107,14 +112,9 @@ class SongSession:
             
             # Reset the skipped flag to False
             self.skipped = False
-            # Define the current song object 
-            self.current_song = next_title
             
-            self.thumbnail = next_song_thumbnail
-            self.song_duration = next_song_duration
-            
-            print(f"Removed {next_title} from the queue.")
-
+            # Define the current song information 
+            self.define_song_info(next_title, next_song_duration, next_song_thumbnail)
         except Exception as e:
             print(f"Error while trying to play next song in music.py: {e}")
             return
