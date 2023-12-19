@@ -1,13 +1,12 @@
 # Discord Music Bot
-### Simple Discord bot to play music and much more!
 
 ### Table of Contents
 
-    [Installation](#installation)
-    [Commands](#commands-available)
-    [Dependencies](#dependencies)
-    [Configuration](#configuration)
-    [License](#license)
+- [Installation](#installation)
+- [Commands](#commands-available)
+- [Dependencies](#dependencies)
+- [Configuration](#configuration)
+- [License](#license)
 
 ## Installation
 
@@ -31,12 +30,12 @@ pip install -r requirements.txt
 python discordbot.py
 ```
 ## Commands Available
-    !health: Check if the bot is alive.
+    !health: Health check for the bot.
     !join: Join the voice channel.
     !leave: Leave the voice channel.
     !ping <username>: Ping a user.
-    !skip: Skip the current song.
     !play <url>: Play a song.
+    !skip: Skip the current song.
     !nowplaying: Display the current song.
     !queue: Display the queue.
     !clear: Clear the queue.
