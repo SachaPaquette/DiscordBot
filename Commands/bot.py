@@ -14,7 +14,7 @@ from Commands.ytdl import YTDLSource
 from Commands.music import SongSession
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.queue import QueueOperations
-
+from Commands.userinfo import UserInfo
 # Import logging 
 from Config.config import conf
 from Config.logging import setup_logging
@@ -28,10 +28,14 @@ load_dotenv()
 
 class Bot(commands.Cog):
     def __init__(self, bot):
+        # Create an instance of the intents class
         self.intents = discord.Intents.default()
+        # Make sure the bot can read messages
         self.intents.message_content = True
+        # Create the client
         self.client = discord.Client(intents=self.intents)
-        self.bot = commands.Bot(command_prefix="!", intents=self.intents)
+        # Assign the bot instance to the bot variable 
+        self.bot = bot
         # Create an instance of SongSession
         self.session = None  
         # Create an instance of QueueOperations
@@ -41,15 +45,28 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        """
+        Event handler that is triggered when the bot is ready to start receiving events.
+
+        This function changes the status of the bot to "Playing !help" when it is ready.
+        """
         try:
-            await self.bot.change_presence(activity=discord.Game(name="!help"))
-            print(f"Logged in as {self.bot.user}")
+            # Check if the bot is ready
+            if self.bot:
+                # Change the status of the bot to "Playing !help"
+                await self.bot.change_presence(activity=discord.Game(name="!help"))
         except Exception as e:
             print(f"Error in on_ready: {e}")
             raise e
+
         
     @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
+        """
+        Check if the bot is alive.
+
+        This command checks the bot's latency by sending a message "I am alive!".
+        """
         try:
             # Send a message that the bot is alive as a health check
             await ctx.send("I am alive!")
@@ -59,6 +76,14 @@ class Bot(commands.Cog):
         
     @commands.command(name='join', brief='Join the voice channel.', usage='', help='This command makes the bot join the voice channel.')
     async def join(self, ctx):
+        """
+        Join the voice channel.
+
+        This command makes the bot join the voice channel of the user who sent the command.
+        If the bot is already in the correct channel, it will send a message indicating that it is already in the channel.
+        If the bot is in a different channel, it will move to the correct channel.
+        If the bot is not in any channel, it will connect to the voice channel.
+        """
         try:
             # Get the voice channel of the user who sent the command
             channel = ctx.author.voice.channel
@@ -409,25 +434,7 @@ class Bot(commands.Cog):
     @commands.command(name="userinfo", aliases=["ui", "whois"], brief="Display user information.", usage="<member>", help="This command displays information about a user.")
     async def user_information(self, ctx, *, member: discord.Member = None):
         try:
-            await ctx.send("Getting user information...")
-
-            # If no member is mentioned, default to the author of the command
-            if member is None:
-                member = ctx.author
-
-            # Create an embed to display user information
-            embed = discord.Embed(title=f'User Information - {member.display_name}', color=member.color)
-            # Add the user's avatar
-            embed.set_thumbnail(url=member.avatar)
-            # Add the user's information
-            embed.add_field(name='Username', value=member.name, inline=True)
-            # Add the user's ID
-            embed.add_field(name='User ID', value=member.id, inline=True)
-            # Add the user's join date to the server
-            embed.add_field(name='Joined Server On', value=member.joined_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
-            # Add the user's account creation date
-            embed.add_field(name='Account Created On', value=member.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
-
+            embed = await UserInfo.fetch_user_information(self, ctx, member=member)
             # Send the embed
             await ctx.send(embed=embed)
         except Exception as e:
