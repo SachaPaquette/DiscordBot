@@ -41,13 +41,22 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.bot.change_presence(activity=discord.Game(name="!help"))
-
+        try:
+            await self.bot.change_presence(activity=discord.Game(name="!help"))
+            print(f"Logged in as {self.bot.user}")
+        except Exception as e:
+            print(f"Error in on_ready: {e}")
+            raise e
+        
     @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
-        # Send a message that the bot is alive as a health check
-        await ctx.send("I am alive!")
-
+        try:
+            # Send a message that the bot is alive as a health check
+            await ctx.send("I am alive!")
+        except Exception as e:
+            print(f"Error in the health command: {e}")
+            raise e
+        
     @commands.command(name='join', brief='Join the voice channel.', usage='', help='This command makes the bot join the voice channel.')
     async def join(self, ctx):
         try:
@@ -74,7 +83,8 @@ class Bot(commands.Cog):
             # Return True to indicate that the bot is in the correct channel
             await ctx.send(f"Joined {channel}")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to join the channel.")
+            print(f"An error occurred when trying to join the channel. {e}")
+            raise e
         
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
@@ -88,7 +98,8 @@ class Bot(commands.Cog):
             # Disconnect the bot from the voice channel
             await ctx.voice_client.disconnect()
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to leave the channel.")
+            print(f"Error in the leave command: {e}")
+            raise e
         
     @commands.command(name='ping', brief='Ping a user.', usage='<username>', help='This command pings a user.')
     async def ping(self, ctx, username):
@@ -99,7 +110,8 @@ class Bot(commands.Cog):
             else:
                 await ctx.send(f"@{username}")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to ping the user.")
+            print(f"Error in the ping command: {e}")
+            raise e
 
 
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
@@ -122,7 +134,8 @@ class Bot(commands.Cog):
                 print(f"Queue length before: {self.queue_operations.return_queue()}")
                 await ctx.send("Skipped to the next song.")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to skip the song.")
+            print(f"Error in the skip command: {e}")
+            raise e
             
     async def joinChannel(self, ctx):
         try:
@@ -151,7 +164,8 @@ class Bot(commands.Cog):
             # Return True to indicate that the bot is in the correct channel
             return True
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to join the channel.")
+            print(f"An error occurred when trying to join the channel. {e}")
+            raise e
 
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
@@ -188,7 +202,9 @@ class Bot(commands.Cog):
                 await ctx.send("No song found.")
                 return
             
+            # Declare a voice client variable
             vc = ctx.voice_client
+            # Check if the bot is playing something
             if vc.is_playing():
                 # Use the instance to add to the queue
                 self.queue_operations.add_to_queue(URL, song_title, vc, song_duration, thumbnail)
@@ -198,9 +214,10 @@ class Bot(commands.Cog):
                 self.session.play(URL, vc, None, song_title, song_duration, thumbnail)
 
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to play the song.")
             # Leave the channel if an error occurs
             await self.leave(ctx)
+            print(f"An error occurred when trying to play the song. {e}")
+            raise e
 
     @commands.command(name='nowplaying', aliases=['np'], brief='Display the current song.', usage='', help='This command displays the current song.')
     async def nowplaying(self, ctx):
@@ -216,9 +233,8 @@ class Bot(commands.Cog):
             if song_title is None:
                 await ctx.send("No music is currently playing.")
                 return
-            # Send a message with the title of the song
-            #await ctx.send(f"Now playing: {song_title}")
             
+            # Create an embed message that contains the title of the song, the thumbnail, and the duration
             embed = discord.Embed(title="Now Playing", description=song_title, color=discord.Color.green())
             # Add the thumbnail if available and the song duration
             if self.session.thumbnail is not None:
@@ -234,7 +250,8 @@ class Bot(commands.Cog):
             # Send the embed
             await ctx.send(embed=embed)
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to display the current song.")
+            print(f"An error occurred when trying to display the song. {e}")
+            raise e
     
     
     @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
@@ -265,7 +282,8 @@ class Bot(commands.Cog):
             # Send a message with the queue
             await ctx.send(f"Queue: {self.queue_operations.display_queue()}")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to display the queue.")
+            print(f"An error occurred when trying to display the queue. {e}")
+            raise e
         
         
     @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
@@ -295,7 +313,8 @@ class Bot(commands.Cog):
             self.queue_operations.queue.clear()
             await ctx.send("Cleared the queue.")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to clear the queue.")
+            print(f"An error occurred when trying to clear the queue. {e}")
+            raise e
             
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
     async def pause(self, ctx):
@@ -320,8 +339,8 @@ class Bot(commands.Cog):
             # Send a message that the song was paused
             await ctx.send("Paused the current song.")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to pause the song.")
-    
+            print(f"An error occurred when trying to pause the song. {e}")
+            raise e    
     @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
     async def resume(self, ctx):
         """
@@ -349,8 +368,8 @@ class Bot(commands.Cog):
             # Send a message that the song was resumed
             await ctx.send("Resumed the current song.")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to resume the song.")
-        
+            print(f"An error occurred when trying to resume the song. {e}")
+            raise e
         
     @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
     async def shuffle(self, ctx):
@@ -384,4 +403,34 @@ class Bot(commands.Cog):
             self.queue_operations.shuffle_queue()
             await ctx.send("Suffled the queue.")
         except Exception as e:
-            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to shuffle the queue.")
+            print(f"Error in the shuffle command: {e}")
+            raise e            
+            
+    @commands.command(name="userinfo", aliases=["ui", "whois"], brief="Display user information.", usage="<member>", help="This command displays information about a user.")
+    async def user_information(self, ctx, *, member: discord.Member = None):
+        try:
+            await ctx.send("Getting user information...")
+
+            # If no member is mentioned, default to the author of the command
+            if member is None:
+                member = ctx.author
+
+            # Create an embed to display user information
+            embed = discord.Embed(title=f'User Information - {member.display_name}', color=member.color)
+            # Add the user's avatar
+            embed.set_thumbnail(url=member.avatar)
+            # Add the user's information
+            embed.add_field(name='Username', value=member.name, inline=True)
+            # Add the user's ID
+            embed.add_field(name='User ID', value=member.id, inline=True)
+            # Add the user's join date to the server
+            embed.add_field(name='Joined Server On', value=member.joined_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
+            # Add the user's account creation date
+            embed.add_field(name='Account Created On', value=member.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
+
+            # Send the embed
+            await ctx.send(embed=embed)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
+        
