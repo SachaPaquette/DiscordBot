@@ -4,13 +4,12 @@
 ### Table of Contents
 
     [Installation](#installation)
-    [Usage](#usage)
     [Commands](#commands-available)
     [Dependencies](#dependencies)
     [Configuration](#configuration)
     [License](#license)
 
-#### Installation
+## Installation
 
 ```bash
 
@@ -31,7 +30,7 @@ pip install -r requirements.txt
 # Run the bot
 python discordbot.py
 ```
-#### Commands Available
+## Commands Available
     !health: Check if the bot is alive.
     !join: Join the voice channel.
     !leave: Leave the voice channel.
@@ -46,7 +45,7 @@ python discordbot.py
     !shuffle: Shuffle the queue.
     !userinfo <member>: Display user information.
 
-#### Dependencies
+## Dependencies
 
 List of external libraries the project relies on.
 
@@ -56,15 +55,15 @@ List of external libraries the project relies on.
     nacl
     dotenv
 
-#### Configuration
+## Configuration
 
 Create a .env file that is in the root of the project and add your discord token.
-```
-# .env
+```bash
+# .env file content
 DISCORD_TOKEN="your_discord_token"
 ```
 
 
-#### License
+## License
 
 This project is licensed under the MIT License.
