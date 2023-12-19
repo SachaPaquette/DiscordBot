@@ -14,3 +14,11 @@ class CommandErrorHandler:
         if song_title is None:
             return False
         return True
+    
+    async def throw_exception(self, ctx, error, message):
+        print(f"Error: {error}")
+        await ctx.send(f"{message}: {error}")
+        raise(f"{message}: {error}")
+    
+
+    

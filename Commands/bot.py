@@ -74,9 +74,8 @@ class Bot(commands.Cog):
             # Return True to indicate that the bot is in the correct channel
             await ctx.send(f"Joined {channel}")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to join the channel: {e}")
-            raise(f"An error occurred when trying to join the channel: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to join the channel.")
+        
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
         try:
@@ -86,9 +85,8 @@ class Bot(commands.Cog):
             # Disconnect the bot from the voice channel
             await ctx.voice_client.disconnect()
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to leave the channel: {e}")
-            raise(f"An error occurred when trying to leave the channel: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to leave the channel.")
+        
     @commands.command(name='ping', brief='Ping a user.', usage='<username>', help='This command pings a user.')
     async def ping(self, ctx, username):
         try:         
@@ -98,9 +96,7 @@ class Bot(commands.Cog):
             else:
                 await ctx.send(f"@{username}")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to ping the user: {e}")
-            raise(f"An error occurred when trying to ping the user: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to ping the user.")
 
 
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
@@ -123,35 +119,36 @@ class Bot(commands.Cog):
                 print(f"Queue length before: {self.queue_operations.return_queue()}")
                 await ctx.send("Skipped to the next song.")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to skip the song: {e}")
-            raise(f"An error occurred when trying to skip the song: {e}")
-        
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to skip the song.")
+            
     async def joinChannel(self, ctx):
-        # Check if the user is in a voice channel
         try:
-            # Get the voice channel of the user who sent the command
-            channel = ctx.author.voice.channel
-        except Exception as e:
-            # Send a message that the user is not in a voice channel
-            await ctx.send(ctx.author.mention + " is not in a voice channel.")
-            # Return False to indicate that the user is not in a voice channel
-            return False
+            # Check if the user is in a voice channel
+            try:
+                # Get the voice channel of the user who sent the command
+                channel = ctx.author.voice.channel
+            except Exception as e:
+                # Send a message that the user is not in a voice channel
+                await ctx.send(ctx.author.mention + " is not in a voice channel.")
+                # Return False to indicate that the user is not in a voice channel
+                return False
 
-        # Create a voice client variable
-        vc = ctx.voice_client
-        # Check if the bot is already in the correct channel
-        if vc and vc.channel == channel:
-            return True  # Bot is already in the correct channel, no need to reconnect
-        # Check if the bot is already in a channel
-        if vc:
-            # Move the bot to the correct channel
-            await vc.move_to(channel)
-        else:
-            # Connect to the voice channel
-            await channel.connect()
-        # Return True to indicate that the bot is in the correct channel
-        return True
+            # Create a voice client variable
+            vc = ctx.voice_client
+            # Check if the bot is already in the correct channel
+            if vc and vc.channel == channel:
+                return True  # Bot is already in the correct channel, no need to reconnect
+            # Check if the bot is already in a channel
+            if vc:
+                # Move the bot to the correct channel
+                await vc.move_to(channel)
+            else:
+                # Connect to the voice channel
+                await channel.connect()
+            # Return True to indicate that the bot is in the correct channel
+            return True
+        except Exception as e:
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to join the channel.")
 
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
@@ -198,10 +195,9 @@ class Bot(commands.Cog):
                 self.session.play(URL, vc, None, song_title, song_duration, thumbnail)
 
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to play the song.")
+            # Leave the channel if an error occurs
             await self.leave(ctx)
-            raise(f"An error occurred when trying to play the song: {e}")
 
     @commands.command(name='nowplaying', aliases=['np'], brief='Display the current song.', usage='', help='This command displays the current song.')
     async def nowplaying(self, ctx):
@@ -235,9 +231,7 @@ class Bot(commands.Cog):
             # Send the embed
             await ctx.send(embed=embed)
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to display the current song: {e}")
-            raise(f"An error occurred when trying to display the current song: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to display the current song.")
     
     
     @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
@@ -268,13 +262,12 @@ class Bot(commands.Cog):
             # Send a message with the queue
             await ctx.send(f"Queue: {self.queue_operations.display_queue()}")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to display the queue: {e}")
-            raise(f"An error occurred when trying to display the queue: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to display the queue.")
         
         
     @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
     async def clear(self, ctx):
+    
         """
         This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
 
@@ -284,20 +277,23 @@ class Bot(commands.Cog):
         Returns:
         None
         """
-        # Get the voice client
-        vc = ctx.voice_client
-        # Check if the bot is playing something
-        if vc is None or not vc.is_playing():
-            await ctx.send("No music is currently playing.")
-            return
-        # Check if the queue is empty
-        if self.queue_operations.return_queue() == 0:
-            await ctx.send("No more songs in the queue to clear.")
-            return
-        # Clear the queue
-        self.queue_operations.queue.clear()
-        await ctx.send("Cleared the queue.")
-        
+        try:
+            # Get the voice client
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing.")
+                return
+            # Check if the queue is empty
+            if self.queue_operations.return_queue() == 0:
+                await ctx.send("No more songs in the queue to clear.")
+                return
+            # Clear the queue
+            self.queue_operations.queue.clear()
+            await ctx.send("Cleared the queue.")
+        except Exception as e:
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to clear the queue.")
+            
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
     async def pause(self, ctx):
         """
@@ -310,16 +306,18 @@ class Bot(commands.Cog):
         None
         """
         try:
+            # Declare a voice client variable
             vc = ctx.voice_client
+            # Check if the bot is playing something
             if vc is None or not vc.is_playing():
                 await ctx.send("No music is currently playing to pause.")
                 return
+            # Pause the song
             await self.session.pause(vc)
+            # Send a message that the song was paused
             await ctx.send("Paused the current song.")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to pause the song: {e}")
-            raise(f"An error occurred when trying to pause the song: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to pause the song.")
     
     @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
     async def resume(self, ctx):
@@ -337,16 +335,18 @@ class Bot(commands.Cog):
         - None
         """
         try:
+            # Declare a voice client variable
             vc = ctx.voice_client
+            # Check if the bot is playing something or if the bot is paused
             if vc is None or not vc.is_paused():
                 await ctx.send("No music is currently paused to resume.")
                 return
+            # Resume the song
             await self.session.resume(vc)
+            # Send a message that the song was resumed
             await ctx.send("Resumed the current song.")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to resume the song: {e}")
-            raise(f"An error occurred when trying to resume the song: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to resume the song.")
         
         
     @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
@@ -381,6 +381,4 @@ class Bot(commands.Cog):
             self.queue_operations.shuffle_queue()
             await ctx.send("Suffled the queue.")
         except Exception as e:
-            print(f"Error: {e}")
-            await ctx.send(f"An error occurred when trying to suffle the queue: {e}")
-            raise(f"An error occurred when trying to suffle the queue: {e}")
+            CommandErrorHandler.throw_exception(e, ctx, "An error occurred when trying to shuffle the queue.")

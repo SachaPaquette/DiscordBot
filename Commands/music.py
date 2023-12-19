@@ -130,6 +130,17 @@ class SongSession:
             return
         
     def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
+        """
+        Play a song in the voice channel.
+
+        Args:
+            source (str): The source of the song to be played.
+            vc (discord.VoiceChannel): The voice channel to play the song in.
+            after (Callable, optional): A function to be called after the song finishes playing. Defaults to None.
+            song_title (str, optional): The title of the song. Defaults to None.
+            song_duration (str, optional): The duration of the song. Defaults to None.
+            thumbnail (str, optional): The thumbnail of the song. Defaults to None.
+        """
         try:
             # Define the song information such as the title and duration 
             self.define_song_info(song_title, song_duration, thumbnail)
@@ -142,6 +153,15 @@ class SongSession:
 
 
     def play_next(self, vc):
+        """
+        Plays the next song in the queue.
+
+        Args:
+            vc (VoiceClient): The voice client object.
+
+        Returns:
+            None
+        """
         try:
             # Check if the queue is empty or if the song was skipped
             self.queue_operations.check_queue_skipped_status(vc, self.skipped)
