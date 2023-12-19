@@ -244,7 +244,7 @@ class Bot(commands.Cog):
             print(f"An error occurred when trying to play the song. {e}")
             raise e
 
-    @commands.command(name='nowplaying', aliases=['np'], brief='Display the current song.', usage='', help='This command displays the current song.')
+    @commands.command(name='nowplaying', aliases=['np', 'playing'], brief='Display the current song.', usage='', help='This command displays the current song.')
     async def nowplaying(self, ctx):
         try:
             # Get the voice client
@@ -279,7 +279,7 @@ class Bot(commands.Cog):
             raise e
     
     
-    @commands.command(name='queue', brief='Display the queue.', usage='', help='This command displays the queue.')
+    @commands.command(name='queue', aliases=["q"], brief='Display the queue.', usage='', help='This command displays the queue.')
     async def queue(self, ctx):
         """
         Display the queue.
@@ -434,6 +434,7 @@ class Bot(commands.Cog):
     @commands.command(name="userinfo", aliases=["ui", "whois"], brief="Display user information.", usage="<member>", help="This command displays information about a user.")
     async def user_information(self, ctx, *, member: discord.Member = None):
         try:
+            # Create the embed message that will display the user information (username, ID, join date, account creation date)
             embed = await UserInfo.fetch_user_information(self, ctx, member=member)
             # Send the embed
             await ctx.send(embed=embed)
