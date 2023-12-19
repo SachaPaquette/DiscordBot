@@ -79,7 +79,10 @@ class Bot(commands.Cog):
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
         try:
-            
+            # Check if the bot is in a voice channel
+            if ctx.voice_client is None:
+                await ctx.send("I'm not in a voice channel.")
+                return
             # Send a message that the bot is leaving
             await ctx.send("Leaving voice channel.")
             # Disconnect the bot from the voice channel
