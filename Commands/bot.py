@@ -15,7 +15,7 @@ from Commands.music import SongSession
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
-# Import logging 
+# Import logging
 from Config.config import conf
 from Config.logging import setup_logging
 
@@ -34,13 +34,13 @@ class Bot(commands.Cog):
         self.intents.message_content = True
         # Create the client
         self.client = discord.Client(intents=self.intents)
-        # Assign the bot instance to the bot variable 
+        # Assign the bot instance to the bot variable
         self.bot = bot
         # Create an instance of SongSession
-        self.session = None  
+        self.session = None
         # Create an instance of QueueOperations
         self.queue_operations = QueueOperations(self.session)
-        # Create an instance of CustomHelpCommand 
+        # Create an instance of CustomHelpCommand
         self.help_command = CustomHelpCommand()
 
     @commands.Cog.listener()
@@ -59,7 +59,6 @@ class Bot(commands.Cog):
             print(f"Error in on_ready: {e}")
             raise e
 
-        
     @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
         """
@@ -73,7 +72,7 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"Error in the health command: {e}")
             raise e
-        
+
     @commands.command(name='join', brief='Join the voice channel.', usage='', help='This command makes the bot join the voice channel.')
     async def join(self, ctx):
         """
@@ -110,7 +109,7 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"An error occurred when trying to join the channel. {e}")
             raise e
-        
+
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
         try:
@@ -125,10 +124,10 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"Error in the leave command: {e}")
             raise e
-        
+
     @commands.command(name='ping', brief='Ping a user.', usage='<username>', help='This command pings a user.')
     async def ping(self, ctx, username):
-        try:         
+        try:
             # check if there is a @ in the username
             if "@" in username:
                 await ctx.send(f"{username}")
@@ -138,30 +137,32 @@ class Bot(commands.Cog):
             print(f"Error in the ping command: {e}")
             raise e
 
-
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
     async def skip(self, ctx):
         try:
             vc = ctx.voice_client
-            
+
             if vc is None or not vc.is_playing():
                 await ctx.send("No music is currently playing to skip.")
                 return
-            print(f"Queue length before: {self.queue_operations.return_queue()}")
-            # Check if the queue is empty 
+            print(
+                f"Queue length before: {self.queue_operations.return_queue()}")
+            # Check if the queue is empty
             if self.queue_operations.return_queue() == 0:
                 await ctx.send("No more songs in the queue to skip.")
                 return
             else:
-                print(f"Queue length before: {self.queue_operations.return_queue()}")
+                print(
+                    f"Queue length before: {self.queue_operations.return_queue()}")
                 # Call the skip function in the SongSession instance to skip the song
                 self.session.skip_song(vc)
-                print(f"Queue length before: {self.queue_operations.return_queue()}")
+                print(
+                    f"Queue length before: {self.queue_operations.return_queue()}")
                 await ctx.send("Skipped to the next song.")
         except Exception as e:
             print(f"Error in the skip command: {e}")
             raise e
-            
+
     async def joinChannel(self, ctx):
         try:
             # Check if the user is in a voice channel
@@ -213,30 +214,31 @@ class Bot(commands.Cog):
             if not self.session:
                 # Create an instance of SongSession
                 self.session = SongSession(ctx.guild, ctx)
-                
+
             # Check if the bot is already in the correct channel
             if await self.joinChannel(ctx) is False:
                 return
-   
-            
+
             # Get the URL and the title of the song
             URL, song_title, song_duration, thumbnail = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-            
+
             # This will return False if the URL or song_title is invalid
-            if not CommandErrorHandler.check_url_song_correct(URL, song_title): 
+            if not CommandErrorHandler.check_url_song_correct(URL, song_title):
                 await ctx.send("No song found.")
                 return
-            
+
             # Declare a voice client variable
             vc = ctx.voice_client
             # Check if the bot is playing something
             if vc.is_playing():
                 # Use the instance to add to the queue
-                self.queue_operations.add_to_queue(URL, song_title, vc, song_duration, thumbnail)
+                self.queue_operations.add_to_queue(
+                    URL, song_title, vc, song_duration, thumbnail)
                 await ctx.send(f"Added {song_title} to the queue.")
             else:
                 # Use the instance to play the song
-                self.session.play(URL, vc, None, song_title, song_duration, thumbnail)
+                self.session.play(URL, vc, None, song_title,
+                                  song_duration, thumbnail)
 
         except Exception as e:
             # Leave the channel if an error occurs
@@ -258,15 +260,17 @@ class Bot(commands.Cog):
             if song_title is None:
                 await ctx.send("No music is currently playing.")
                 return
-            
+
             # Create an embed message that contains the title of the song, the thumbnail, and the duration
-            embed = discord.Embed(title="Now Playing", description=song_title, color=discord.Color.green())
+            embed = discord.Embed(
+                title="Now Playing", description=song_title, color=discord.Color.green())
             # Add the thumbnail if available and the song duration
             if self.session.thumbnail is not None:
                 embed.set_thumbnail(url=self.session.thumbnail)
             if self.session.song_duration is not None:
-                embed.add_field(name="Duration", value=self.session.song_duration)
-                
+                embed.add_field(name="Duration",
+                                value=self.session.song_duration)
+
             # Add more information to the embed if available
             if vc.source:
                 # Get the duration of the song
@@ -277,8 +281,29 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"An error occurred when trying to display the song. {e}")
             raise e
-    
-    
+
+    @commands.command(name='lyrics', brief='Display the lyrics of the current song.', usage='', help='This command displays the lyrics of the current song.')
+    async def lyrics(self, ctx):
+        try:
+            # Get the voice client
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing.")
+                return
+            # Get the title of the song
+            song_title = self.session.get_song_title()
+            if song_title is None:
+                await ctx.send("No music is currently playing.")
+                return
+            # Get the lyrics of the song
+            lyrics = await self.session.get_lyrics(song_title)
+            # Send the lyrics
+            await ctx.send(lyrics)
+        except Exception as e:
+            print(f"An error occurred when trying to display the lyrics. {e}")
+            raise e
+
     @commands.command(name='queue', aliases=["q"], brief='Display the queue.', usage='', help='This command displays the queue.')
     async def queue(self, ctx):
         """
@@ -309,11 +334,10 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"An error occurred when trying to display the queue. {e}")
             raise e
-        
-        
+
     @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
     async def clear(self, ctx):
-    
+
         """
         This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
 
@@ -340,7 +364,7 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"An error occurred when trying to clear the queue. {e}")
             raise e
-            
+
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
     async def pause(self, ctx):
         """
@@ -365,7 +389,8 @@ class Bot(commands.Cog):
             await ctx.send("Paused the current song.")
         except Exception as e:
             print(f"An error occurred when trying to pause the song. {e}")
-            raise e    
+            raise e
+
     @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
     async def resume(self, ctx):
         """
@@ -395,7 +420,7 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"An error occurred when trying to resume the song. {e}")
             raise e
-        
+
     @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
     async def shuffle(self, ctx):
         """
@@ -429,8 +454,8 @@ class Bot(commands.Cog):
             await ctx.send("Suffled the queue.")
         except Exception as e:
             print(f"Error in the shuffle command: {e}")
-            raise e            
-            
+            raise e
+
     @commands.command(name="userinfo", aliases=["ui", "whois"], brief="Display user information.", usage="<member>", help="This command displays information about a user.")
     async def user_information(self, ctx, *, member: discord.Member = None):
         try:
@@ -441,4 +466,3 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"Error: {e}")
             raise e
-        
