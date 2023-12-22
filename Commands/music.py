@@ -6,6 +6,7 @@ from Commands.queue import QueueOperations
 # Load the .env file
 load_dotenv()
 
+
 class SongSession:
     def __init__(self, guild,  ctx) -> None:
         self.guild = guild
@@ -18,7 +19,7 @@ class SongSession:
         self.song_duration = None
         # Initialize the thumbnail attribute of the song
         self.thumbnail = None
-        
+
     async def stop(self, vc):
         """
         Stop the currently playing song.
@@ -31,7 +32,7 @@ class SongSession:
         """
         try:
             if vc and vc.is_playing():
-                vc.stop()   
+                vc.stop()
         except Exception as e:
             print(f"Error at stop function in music.py: {e}")
             return
@@ -46,13 +47,12 @@ class SongSession:
         Returns:
         None
         """
-        try: 
+        try:
             if vc and vc.is_playing():
                 vc.pause()
         except Exception as e:
             print(f"Error at pause function in music.py: {e}")
             return
-        
 
     async def resume(self, vc):
         """
@@ -79,13 +79,12 @@ class SongSession:
             bool: True if the bot is playing audio, False otherwise.
         """
         try:
-            
+
             return self.voice_client.is_playing()
         except Exception as e:
             print(f"Error at is_playing function in music.py: {e}")
             return False
 
-                
     def skip_song(self, vc):
         """
         Skips the current song and plays the next song.
@@ -98,13 +97,13 @@ class SongSession:
         """
         try:
             # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
-            self.skipped = True  
+            self.skipped = True
             # Play the next song
-            self.play_next(vc)  
+            self.play_next(vc)
         except Exception as e:
             print(f"Error while trying to skip song in music.py: {e}")
             return
-    
+
     def define_song_info(self, song_title, song_duration, song_thumbnail):
         """
         Defines the information for the current song.
@@ -117,10 +116,10 @@ class SongSession:
         Returns:
             None
         """
-        try:         
+        try:
             if song_title is None or song_duration is None or song_thumbnail is None:
                 raise Exception("Song information is None.")
-            # Define the current song object 
+            # Define the current song object
             self.current_song = song_title
             self.song_duration = song_duration
             self.thumbnail = song_thumbnail
@@ -128,7 +127,7 @@ class SongSession:
         except Exception as e:
             print(f"Error at define_song_info function in music.py: {e}")
             return
-        
+
     def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
         """
         Play a song in the voice channel.
@@ -142,15 +141,14 @@ class SongSession:
             thumbnail (str, optional): The thumbnail of the song. Defaults to None.
         """
         try:
-            # Define the song information such as the title and duration 
+            # Define the song information such as the title and duration
             self.define_song_info(song_title, song_duration, thumbnail)
-            # Play the source 
-            vc.play(discord.FFmpegPCMAudio(source, **conf.FFMPEG_OPTIONS), after=after)
+            # Play the source
+            vc.play(discord.FFmpegPCMAudio(
+                source, **conf.FFMPEG_OPTIONS), after=after)
         except Exception as e:
             print(f"Error at play function in music.py: {e}")
             return
-    
-
 
     def play_next(self, vc):
         """
@@ -165,22 +163,23 @@ class SongSession:
         try:
             # Check if the queue is empty or if the song was skipped
             self.queue_operations.check_queue_skipped_status(vc, self.skipped)
-            
+
             # Get the next song from the queue
             next_source, next_title, next_song_duration, next_song_thumbnail = self.queue_operations.get_next_song()
-            
+
             # Check if the source and title are valid
             if next_source is None or next_title is None or next_song_duration is None or next_song_thumbnail is None:
                 raise Exception("Song information is None.")
-            
+
             # Play the next song
             self.play(next_source, vc, after=self.after_playing)
-            
+
             # Reset the skipped flag to False
             self.skipped = False
-            
-            # Define the current song information 
-            self.define_song_info(next_title, next_song_duration, next_song_thumbnail)
+
+            # Define the current song information
+            self.define_song_info(
+                next_title, next_song_duration, next_song_thumbnail)
         except Exception as e:
             print(f"Error while trying to play next song in music.py: {e}")
             return
@@ -205,7 +204,6 @@ class SongSession:
                 # Play the next song in the queue
                 self.play_next(vc)
 
-
     def get_song_title(self):
         """
         Returns the title of the current song.
@@ -220,6 +218,3 @@ class SongSession:
         except Exception as e:
             print(f"Error at get_song_title function in music.py: {e}")
             return None
-            
-            
-            
