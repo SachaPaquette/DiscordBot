@@ -15,6 +15,7 @@ from Commands.music import SongSession
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
+from Commands.linkmessage import LinkMessage
 # Import logging
 from Config.config import conf
 from Config.logging import setup_logging
@@ -42,6 +43,7 @@ class Bot(commands.Cog):
         self.queue_operations = QueueOperations(self.session)
         # Create an instance of CustomHelpCommand
         self.help_command = CustomHelpCommand()
+        self.linkmessage = LinkMessage(bot)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -58,6 +60,19 @@ class Bot(commands.Cog):
         except Exception as e:
             print(f"Error in on_ready: {e}")
             raise e
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        try:
+            url_information = await self.linkmessage.on_message(message)
+            print(f"URL Information: {url_information}")
+            if url_information is None:
+                return
+            
+        except Exception as e:
+            print(f"Error in the on message event: {e}")
+            raise e
+
 
     @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
     async def health(self, ctx):
@@ -464,5 +479,8 @@ class Bot(commands.Cog):
             # Send the embed
             await ctx.send(embed=embed)
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error in the user info command: {e}")
             raise e
+
+
+                

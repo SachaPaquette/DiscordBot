@@ -117,6 +117,7 @@ class SongSession:
             None
         """
         try:
+            # Check if the song information is valid
             if song_title is None or song_duration is None or song_thumbnail is None:
                 raise Exception("Song information is None.")
             # Define the current song object
