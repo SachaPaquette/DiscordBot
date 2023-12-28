@@ -16,6 +16,8 @@ from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
 from Commands.linkmessage import LinkMessage
+from Commands.utility import Utility
+from Commands.nowplaying import NowPlaying
 # Import logging
 from Config.config import conf
 from Config.logging import setup_logging
@@ -39,11 +41,16 @@ class Bot(commands.Cog):
         self.bot = bot
         # Create an instance of SongSession
         self.session = None
-        # Create an instance of QueueOperations
+        # Create an instance of QueueOperations to handle the music queue
         self.queue_operations = QueueOperations(self.session)
-        # Create an instance of CustomHelpCommand
+        # Create an instance of CustomHelpCommand to handle the help command
         self.help_command = CustomHelpCommand()
+        # Create an instance of LinkMessage to handle messages that contain URLs
         self.linkmessage = LinkMessage(bot)
+        # Create an instance of Utility to handle utility commands
+        self.utility = Utility(bot)
+        # Create an instance of NowPlaying to handle the nowplaying command
+        self.playing_operations = NowPlaying()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -63,15 +70,36 @@ class Bot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        """
+        Event handler that is triggered when a message is sent in a channel.
+        
+        This function checks if the message contains a URL. If it does, it will fetch the domain information and send it as a message.
+        
+        Parameters:
+        - message (discord.Message): The message object that was sent.
+        
+        Returns:
+        None
+        
+        Raises:
+        Exception: If an error occurs while fetching the domain information.
+        
+        Examples:
+        https://www.youtube.com/watch?v=vJwKKKd2ZYE&list=RDMMvrQWhFysPKY&index=3 ->
+        
+        Origin: US
+        Creation Date: 2005-02-15 05:13:12
+        Name Servers: NS1.GOOGLE.COM, NS2.GOOGLE.COM, NS3.GOOGLE.COM, NS4.GOOGLE.COM, ns2.google.com, ns1.google.com, ns4.google.com, ns3.google.com
+        Name Domain: YOUTUBE.COM, youtube.com
+        Organization: Google LLC
+        """
         try:
             # Fetch the domain information from the message url
             url_information = await self.linkmessage.on_message(message)
             
             # Make the bot send a message with the domain information
             if url_information is not None:
-                # Format the message to be sent 
-                
-                # Send the message
+                # Format and send the message
                 await message.channel.send(url_information)
         except Exception as e:
             print(f"Error in the on message event: {e}")
@@ -102,29 +130,9 @@ class Bot(commands.Cog):
         If the bot is in a different channel, it will move to the correct channel.
         If the bot is not in any channel, it will connect to the voice channel.
         """
-        try:
-            # Get the voice channel of the user who sent the command
-            channel = ctx.author.voice.channel
-        except AttributeError:
-            await ctx.send(ctx.author.mention + " is not in a voice channel.")
-            return
-        try:
-            # Create a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is already in the correct channel
-            if vc and vc.channel == channel:
-                await ctx.send("I'm already in your channel.")
-                return
 
-            # Check if the bot is already in a channel
-            if vc:
-                # Move the bot to the correct channel
-                await vc.move_to(channel)
-            else:
-                # Connect to the voice channel
-                await channel.connect()
-            # Return True to indicate that the bot is in the correct channel
-            await ctx.send(f"Joined {channel}")
+        try:
+            await self.utility.join(ctx)
         except Exception as e:
             print(f"An error occurred when trying to join the channel. {e}")
             raise e
@@ -132,14 +140,7 @@ class Bot(commands.Cog):
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
     async def leave(self, ctx):
         try:
-            # Check if the bot is in a voice channel
-            if ctx.voice_client is None:
-                await ctx.send("I'm not in a voice channel.")
-                return
-            # Send a message that the bot is leaving
-            await ctx.send("Leaving voice channel.")
-            # Disconnect the bot from the voice channel
-            await ctx.voice_client.disconnect()
+            await self.utility.leave(ctx)
         except Exception as e:
             print(f"Error in the leave command: {e}")
             raise e
@@ -159,58 +160,13 @@ class Bot(commands.Cog):
     @commands.command(name='skip', brief='Skip the current song.', usage='', help='This command skips the current song.')
     async def skip(self, ctx):
         try:
-            vc = ctx.voice_client
-
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing to skip.")
-                return
-            print(
-                f"Queue length before: {self.queue_operations.return_queue()}")
-            # Check if the queue is empty
-            if self.queue_operations.return_queue() == 0:
-                await ctx.send("No more songs in the queue to skip.")
-                return
-            else:
-                print(
-                    f"Queue length before: {self.queue_operations.return_queue()}")
-                # Call the skip function in the SongSession instance to skip the song
-                self.session.skip_song(vc)
-                print(
-                    f"Queue length before: {self.queue_operations.return_queue()}")
-                await ctx.send("Skipped to the next song.")
+            # Call the skip function in SongSession
+            await self.session.skip(ctx)
         except Exception as e:
             print(f"Error in the skip command: {e}")
             raise e
 
-    async def joinChannel(self, ctx):
-        try:
-            # Check if the user is in a voice channel
-            try:
-                # Get the voice channel of the user who sent the command
-                channel = ctx.author.voice.channel
-            except Exception as e:
-                # Send a message that the user is not in a voice channel
-                await ctx.send(ctx.author.mention + " is not in a voice channel.")
-                # Return False to indicate that the user is not in a voice channel
-                return False
 
-            # Create a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is already in the correct channel
-            if vc and vc.channel == channel:
-                return True  # Bot is already in the correct channel, no need to reconnect
-            # Check if the bot is already in a channel
-            if vc:
-                # Move the bot to the correct channel
-                await vc.move_to(channel)
-            else:
-                # Connect to the voice channel
-                await channel.connect()
-            # Return True to indicate that the bot is in the correct channel
-            return True
-        except Exception as e:
-            print(f"An error occurred when trying to join the channel. {e}")
-            raise e
 
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
@@ -225,100 +181,30 @@ class Bot(commands.Cog):
         None
         """
         try:
-            # Check if the URL is valid (i.e. it is a YouTube URL)
-            if not CommandErrorHandler.check_url_correct(url):
-                await ctx.send("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-                return
-            # Check if the bot is already in the correct channel
             if not self.session:
                 # Create an instance of SongSession
                 self.session = SongSession(ctx.guild, ctx)
-
-            # Check if the bot is already in the correct channel
-            if await self.joinChannel(ctx) is False:
-                return
-
-            # Get the URL and the title of the song
-            URL, song_title, song_duration, thumbnail = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-
-            # This will return False if the URL or song_title is invalid
-            if not CommandErrorHandler.check_url_song_correct(URL, song_title):
-                await ctx.send("No song found.")
-                return
-
-            # Declare a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc.is_playing():
-                # Use the instance to add to the queue
-                self.queue_operations.add_to_queue(
-                    URL, song_title, vc, song_duration, thumbnail)
-                await ctx.send(f"Added {song_title} to the queue.")
-            else:
-                # Use the instance to play the song
-                self.session.play(URL, vc, None, song_title,
-                                  song_duration, thumbnail)
+                
+            await self.session.play_command(ctx, url, self.bot.loop)
 
         except Exception as e:
             # Leave the channel if an error occurs
-            await self.leave(ctx)
             print(f"An error occurred when trying to play the song. {e}")
             raise e
 
     @commands.command(name='nowplaying', aliases=['np', 'playing'], brief='Display the current song.', usage='', help='This command displays the current song.')
     async def nowplaying(self, ctx):
         try:
-            # Get the voice client
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
-                return
-            # Get the title of the song
-            song_title = self.session.get_song_title()
-            if song_title is None:
-                await ctx.send("No music is currently playing.")
-                return
-
-            # Create an embed message that contains the title of the song, the thumbnail, and the duration
-            embed = discord.Embed(
-                title="Now Playing", description=song_title, color=discord.Color.green())
-            # Add the thumbnail if available and the song duration
-            if self.session.thumbnail is not None:
-                embed.set_thumbnail(url=self.session.thumbnail)
-            if self.session.song_duration is not None:
-                embed.add_field(name="Duration",
-                                value=self.session.song_duration)
-
-            # Add more information to the embed if available
-            if vc.source:
-                # Get the duration of the song
-                pass
-
-            # Send the embed
-            await ctx.send(embed=embed)
+            await self.playing_operations.nowplaying_command(ctx, self.session)
         except Exception as e:
             print(f"An error occurred when trying to display the song. {e}")
             raise e
 
+    # TODO - Add a command to display the lyrics of the current song
     @commands.command(name='lyrics', brief='Display the lyrics of the current song.', usage='', help='This command displays the lyrics of the current song.')
     async def lyrics(self, ctx):
         try:
-            # Get the voice client
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
-                return
-            # Get the title of the song
-            song_title = self.session.get_song_title()
-            if song_title is None:
-                await ctx.send("No music is currently playing.")
-                return
-            # Get the lyrics of the song
-            lyrics = await self.session.get_lyrics(song_title)
-            # Send the lyrics
-            await ctx.send(lyrics)
+           pass
         except Exception as e:
             print(f"An error occurred when trying to display the lyrics. {e}")
             raise e

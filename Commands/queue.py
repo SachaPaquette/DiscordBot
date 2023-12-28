@@ -4,24 +4,25 @@ import random
 class QueueOperations:
     shared_queue = deque()  # Initialize the queue attribute
     def __init__(self, song_session=None):
-        print("Initializing QueueOperations...")
+        # Initialize the song session attribute
         self.song_session = song_session
+        # Initialize the queue attribute
         self.queue = self.shared_queue
 
     def display_queue(self):
-        print("Queue:")
-        print(self.queue)
-        # Clear the title queue
-        # Return the queue of song titles
-        # return only the titles in the queue list
+        # Return only the titles in the queue list
         return [song["title"] for song in self.queue]
         
     def clear_queue(self):
         """
         Clears the queue and the title queue.
         """
-        # Clear the queue
-        self.queue.clear()
+        try:
+            # Clear the queue
+            self.queue.clear()
+        except Exception as e:
+            print(f"Error while trying to clear the queue in queue.py: {e}")
+            return
         
     def add_to_queue(self, youtube_source, title, vc, song_duration, thumbnail):
         """
@@ -52,23 +53,28 @@ class QueueOperations:
             return
         
     def return_queue(self):
-        print("Returning queue...")
-        print(f"Queue: {self.queue}")
-        # Return the queue
-        return len(self.queue)
-    
+        try:
+            # Return the queue length
+            return len(self.queue)
+        except Exception as e:
+            print(f"Error while trying to return the queue in queue.py: {e}")
+            return
     
     def check_queue_skipped_status(self, vc, skipped_status):
-        # Check if the queue is empty or if the song was skipped
-        if self.return_queue() == 0:
-            print("No more songs in queue.")
-        elif skipped_status:
-            print("Song was skipped.")
-        else:
+        try:
+            # Check if the queue is empty or if the song was skipped
+            if self.return_queue() == 0:
+                print("No more songs in queue.")
+            elif skipped_status:
+                print("Song was skipped.")
+            else:
+                return
+            # Stop the song's audio
+            vc.stop()
+        except Exception as e:
+            print(f"Error in the check_queue_skipped_status function in queue.py: {e}")
             return
-        # Stop the song's audio
-        vc.stop()
-            
+        
     def get_next_song(self):
         try:
             print("Getting next song...")
@@ -98,6 +104,7 @@ class QueueOperations:
 
     def shuffle_queue(self):
         try:
+            # Check if the queue is empty
             if self.return_queue() == 0:
                 print("Queue is empty.")
                 return    

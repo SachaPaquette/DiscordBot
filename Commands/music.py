@@ -3,7 +3,9 @@ import nacl
 from dotenv import load_dotenv
 from Config.config import conf
 from Commands.queue import QueueOperations
-
+from Commands.ErrorHandling.handling import CommandErrorHandler
+from Commands.ytdl import YTDLSource
+from Commands.utility import Utility
 # Load the .env file
 load_dotenv()
 
@@ -40,6 +42,9 @@ class SongSession:
         self.song_duration = None
         # Initialize the thumbnail attribute of the song
         self.thumbnail = None
+        
+        self.utility = Utility()
+
 
     async def stop(self, vc):
         """
@@ -112,24 +117,34 @@ class SongSession:
             print(f"Error at is_playing function in music.py: {e}")
             return False
 
-    def skip_song(self, vc):
-        """
-        Skips the current song and plays the next song.
 
-        Parameters:
-        - vc (VoiceClient): The voice client object.
-
-        Returns:
-        None
-        """
+    async def skip(self, ctx):
         try:
-            # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
-            self.skipped = True
-            # Play the next song
-            self.play_next(vc)
+            # Declare a voice client variable
+            vc = ctx.voice_client
+            
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing to skip.")
+                return
+
+            # Check if the queue is empty
+            if self.queue_operations.return_queue() == 0:
+                await ctx.send("No more songs in the queue to skip.")
+                return
+            
+            else:
+                # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
+                self.skipped = True
+                # Play the next song
+                self.play_next(vc)
+                
+                # Send a message saying that the song was skipped
+                await ctx.send("Skipped to the next song.")
         except Exception as e:
-            print(f"Error while trying to skip song in music.py: {e}")
-            return
+            print(f"Error in the skip command: {e}")
+            raise e
+
 
     def define_song_info(self, song_title, song_duration, song_thumbnail):
         """
@@ -178,6 +193,68 @@ class SongSession:
         except Exception as e:
             print(f"Error at play function in music.py: {e}")
             return
+
+    async def play_command(self,ctx,url, loop):
+        """
+        Play a song.
+
+        Parameters:
+        - ctx (discord.ext.commands.Context): The context of the command.
+        - url (str): The URL of the song to be played.
+
+        Returns:
+        None
+        """
+        try:
+            # Check if the URL is valid (i.e. it is a YouTube URL)
+            if not CommandErrorHandler.check_url_correct(url):
+                await ctx.send("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+                return
+
+            # Check if the bot is already in the correct channel
+            if await self.utility.joinChannel(ctx) is False:
+                return
+
+            # Get the URL and the title of the song
+            URL, song_title, song_duration, thumbnail = await YTDLSource.from_url(url, loop=loop, stream=True)
+
+            # This will return False if the URL or song_title is invalid
+            if not CommandErrorHandler.check_url_song_correct(URL, song_title):
+                await ctx.send("No song found.")
+                return
+
+            # Declare a voice client variable
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc.is_playing():
+                # Use the instance to add to the queue
+                self.queue_operations.add_to_queue(
+                    URL, song_title, vc, song_duration, thumbnail)
+                await ctx.send(f"Added {song_title} to the queue.")
+            else:
+                # Use the instance to play the song
+                self.play(URL, vc, None, song_title,
+                                  song_duration, thumbnail)
+
+        except Exception as e:
+            # Leave the channel if an error occurs
+            await self.utility.leave(ctx)
+            print(f"An error occurred when trying to play the song. {e}")
+            raise e
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def play_next(self, vc):
         """
@@ -247,3 +324,6 @@ class SongSession:
         except Exception as e:
             print(f"Error at get_song_title function in music.py: {e}")
             return None
+
+    
+
