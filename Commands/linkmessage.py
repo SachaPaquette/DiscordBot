@@ -27,8 +27,9 @@ class LinkMessage:
             # Get the domain information
             domain_info = self.get_domain_info(url)
             
+            formatted_domain_info = self.format_domain_info_message(domain_info)
             # Return the domain information                   
-            return domain_info
+            return formatted_domain_info
         
     def extract_domain_from_url(self, url):
         # Extract the domain from the URL using tldextract
@@ -72,3 +73,16 @@ class LinkMessage:
             return None
                 
     
+    def format_domain_info_message(self, domain_info):
+        try:
+            return (
+                f"**Origin:** {domain_info['ORIGIN']}\n"
+                f"**Creation Date:** {domain_info['CREATION_DATE']}\n"
+                f"**Name Servers:** {', '.join(domain_info['NAME_SERV'])}\n"
+                f"**Name Domain:** {', '.join(domain_info['NAME_DOMAIN'])}\n"
+                f"**Organization:** {domain_info['ORGANIZATION']}"
+                )
+            
+        except Exception as e:
+            print(f"Error while formatting domain info message: {e}")
+            return None

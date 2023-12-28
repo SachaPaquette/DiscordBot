@@ -70,15 +70,9 @@ class Bot(commands.Cog):
             # Make the bot send a message with the domain information
             if url_information is not None:
                 # Format the message to be sent 
-                formatted_message = (
-                f"**Origin:** {url_information['ORIGIN']}\n"
-                f"**Creation Date:** {url_information['CREATION_DATE']}\n"
-                f"**Name Servers:** {', '.join(url_information['NAME_SERV'])}\n"
-                f"**Name Domain:** {', '.join(url_information['NAME_DOMAIN'])}\n"
-                f"**Organization:** {url_information['ORGANIZATION']}"
-                )
+                
                 # Send the message
-                await message.channel.send(formatted_message)
+                await message.channel.send(url_information)
         except Exception as e:
             print(f"Error in the on message event: {e}")
             raise e
