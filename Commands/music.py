@@ -3,16 +3,37 @@ import nacl
 from dotenv import load_dotenv
 from Config.config import conf
 from Commands.queue import QueueOperations
+
 # Load the .env file
 load_dotenv()
 
-
 class SongSession:
     def __init__(self, guild,  ctx) -> None:
+        """
+        Initializes a music session object.
+
+        Parameters:
+        - guild (str): The guild associated with the Music object.
+        - ctx (object): The context object containing information about the command invocation.
+
+        Attributes:
+        - guild (str): The guild associated with the Music object.
+        - voice_client (object): The voice client associated with the Music object.
+        - skipped (bool): Indicates whether a song has been skipped or not.
+        - queue_operations (object): The queue operations object associated with the Music object.
+        - current_song (str): The currently playing song.
+        - song_duration (str): The duration of the currently playing song.
+        - thumbnail (str): The thumbnail of the currently playing song.
+        """
+        # Define the guild attribute
         self.guild = guild
+        # Define the voice client object
         vc = ctx.voice_client
+        # Assign the voice client to the voice_client attribute
         self.voice_client = vc
-        self.skipped = False  # Initialize the skipped attribute
+        # Initialize the skipped attribute
+        self.skipped = False  
+        # Initialize the queue operations object 
         self.queue_operations = QueueOperations(self)
         # Initialize the current song and song duration attributes
         self.current_song = None
@@ -31,7 +52,9 @@ class SongSession:
         None
         """
         try:
+            # Check if the voice client is playing audio
             if vc and vc.is_playing():
+                # Stop the audio
                 vc.stop()
         except Exception as e:
             print(f"Error at stop function in music.py: {e}")
@@ -48,7 +71,9 @@ class SongSession:
         None
         """
         try:
+            # Check if the voice client is playing audio
             if vc and vc.is_playing():
+                # Pause the audio
                 vc.pause()
         except Exception as e:
             print(f"Error at pause function in music.py: {e}")
@@ -65,7 +90,9 @@ class SongSession:
         None
         """
         try:
+            # Check if the voice client is paused
             if vc and vc.is_paused():
+                # Resume the audio
                 vc.resume()
         except Exception as e:
             print(f"Error at resume function in music.py: {e}")
@@ -79,7 +106,7 @@ class SongSession:
             bool: True if the bot is playing audio, False otherwise.
         """
         try:
-
+            # Return whether the voice client is playing audio
             return self.voice_client.is_playing()
         except Exception as e:
             print(f"Error at is_playing function in music.py: {e}")
@@ -122,9 +149,10 @@ class SongSession:
                 raise Exception("Song information is None.")
             # Define the current song object
             self.current_song = song_title
+            # Define the song duration object
             self.song_duration = song_duration
+            # Define the song thumbnail object
             self.thumbnail = song_thumbnail
-            print(f"Removed {song_title} from the queue.")
         except Exception as e:
             print(f"Error at define_song_info function in music.py: {e}")
             return
