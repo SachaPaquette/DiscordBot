@@ -8,6 +8,7 @@ from Commands.userinfo import UserInfo
 from Commands.linkmessage import LinkMessage
 from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
+from Commands.health import HealthCheck
 from Config.config import conf
 # Import logging
 from Config.logging import setup_logging
@@ -41,6 +42,8 @@ class Bot(commands.Cog):
         self.utility = Utility(bot)
         # Create an instance of NowPlaying to handle the nowplaying command
         self.playing_operations = NowPlaying()
+        # Create an instance of HealthCheck to handle the health command
+        self.health_check = HealthCheck(bot)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -62,21 +65,21 @@ class Bot(commands.Cog):
     async def on_message(self, message):
         """
         Event handler that is triggered when a message is sent in a channel.
-        
+
         This function checks if the message contains a URL. If it does, it will fetch the domain information and send it as a message.
-        
+
         Parameters:
         - message (discord.Message): The message object that was sent.
-        
+
         Returns:
         None
-        
+
         Raises:
         Exception: If an error occurs while fetching the domain information.
-        
+
         Examples:
         https://www.youtube.com/watch?v=vJwKKKd2ZYE&list=RDMMvrQWhFysPKY&index=3 ->
-        
+
         Origin: US
         Creation Date: 2005-02-15 05:13:12
         Name Servers: NS1.GOOGLE.COM, NS2.GOOGLE.COM, NS3.GOOGLE.COM, NS4.GOOGLE.COM, ns2.google.com, ns1.google.com, ns4.google.com, ns3.google.com
@@ -90,19 +93,15 @@ class Bot(commands.Cog):
             logger.error(f"Error in the on message event: {e}")
             raise e
 
-
-    @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command checks the bot\'s latency.')
+    @commands.command(name='health', brief='Check if the bot is alive.', usage='', help='This command provides detailed information about the bot\'s health.')
     async def health(self, ctx):
         """
-        Check if the bot is alive.
-
-        This command checks the bot's latency by sending a message "I am alive!".
+        Check if the bot is alive and provide detailed health information.
         """
         try:
-            # Send a message that the bot is alive as a health check
-            await ctx.send("I am alive!")
+            await self.health_check.health_command(ctx, self.bot)
         except Exception as e:
-            logger.error(f"Error in the health command: {e}")
+            print(f"Error in the health command: {e}")
             raise e
 
     @commands.command(name='join', brief='Join the voice channel.', usage='', help='This command makes the bot join the voice channel.')
@@ -119,7 +118,8 @@ class Bot(commands.Cog):
         try:
             await self.utility.join(ctx)
         except Exception as e:
-            logger.error(f"An error occurred when trying to join the channel. {e}")
+            logger.error(
+                f"An error occurred when trying to join the channel. {e}")
             raise e
 
     @commands.command(name='leave', aliases=['disconnect'], brief='Leave the voice channel.', usage='', help='This command disconnects the bot from the voice channel.')
@@ -151,8 +151,6 @@ class Bot(commands.Cog):
             logger.error(f"Error in the skip command: {e}")
             raise e
 
-
-
     @commands.command(name='play', brief='Play a song.', usage='<url>', help='This command plays a song.')
     async def play(self, ctx, url):
         """
@@ -170,12 +168,13 @@ class Bot(commands.Cog):
             if not self.session:
                 # Create an instance of SongSession
                 self.session = SongSession(ctx.guild, ctx)
-                
+
             await self.session.play_command(ctx, url, self.bot.loop)
 
         except Exception as e:
             # Leave the channel if an error occurs
-            logger.error(f"An error occurred when trying to play the song. {e}")
+            logger.error(
+                f"An error occurred when trying to play the song. {e}")
             raise e
 
     @commands.command(name='nowplaying', aliases=['np', 'playing', 'now'], brief='Display the current song.', usage='', help='This command displays the current song.')
@@ -183,16 +182,18 @@ class Bot(commands.Cog):
         try:
             await self.playing_operations.nowplaying_command(ctx, self.session)
         except Exception as e:
-            logger.error(f"An error occurred when trying to display the song. {e}")
+            logger.error(
+                f"An error occurred when trying to display the song. {e}")
             raise e
 
     # TODO - Add a command to display the lyrics of the current song
     @commands.command(name='lyrics', brief='Display the lyrics of the current song.', usage='', help='This command displays the lyrics of the current song.')
     async def lyrics(self, ctx):
         try:
-           pass
+            pass
         except Exception as e:
-            logger.error(f"An error occurred when trying to display the lyrics. {e}")
+            logger.error(
+                f"An error occurred when trying to display the lyrics. {e}")
             raise e
 
     @commands.command(name='queue', aliases=["q"], brief='Display the queue.', usage='', help='This command displays the queue.')
@@ -212,7 +213,8 @@ class Bot(commands.Cog):
             # Call the queue function in QueueOperations
             await self.queue_operations.display_queue_command(ctx, discord)
         except Exception as e:
-            logger.error(f"An error occurred when trying to display the queue. {e}")
+            logger.error(
+                f"An error occurred when trying to display the queue. {e}")
             raise e
 
     @commands.command(name="clear", brief="Clear the queue.", usage="", help="This command clears the queue.")
@@ -230,7 +232,8 @@ class Bot(commands.Cog):
         try:
             self.queue_operations.clear_command(ctx)
         except Exception as e:
-            logger.error(f"An error occurred when trying to clear the queue. {e}")
+            logger.error(
+                f"An error occurred when trying to clear the queue. {e}")
             raise e
 
     @commands.command(name='pause', brief='Pause the current song.', usage='', help='This command pauses the current song.')
@@ -247,7 +250,8 @@ class Bot(commands.Cog):
         try:
             await self.session.pause_command(ctx)
         except Exception as e:
-            logger.error(f"An error occurred when trying to pause the song. {e}")
+            logger.error(
+                f"An error occurred when trying to pause the song. {e}")
             raise e
 
     @commands.command(name='resume', brief='Resume the current song.', usage='', help='This command resumes the current song.')
@@ -268,7 +272,8 @@ class Bot(commands.Cog):
         try:
             await self.session.resume_command(ctx)
         except Exception as e:
-            logger.error(f"An error occurred when trying to resume the song. {e}")
+            logger.error(
+                f"An error occurred when trying to resume the song. {e}")
             raise e
 
     @commands.command(name='shuffle', brief='Suffle the queue.', usage='', help='This command suffles the queue.')
@@ -277,7 +282,7 @@ class Bot(commands.Cog):
         Shuffles the queue.
 
         This command shuffles the songs in the queue if the conditions are met. It checks if the bot is currently playing music and if there are songs in the queue.
-        
+
         Parameters:
         - ctx (Context): The context object representing the invocation context of the command.
 
@@ -294,7 +299,7 @@ class Bot(commands.Cog):
             logger.error(f"Error in the shuffle command: {e}")
             raise e
 
-    @commands.command(name='volume', aliases=['vol'], brief='Change the volume.', usage='<volume>', help='This command changes the volume.')
+    @commands.command(name='volume', aliases=['vol', 'sound', 'v'], brief='Change the volume.', usage='<volume>', help='This command changes the volume.')
     async def volume(self, ctx, volume: int):
         """
         Change the volume.
@@ -317,8 +322,6 @@ class Bot(commands.Cog):
         except Exception as e:
             logger.error(f"Error in the volume command: {e}")
             raise e
-
-
 
     @commands.command(name="userinfo", aliases=["ui", "whois"], brief="Display user information.", usage="<member>", help="This command displays information about a user.")
     async def user_information(self, ctx, *, member: discord.Member = None):
@@ -343,7 +346,7 @@ class Bot(commands.Cog):
             2017-02-26 20:37:34
             Account Created On
             2017-02-18 04:04:35 `
-        
+
         Returns:
         - None
         """
@@ -353,6 +356,3 @@ class Bot(commands.Cog):
         except Exception as e:
             logger.error(f"Error in the user info command: {e}")
             raise e
-
-
-                
