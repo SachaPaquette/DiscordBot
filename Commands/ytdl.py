@@ -7,11 +7,25 @@ import asyncio
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
+        # Set the data attribute
         self.data = data
+        # Set the title attribute
         self.title = data.get("title")
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
+        """
+        Extracts information from a given URL using YoutubeDL.
+
+        Args:
+            url (str): The URL of the video or audio to extract information from.
+            loop (asyncio.AbstractEventLoop, optional): The event loop to use for asynchronous operations. Defaults to None.
+            stream (bool, optional): Whether to stream the audio instead of downloading it. Defaults to False.
+
+        Returns:
+            tuple: A tuple containing the URL, title, duration, and thumbnail of the song.
+                   If an error occurs during extraction, returns (None, None).
+        """
         try:
             # Set the options for YoutubeDL
             YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}

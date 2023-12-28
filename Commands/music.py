@@ -44,6 +44,8 @@ class SongSession:
         self.thumbnail = None
         
         self.utility = Utility()
+        
+        self.source = None
 
 
     async def stop(self, vc):
@@ -179,9 +181,6 @@ class SongSession:
             None
         """
         try:
-            # Check if the song information is valid
-            if song_title is None or song_duration is None or song_thumbnail is None:
-                raise Exception("Song information is None.")
             # Define the current song object
             self.current_song = song_title
             # Define the song duration object
@@ -208,8 +207,9 @@ class SongSession:
             # Define the song information such as the title and duration
             self.define_song_info(song_title, song_duration, thumbnail)
             # Play the source
-            vc.play(discord.FFmpegPCMAudio(
-                source, **conf.FFMPEG_OPTIONS), after=after)
+            vc.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(
+                source, **conf.FFMPEG_OPTIONS)), after=after)
+            self.source = discord.PCMVolumeTransformer(vc.source)
         except Exception as e:
             print(f"Error at play function in music.py: {e}")
             return
@@ -346,4 +346,32 @@ class SongSession:
             return None
 
     
+    
+    async def change_volume(self, volume, ctx):
+        """
+        Changes the volume of the bot.
+
+        Args:
+            volume (float): The volume to change to.
+
+        Returns:
+            None
+        """
+        try:
+            # Check if the volume is valid
+            if volume < 0 or volume > 100:
+                await ctx.send("Please enter a valid volume between 0 and 100.")
+                return
+            
+            # Put the volume in the correct range (0.0 - 1.0)
+            volume = float(volume) / 100
+            
+            # Change the volume of the bot
+            ctx.voice_client.source.volume = volume
+            
+            # Send a message that the volume was changed
+            await ctx.send(f"Changed the volume to {volume * 100}%")
+        except Exception as e:
+            print(f"Error at change_volume function in music.py: {e}")
+            return
 

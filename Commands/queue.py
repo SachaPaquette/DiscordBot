@@ -1,10 +1,11 @@
 from collections import deque
-# Random is used to shuffle the queue
-import random
+import random # Random is used to shuffle the queue
 
 
 class QueueOperations:
-    shared_queue = deque()  # Initialize the queue attribute
+    # Initialize the queue attribute
+    shared_queue = deque()  
+    
     def __init__(self, song_session=None):
         # Initialize the song session attribute
         self.song_session = song_session
@@ -12,7 +13,12 @@ class QueueOperations:
         self.queue = self.shared_queue
 
     def display_queue(self):
-        # Return only the titles in the queue list
+        """
+        Returns a list of titles in the queue.
+
+        Returns:
+            list: A list of titles in the queue.
+        """
         return [song["title"] for song in self.queue]
         
     async def display_queue_command(self, ctx, discord):
@@ -57,7 +63,7 @@ class QueueOperations:
         try:
             # Add the source and title to the queue as a dictionary
             song_info = {"source": youtube_source, "title": title, "duration": song_duration, "thumbnail": thumbnail}
-            print(f"Song info: {song_info}")
+
             # Append the song info to the queue
             self.queue.append(song_info)
 
@@ -71,6 +77,12 @@ class QueueOperations:
             return
         
     def return_queue(self):
+        """
+        Returns the length of the queue.
+
+        Returns:
+            int: The length of the queue.
+        """
         try:
             # Return the queue length
             return len(self.queue)
@@ -95,8 +107,7 @@ class QueueOperations:
         
     def get_next_song(self):
         try:
-            print("Getting next song...")
-            print(f"Queue: {self.queue}")
+            print("Getting next song.")
             # Check if the queue is empty
             if self.return_queue() == 0:
                 return None, None
@@ -113,7 +124,7 @@ class QueueOperations:
             if next_source is not None and next_title is not None and next_song_duration is not None and next_song_thumbnail is not None:
                 return next_source, next_title, next_song_duration, next_song_thumbnail
             else:
-                print("Source or title is None.")
+                print("Some song information is None.")
                 return None, None, None, None
         except Exception as e:
             print(f"Error in the get_next_song function in queue.py: {e}")
