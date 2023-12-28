@@ -2,40 +2,58 @@ import re
 import aiohttp
 import whois
 import tldextract
+from Config.config import conf
 class LinkMessage:
     def __init__(self, bot):
         self.bot = bot
 
-    async def on_message(self, message):
-        # Ignore messages sent by the bot
-        if message.author == self.bot.user:
-            return
-        
-        # Ignore message that is a command
-        if message.content.startswith("!"):
-            return
-        
-        # Create a regex pattern to match a URL (https and http)
-        pattern = r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,})"
-        
-        # Check if the message contains a URL
-        if re.search(pattern, message.content):
+    async def on_message_command(self, message):
+        try:
+            # Ignore messages sent by the bot
+            if message.author == self.bot.user:
+                return
             
-            # Get the URL from the message
-            url = re.search(pattern, message.content).group(0)
+            # Ignore message that is a command
+            if message.content.startswith("!"):
+                return
+            
+            # Check if the message contains a URL
+            if re.search(conf.REGEX_URL_PATTERN, message.content):
+                
+                # Get the URL from the message
+                url = re.search(conf.REGEX_URL_PATTERN, message.content).group(0)
 
-            # Get the domain information
-            domain_info = self.get_domain_info(url)
-            
-            formatted_domain_info = self.format_domain_info_message(domain_info)
-            # Return the domain information                   
-            return formatted_domain_info
+                # Get the domain information
+                domain_info = self.get_domain_info(url)
+                # Format the domain information 
+                formatted_domain_info = self.format_domain_info_message(domain_info)
+                
+                # Check if the domain information is None
+                if formatted_domain_info is None:
+                    return
+                
+                # Send the domain information
+                await message.channel.send(formatted_domain_info)
+        except Exception as e:
+            print(f"Error while handling message: {e}")
+            return
         
+    
     def extract_domain_from_url(self, url):
+        """
+        Extracts the domain name from a given URL. (e.g. https://www.google.com -> google.com)
+
+        Args:
+            url (str): The URL from which to extract the domain name.
+
+        Returns:
+            str: The domain name and suffix (e.g. google.com).
+        """
         # Extract the domain from the URL using tldextract
         ext = tldextract.extract(url)
         # Return the domain name and suffix (e.g. google.com)
         return f"{ext.domain}.{ext.suffix}"
+                        
                         
     def get_domain_info(self, url):
         try:

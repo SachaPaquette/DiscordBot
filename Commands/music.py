@@ -65,44 +65,64 @@ class SongSession:
             print(f"Error at stop function in music.py: {e}")
             return
 
-    async def pause(self, vc):
+
+        
+    async def pause_command(self, ctx):
         """
-        Pause the song audio.
+        Pauses the current song.
 
         Parameters:
-        - vc: The voice client object.
+        - ctx (Context): The context of the command.
 
         Returns:
         None
         """
         try:
-            # Check if the voice client is playing audio
-            if vc and vc.is_playing():
-                # Pause the audio
-                vc.pause()
+            # Declare a voice client variable
+            vc = ctx.voice_client
+            # Check if the bot is playing something
+            if vc is None or not vc.is_playing():
+                await ctx.send("No music is currently playing to pause.")
+                return
+            # Pause the song
+            vc.pause()
+            # Send a message that the song was paused
+            await ctx.send("Paused the current song.")
         except Exception as e:
-            print(f"Error at pause function in music.py: {e}")
-            return
+            print(f"An error occurred when trying to pause the song. {e}")
+            raise e
 
-    async def resume(self, vc):
+
+
+    async def resume_command(self, ctx):
         """
         Resumes the paused song audio.
 
         Parameters:
-        - vc (object): The voice client object.
+        - ctx (Context): The context of the command.
 
         Returns:
         None
         """
         try:
-            # Check if the voice client is paused
-            if vc and vc.is_paused():
-                # Resume the audio
-                vc.resume()
+            # Declare a voice client variable
+            vc = ctx.voice_client
+            
+            # Check if the bot is playing something
+            if vc is None or not vc.is_paused():
+                await ctx.send("No music is currently paused to resume.")
+                return
+            
+            # Resume the song
+            vc.resume()
+            
+            # Send a message that the song was resumed
+            await ctx.send("Resumed the current song.")
         except Exception as e:
-            print(f"Error at resume function in music.py: {e}")
-            return
+            print(f"An error occurred when trying to resume the song. {e}")
+            raise e
 
+        
     def is_playing(self):
         """
         Check if the bot is currently playing audio.

@@ -19,7 +19,9 @@ class UserInfo:
                 embed.add_field(name='Joined Server On', value=member.joined_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
                 # Add the user's account creation date
                 embed.add_field(name='Account Created On', value=member.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
-                return embed
+                
+                # Send the embed
+                await ctx.send(embed=embed)
 
             except Exception as e:
                 print(f"Error: {e}")

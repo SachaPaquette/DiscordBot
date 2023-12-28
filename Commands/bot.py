@@ -94,13 +94,8 @@ class Bot(commands.Cog):
         Organization: Google LLC
         """
         try:
-            # Fetch the domain information from the message url
-            url_information = await self.linkmessage.on_message(message)
-            
-            # Make the bot send a message with the domain information
-            if url_information is not None:
-                # Format and send the message
-                await message.channel.send(url_information)
+            # Fetch the domain information from the message url and send it as a message
+            await self.linkmessage.on_message_command(message)
         except Exception as e:
             print(f"Error in the on message event: {e}")
             raise e
@@ -181,6 +176,7 @@ class Bot(commands.Cog):
         None
         """
         try:
+            # Check if a music session instance was already created
             if not self.session:
                 # Create an instance of SongSession
                 self.session = SongSession(ctx.guild, ctx)
@@ -223,19 +219,8 @@ class Bot(commands.Cog):
         None
         """
         try:
-            # Get the voice client
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
-                return
-            # Check if the queue is empty
-            if self.queue_operations.return_queue() == 0:
-                await ctx.send("No more songs in the queue.")
-                return
-
-            # Send a message with the queue
-            await ctx.send(f"Queue: {self.queue_operations.display_queue()}")
+            # Call the queue function in QueueOperations
+            await self.queue_operations.display_queue_command(ctx, discord)
         except Exception as e:
             print(f"An error occurred when trying to display the queue. {e}")
             raise e
@@ -253,19 +238,7 @@ class Bot(commands.Cog):
         None
         """
         try:
-            # Get the voice client
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
-                return
-            # Check if the queue is empty
-            if self.queue_operations.return_queue() == 0:
-                await ctx.send("No more songs in the queue to clear.")
-                return
-            # Clear the queue
-            self.queue_operations.queue.clear()
-            await ctx.send("Cleared the queue.")
+            self.queue_operations.clear_command(ctx)
         except Exception as e:
             print(f"An error occurred when trying to clear the queue. {e}")
             raise e
@@ -282,16 +255,7 @@ class Bot(commands.Cog):
         None
         """
         try:
-            # Declare a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing to pause.")
-                return
-            # Pause the song
-            await self.session.pause(vc)
-            # Send a message that the song was paused
-            await ctx.send("Paused the current song.")
+            await self.session.pause_command(ctx)
         except Exception as e:
             print(f"An error occurred when trying to pause the song. {e}")
             raise e
@@ -312,16 +276,7 @@ class Bot(commands.Cog):
         - None
         """
         try:
-            # Declare a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is playing something or if the bot is paused
-            if vc is None or not vc.is_paused():
-                await ctx.send("No music is currently paused to resume.")
-                return
-            # Resume the song
-            await self.session.resume(vc)
-            # Send a message that the song was resumed
-            await ctx.send("Resumed the current song.")
+            await self.session.resume_command(ctx)
         except Exception as e:
             print(f"An error occurred when trying to resume the song. {e}")
             raise e
@@ -344,19 +299,8 @@ class Bot(commands.Cog):
         - None
         """
         try:
-            # Get the voice client
-            vc = ctx.voice_client
-            # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
-                return
-            # Check if the queue is empty
-            if self.queue_operations.return_queue() == 0:
-                await ctx.send("No songs in the queue to suffle.")
-                return
             # Call the queue shuffle function in QueueOperations
-            self.queue_operations.shuffle_queue()
-            await ctx.send("Suffled the queue.")
+            await self.queue_operations.shuffle_queue_command(ctx)
         except Exception as e:
             print(f"Error in the shuffle command: {e}")
             raise e
@@ -365,9 +309,7 @@ class Bot(commands.Cog):
     async def user_information(self, ctx, *, member: discord.Member = None):
         try:
             # Create the embed message that will display the user information (username, ID, join date, account creation date)
-            embed = await UserInfo.fetch_user_information(self, ctx, member=member)
-            # Send the embed
-            await ctx.send(embed=embed)
+            await UserInfo.fetch_user_information(self, ctx, member=member)
         except Exception as e:
             print(f"Error in the user info command: {e}")
             raise e
