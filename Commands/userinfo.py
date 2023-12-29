@@ -1,11 +1,11 @@
 import discord 
 class UserInfo:
-    async def fetch_user_information(self, ctx, *, member):
+    async def fetch_user_information(self, interactions, *, member):
             try:
 
                 # If no member is mentioned, default to the author of the command
                 if member is None:
-                    member = ctx.author
+                    member = interactions.author
 
                 # Create an embed to display user information
                 embed = discord.Embed(title=f'User Information - {member.display_name}', color=member.color)
@@ -21,7 +21,7 @@ class UserInfo:
                 embed.add_field(name='Account Created On', value=member.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
                 
                 # Send the embed
-                await ctx.send(embed=embed)
+                await interactions.response.send_message(embed=embed)
 
             except Exception as e:
                 print(f"Error: {e}")

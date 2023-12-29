@@ -21,18 +21,18 @@ class QueueOperations:
         """
         return [song["title"] for song in self.queue]
         
-    async def display_queue_command(self, ctx, discord):
+    async def display_queue_command(self, interactions, discord):
         try:
             # Check if the queue is empty
             if self.return_queue() == 0:
-                await ctx.send("No songs in queue.")
+                await interactions.response.send_message("No songs in queue.")
                 return
             # Get the queue
             queue = self.display_queue()
             # Create an embed message that contains the queue
             embed = discord.Embed(title="Queue", description="\n".join(queue), color=discord.Color.green())
             # Send the embed
-            await ctx.send(embed=embed)
+            await interactions.response.send_message(embed=embed)
         except Exception as e:
             print(f"An error occurred when trying to display the queue. {e}")
             raise e
@@ -131,11 +131,11 @@ class QueueOperations:
             return None, None, None, None
 
 
-    async def shuffle_queue_command(self, ctx):
+    async def shuffle_queue_command(self, interactions):
         try:
             # Check if the bot is playing something
-            if ctx.voice_client is None or not ctx.voice_client.is_playing():
-                await ctx.send("No music is currently playing.")
+            if interactions.voice_client is None or not interactions.voice_client.is_playing():
+                await interactions.response.send_message("No music is currently playing.")
                 return
             
             # Check if the queue contains music
@@ -147,38 +147,38 @@ class QueueOperations:
             random.shuffle(self.queue)
             
             # Send a message that the queue was shuffled
-            await ctx.send("Suffled the queue.")
+            await interactions.response.send_message("Suffled the queue.")
         except Exception as e:
             print(f"Error in the shuffle_queue_command function in queue.py: {e}")
             return
         
     
         
-    async def clear_command(self, ctx):
+    async def clear_command(self, interactions):
 
         """
         This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
 
         Parameters:
-        - ctx (Context): The context object representing the invocation context of the command.
+        - interactions (Context): The context object representing the invocation context of the command.
 
         Returns:
         None
         """
         try:
             # Get the voice client
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
+                await interactions.response.send_message("No music is currently playing.")
                 return
             # Check if the queue is empty
             if self.return_queue() == 0:
-                await ctx.send("No more songs in the queue to clear.")
+                await interactions.response.send_message("No more songs in the queue to clear.")
                 return
             # Clear the queue
             self.queue.clear()
-            await ctx.send("Cleared the queue.")
+            await interactions.response.send_message("Cleared the queue.")
         except Exception as e:
             print(f"An error occurred when trying to clear the queue. {e}")
             raise e

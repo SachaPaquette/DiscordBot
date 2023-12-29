@@ -10,13 +10,13 @@ from Commands.utility import Utility
 load_dotenv()
 
 class SongSession:
-    def __init__(self, guild,  ctx) -> None:
+    def __init__(self, guild,  interactions) -> None:
         """
         Initializes a music session object.
 
         Parameters:
         - guild (str): The guild associated with the Music object.
-        - ctx (object): The context object containing information about the command invocation.
+        - interactions (object): The context object containing information about the command invocation.
 
         Attributes:
         - guild (str): The guild associated with the Music object.
@@ -30,7 +30,7 @@ class SongSession:
         # Define the guild attribute
         self.guild = guild
         # Define the voice client object
-        vc = ctx.voice_client
+        vc = interactions.voice_client
         # Assign the voice client to the voice_client attribute
         self.voice_client = vc
         # Initialize the skipped attribute
@@ -69,57 +69,57 @@ class SongSession:
 
 
         
-    async def pause_command(self, ctx):
+    async def pause_command(self, interactions):
         """
         Pauses the current song.
 
         Parameters:
-        - ctx (Context): The context of the command.
+        - interactions (Context): The context of the command.
 
         Returns:
         None
         """
         try:
             # Declare a voice client variable
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing to pause.")
+                await interactions.response.send_message("No music is currently playing to pause.")
                 return
             # Pause the song
             vc.pause()
             # Send a message that the song was paused
-            await ctx.send("Paused the current song.")
+            await interactions.response.send_message("Paused the current song.")
         except Exception as e:
             print(f"An error occurred when trying to pause the song. {e}")
             raise e
 
 
 
-    async def resume_command(self, ctx):
+    async def resume_command(self, interactions):
         """
         Resumes the paused song audio.
 
         Parameters:
-        - ctx (Context): The context of the command.
+        - interactions (Context): The context of the command.
 
         Returns:
         None
         """
         try:
             # Declare a voice client variable
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_paused():
-                await ctx.send("No music is currently paused to resume.")
+                await interactions.response.send_message("No music is currently paused to resume.")
                 return
             
             # Resume the song
             vc.resume()
             
             # Send a message that the song was resumed
-            await ctx.send("Resumed the current song.")
+            await interactions.response.send_message("Resumed the current song.")
         except Exception as e:
             print(f"An error occurred when trying to resume the song. {e}")
             raise e
@@ -140,19 +140,19 @@ class SongSession:
             return False
 
 
-    async def skip(self, ctx):
+    async def skip(self, interactions):
         try:
             # Declare a voice client variable
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing to skip.")
+                await interactions.response.send_message("No music is currently playing to skip.")
                 return
 
             # Check if the queue is empty
             if self.queue_operations.return_queue() == 0:
-                await ctx.send("No more songs in the queue to skip.")
+                await interactions.response.send_message("No more songs in the queue to skip.")
                 return
             
             else:
@@ -162,7 +162,7 @@ class SongSession:
                 self.play_next(vc)
                 
                 # Send a message saying that the song was skipped
-                await ctx.send("Skipped to the next song.")
+                await interactions.response.send_message("Skipped to the next song.")
         except Exception as e:
             print(f"Error in the skip command: {e}")
             raise e
@@ -214,12 +214,12 @@ class SongSession:
             print(f"Error at play function in music.py: {e}")
             return
 
-    async def play_command(self,ctx,url, loop):
+    async def play_command(self,interactions,url, loop):
         """
         Play a song.
 
         Parameters:
-        - ctx (discord.ext.commands.Context): The context of the command.
+        - interactions (discord.ext.commands.Context): The context of the command.
         - url (str): The URL of the song to be played.
 
         Returns:
@@ -228,11 +228,11 @@ class SongSession:
         try:
             # Check if the URL is valid (i.e. it is a YouTube URL)
             if not CommandErrorHandler.check_url_correct(url):
-                await ctx.send("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+                await interactions.response.send_message("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
                 return
 
             # Check if the bot is already in the correct channel
-            if await self.utility.joinChannel(ctx) is False:
+            if await self.utility.joinChannel(interactions) is False:
                 return
 
             # Get the URL and the title of the song
@@ -240,17 +240,17 @@ class SongSession:
 
             # This will return False if the URL or song_title is invalid
             if not CommandErrorHandler.check_url_song_correct(URL, song_title):
-                await ctx.send("No song found.")
+                await interactions.response.send_message("No song found.")
                 return
 
             # Declare a voice client variable
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             # Check if the bot is playing something
             if vc.is_playing():
                 # Use the instance to add to the queue
                 self.queue_operations.add_to_queue(
                     URL, song_title, vc, song_duration, thumbnail)
-                await ctx.send(f"Added {song_title} to the queue.")
+                await interactions.response.send_message(f"Added {song_title} to the queue.")
             else:
                 # Use the instance to play the song
                 self.play(URL, vc, None, song_title,
@@ -258,7 +258,7 @@ class SongSession:
 
         except Exception as e:
             # Leave the channel if an error occurs
-            await self.utility.leave(ctx)
+            await self.utility.leave(interactions)
             print(f"An error occurred when trying to play the song. {e}")
             raise e
 
@@ -347,7 +347,7 @@ class SongSession:
 
     
     
-    async def change_volume(self, volume, ctx):
+    async def change_volume(self, volume, interactions):
         """
         Changes the volume of the bot.
 
@@ -360,17 +360,17 @@ class SongSession:
         try:
             # Check if the volume is valid
             if volume < 0 or volume > 100:
-                await ctx.send("Please enter a valid volume between 0 and 100.")
+                await interactions.response.send_message("Please enter a valid volume between 0 and 100.")
                 return
             
             # Put the volume in the correct range (0.0 - 1.0)
             volume = float(volume) / 100
             
             # Change the volume of the bot
-            ctx.voice_client.source.volume = volume
+            interactions.voice_client.source.volume = volume
             
             # Send a message that the volume was changed
-            await ctx.send(f"Changed the volume to {volume * 100}%")
+            await interactions.response.send_message(f"Changed the volume to {volume * 100}%")
         except Exception as e:
             print(f"Error at change_volume function in music.py: {e}")
             return

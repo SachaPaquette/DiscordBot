@@ -1,14 +1,14 @@
 import discord
 class NowPlaying():    
         
-    async def nowplaying_command(self, ctx, session):
+    async def nowplaying_command(self, interactions, session):
         try:
             # Get the voice client
-            vc = ctx.voice_client
+            vc = interactions.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
-                await ctx.send("No music is currently playing.")
+                await interactions.response.send_message("No music is currently playing.")
                 return
             
             # Get the title of the song
@@ -16,7 +16,7 @@ class NowPlaying():
             
             # Check if the song title is None
             if song_title is None:
-                await ctx.send("No music is currently playing.")
+                await interactions.response.send_message("No music is currently playing.")
                 return
 
             # Create an embed message that contains the title of the song, the thumbnail, and the duration
@@ -31,7 +31,7 @@ class NowPlaying():
                                 value=session.song_duration)
                 
             # Send the embed
-            await ctx.send(embed=embed)
+            await interactions.response.send_message(embed=embed)
         except Exception as e:
             print(f"An error occurred when trying to display the song. {e}")
             raise e

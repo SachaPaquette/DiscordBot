@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-class Utility(commands.Cog):
-    async def join(self, ctx):
+class Utility():
+    async def join(self, interactions: discord.Interaction):
         """
         Join the voice channel.
 
@@ -12,73 +12,55 @@ class Utility(commands.Cog):
         If the bot is not in any channel, it will connect to the voice channel.
         """
         try:
+
             # Get the voice channel of the user who sent the command
-            channel = ctx.author.voice.channel
+            channel = interactions.channel
         except AttributeError:
-            await ctx.send(ctx.author.mention + " is not in a voice channel.")
+            await interactions.response.send_message(interactions.user + " is not in a voice channel.")
             return
         try:
-            # Create a voice client variable
-            vc = ctx.voice_client
-            # Check if the bot is already in the correct channel
-            if vc and vc.channel == channel:
-                await ctx.send("I'm already in your channel.")
-                return
-
-            # Check if the bot is already in a channel
-            if vc:
-                # Move the bot to the correct channel
-                await vc.move_to(channel)
-            else:
-                # Connect to the voice channel
-                await channel.connect()
-            # Return True to indicate that the bot is in the correct channel
-            await ctx.send(f"Joined {channel}")
-        except Exception as e:
-            print(f"An error occurred when trying to join the channel. {e}")
-            raise e
-        
-    async def joinChannel(self, ctx):
-        try:
+            # Create a user voice variable
+            user_voice = interactions.user.voice
+            
             # Check if the user is in a voice channel
-            try:
-                # Get the voice channel of the user who sent the command
-                channel = ctx.author.voice.channel
-            except Exception as e:
-                # Send a message that the user is not in a voice channel
-                await ctx.send(ctx.author.mention + " is not in a voice channel.")
-                # Return False to indicate that the user is not in a voice channel
-                return False
-
+            if not user_voice:
+                await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+                return
+            
             # Create a voice client variable
-            vc = ctx.voice_client
+            voice_client = interactions.guild.voice_client
+            
+            if voice_client:
+                if voice_client.channel.id == user_voice.channel.id:
+                    await interactions.response.send_message("I'm already in your channel.")
+                    return
+                
+            await user_voice.channel.connect(reconnect=True)
+    
+            
+                
             # Check if the bot is already in the correct channel
-            if vc and vc.channel == channel:
-                return True  # Bot is already in the correct channel, no need to reconnect
-            # Check if the bot is already in a channel
-            if vc:
-                # Move the bot to the correct channel
-                await vc.move_to(channel)
-            else:
-                # Connect to the voice channel
-                await channel.connect()
+            
+
             # Return True to indicate that the bot is in the correct channel
-            return True
+            await interactions.response.send_message(f"Joined {channel}")
         except Exception as e:
             print(f"An error occurred when trying to join the channel. {e}")
             raise e
         
-    async def leave(self, ctx):
+
+        
+    async def leave(self, interactions):
         try:
             # Check if the bot is in a voice channel
-            if ctx.voice_client is None:
-                await ctx.send("I'm not in a voice channel.")
+            if interactions.guild.voice_client is None:
+                await interactions.response.send_message("I'm not in a voice channel.")
                 return
             
             # Send a message that the bot is leaving
-            await ctx.send("Leaving voice channel.")
+            await interactions.response.send_message("Leaving voice channel.")
             # Disconnect the bot from the voice channel
-            await ctx.voice_client.disconnect()
+            await interactions.guild.voice_client.disconnect()
         except Exception as e:
             print(f"Error in the leave command: {e}")
             raise e

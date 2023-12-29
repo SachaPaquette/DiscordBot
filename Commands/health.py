@@ -5,9 +5,10 @@ class HealthCheck():
     def __init__(self, bot):
         self.bot = bot
         self.start_time = datetime.datetime.utcnow()
-    async def health_command(self, ctx, bot):
+        
+    async def health_command(self, interactions, bot):
         """
-        Check if the bot is alive and provide detailed health information.
+        Check if the bot is running and provide detailed health information.
         """
         try:
             # Get the bot's latency
@@ -20,10 +21,8 @@ class HealthCheck():
             days, hours, minutes, seconds = self.calculate_time_components(uptime_delta)
             uptime_str = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
-            # Calculate the uptime
-
             # Create an embed with health information
-            embed = discord.Embed(title="Bot Health Check", color=discord.Color.green())
+            embed = discord.Embed(title="**Bot Health Check**", color=discord.Color.green())
             embed.add_field(name="Bot Status", value="I am alive and functioning!", inline=False)
             embed.add_field(name="Latency", value=f"{latency} ms", inline=False)
             embed.add_field(name="Uptime", value=uptime_str, inline=False)
@@ -31,10 +30,10 @@ class HealthCheck():
             embed.add_field(name="Users", value=sum([guild.member_count for guild in self.bot.guilds]), inline=True)
 
             # Send the embed as a response
-            await ctx.send(embed=embed)
+            await interactions.response.send_message(embed=embed)
 
         except Exception as e:
-            print(f"Error in the health command: {e}")
+            print(f"Error in the health command in health.py: {e}")
             raise e
         
     @staticmethod
@@ -48,7 +47,12 @@ class HealthCheck():
         Returns:
         - Tuple[int, int, int, int]: Tuple containing days, hours, minutes, and seconds.
         """
-        days, seconds = delta.days, delta.seconds
-        hours, seconds = divmod(seconds, 3600)
-        minutes, seconds = divmod(seconds, 60)
-        return days, hours, minutes, seconds
+        try:
+            # Calculate days, hours, minutes, and seconds        
+            days, seconds = delta.days, delta.seconds
+            hours, seconds = divmod(seconds, 3600)
+            minutes, seconds = divmod(seconds, 60)
+            return days, hours, minutes, seconds    
+        except Exception as e:
+            print(f"Error in calculate_time_components in health.py: {e}")
+            raise e
