@@ -34,8 +34,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 session = None
 # Create an instance of QueueOperations to handle the music queue
 queue_operations = QueueOperations(session)
-# Create an instance of CustomHelpCommand to handle the help command
-help_command = CustomHelpCommand()
+
 # Create an instance of LinkMessage to handle messages that contain URLs
 linkmessage = LinkMessage(bot)
 # Create an instance of Utility to handle utility commands
