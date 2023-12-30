@@ -32,15 +32,10 @@ class Utility():
             
             if voice_client:
                 if voice_client.channel.id == user_voice.channel.id:
-                    await interactions.response.send_message("I'm already in your channel.")
+                    #await interactions.response.send_message("I'm already in your channel.")
                     return
-                
+            # Connect to the voice channel                
             await user_voice.channel.connect(reconnect=True)
-    
-            
-                
-            # Check if the bot is already in the correct channel
-            
 
             # Return True to indicate that the bot is in the correct channel
             await interactions.response.send_message(f"Joined {channel}")

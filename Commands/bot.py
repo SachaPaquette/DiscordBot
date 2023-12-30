@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from discord import app_commands
-from Commands.help import CustomHelpCommand
 from Commands.music import SongSession
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
@@ -136,13 +135,10 @@ async def leave( interactions):
         raise e
 
 @bot.tree.command(name='ping', description='Ping a user.')
-async def ping( interactions, username: str):
+async def ping(interactions, username: discord.User):
     try:
         # check if there is a @ in the username
-        if "@" in username:
-            await interactions.response.send_message(f"{username}")
-        else:
-            await interactions.response.send_message(f"@{username}")
+        await interactions.response.send_message(f"Hello {username.mention}")
     except Exception as e:
         logger.error(f"Error in the ping command: {e}")
         raise e
@@ -169,6 +165,7 @@ async def play( interactions, url: str):
     None
     """
     try:
+        global session
         # Check if a music session instance was already created
         if not session:
             # Create an instance of SongSession

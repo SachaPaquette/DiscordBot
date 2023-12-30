@@ -4,7 +4,7 @@ class NowPlaying():
     async def nowplaying_command(self, interactions, session):
         try:
             # Get the voice client
-            vc = interactions.voice_client
+            vc = interactions.guild.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():

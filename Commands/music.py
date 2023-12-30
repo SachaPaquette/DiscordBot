@@ -30,7 +30,7 @@ class SongSession:
         # Define the guild attribute
         self.guild = guild
         # Define the voice client object
-        vc = interactions.voice_client
+        vc = interactions.guild.voice_client
         # Assign the voice client to the voice_client attribute
         self.voice_client = vc
         # Initialize the skipped attribute
@@ -81,7 +81,7 @@ class SongSession:
         """
         try:
             # Declare a voice client variable
-            vc = interactions.voice_client
+            vc = interactions.guild.voice_client
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
                 await interactions.response.send_message("No music is currently playing to pause.")
@@ -108,7 +108,7 @@ class SongSession:
         """
         try:
             # Declare a voice client variable
-            vc = interactions.voice_client
+            vc = interactions.guild.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_paused():
@@ -143,7 +143,7 @@ class SongSession:
     async def skip(self, interactions):
         try:
             # Declare a voice client variable
-            vc = interactions.voice_client
+            vc = interactions.guild.voice_client
             
             # Check if the bot is playing something
             if vc is None or not vc.is_playing():
@@ -159,7 +159,7 @@ class SongSession:
                 # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
                 self.skipped = True
                 # Play the next song
-                self.play_next(vc)
+                await self.play_next(vc)
                 
                 # Send a message saying that the song was skipped
                 await interactions.response.send_message("Skipped to the next song.")
@@ -191,7 +191,7 @@ class SongSession:
             print(f"Error at define_song_info function in music.py: {e}")
             return
 
-    def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
+    async def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
         """
         Play a song in the voice channel.
 
@@ -232,7 +232,7 @@ class SongSession:
                 return
 
             # Check if the bot is already in the correct channel
-            if await self.utility.joinChannel(interactions) is False:
+            if await self.utility.join(interactions) is False:
                 return
 
             # Get the URL and the title of the song
@@ -244,16 +244,21 @@ class SongSession:
                 return
 
             # Declare a voice client variable
-            vc = interactions.voice_client
+            vc = interactions.guild.voice_client
+
             # Check if the bot is playing something
             if vc.is_playing():
+                
                 # Use the instance to add to the queue
                 self.queue_operations.add_to_queue(
                     URL, song_title, vc, song_duration, thumbnail)
-                await interactions.response.send_message(f"Added {song_title} to the queue.")
+                if not interactions.response.is_done():
+                    await interactions.response.send_message(f"Added {song_title} to the queue.")
+                    print("Added to queue")
             else:
+ 
                 # Use the instance to play the song
-                self.play(URL, vc, None, song_title,
+                await self.play(URL, vc, None, song_title,
                                   song_duration, thumbnail)
 
         except Exception as e:
@@ -276,7 +281,7 @@ class SongSession:
 
 
 
-    def play_next(self, vc):
+    async def play_next(self, vc):
         """
         Plays the next song in the queue.
 
@@ -297,8 +302,11 @@ class SongSession:
             if next_source is None or next_title is None or next_song_duration is None or next_song_thumbnail is None:
                 raise Exception("Song information is None.")
 
+            if not vc:
+                raise Exception("Voice client is None.")
+            
             # Play the next song
-            self.play(next_source, vc, after=self.after_playing)
+            await self.play(next_source, vc, after=self.after_playing)
 
             # Reset the skipped flag to False
             self.skipped = False
@@ -310,7 +318,7 @@ class SongSession:
             print(f"Error while trying to play next song in music.py: {e}")
             return
 
-    def after_playing(self, error, vc):
+    async def after_playing(self, error, vc):
         """
         Callback function called after a song finishes playing.
 
@@ -328,7 +336,7 @@ class SongSession:
             # Check if the skipped flag is False (if it is, the song ended naturally and was not skipped)
             if not self.skipped:
                 # Play the next song in the queue
-                self.play_next(vc)
+                await self.play_next(vc)
 
     def get_song_title(self):
         """
