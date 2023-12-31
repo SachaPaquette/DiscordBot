@@ -134,13 +134,13 @@ class QueueOperations:
     async def shuffle_queue_command(self, interactions):
         try:
             # Check if the bot is playing something
-            if interactions.voice_client is None or not interactions.voice_client.is_playing():
+            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
                 await interactions.response.send_message("No music is currently playing.")
                 return
             
             # Check if the queue contains music
             if self.return_queue() == 0:
-                print("Queue is empty.")
+                await interactions.response.send_message("Queue is empty.")
                 return    
        
             # Shuffle the queue

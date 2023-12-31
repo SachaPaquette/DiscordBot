@@ -246,6 +246,10 @@ class SongSession:
             # Declare a voice client variable
             vc = interactions.guild.voice_client
 
+            if vc is None:
+                print("Voice client is None")
+                return
+            
             # Check if the bot is playing something
             if vc.is_playing():
                 
@@ -375,7 +379,7 @@ class SongSession:
             volume = float(volume) / 100
             
             # Change the volume of the bot
-            interactions.voice_client.source.volume = volume
+            interactions.guild.voice_client.source.volume = volume
             
             # Send a message that the volume was changed
             await interactions.response.send_message(f"Changed the volume to {volume * 100}%")
