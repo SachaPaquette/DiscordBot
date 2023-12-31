@@ -15,8 +15,11 @@ class Utility():
 
             # Get the voice channel of the user who sent the command
             channel = interactions.channel
+            print(channel)
+            if not channel:
+                await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
         except AttributeError:
-            await interactions.response.send_message(interactions.user + " is not in a voice channel.")
+            await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
             return
         try:
             # Create a user voice variable
@@ -32,7 +35,6 @@ class Utility():
             
             if voice_client:
                 if voice_client.channel.id == user_voice.channel.id:
-                    #await interactions.response.send_message("I'm already in your channel.")
                     return
             # Connect to the voice channel                
             await user_voice.channel.connect(reconnect=True)

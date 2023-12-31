@@ -165,6 +165,7 @@ async def play( interactions, url: str):
     None
     """
     try:
+        # Create a global session variable to store the SongSession instance
         global session
         # Check if a music session instance was already created
         if not session:

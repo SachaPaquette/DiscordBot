@@ -23,9 +23,10 @@ class NowPlaying():
             embed = discord.Embed(
                 title="Now Playing", description=song_title, color=discord.Color.green())
             
-            # Add the thumbnail if available and the song duration
+            # Add the thumbnail if available 
             if session.thumbnail is not None:
                 embed.set_thumbnail(url=session.thumbnail)
+            # Add the song duration if available
             if session.song_duration is not None:
                 embed.add_field(name="Duration",
                                 value=session.song_duration)
