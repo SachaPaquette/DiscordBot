@@ -33,13 +33,16 @@ class Utility():
             # Create a voice client variable
             voice_client = interactions.guild.voice_client
             
+            # Check if the bot is in a voice channel
             if voice_client:
+                # Check if the bot is in the correct channel
                 if voice_client.channel.id == user_voice.channel.id:
                     return
+                
             # Connect to the voice channel                
             await user_voice.channel.connect(reconnect=True)
 
-            # Return True to indicate that the bot is in the correct channel
+            # Send a message that the bot joined the channel
             await interactions.response.send_message(f"Joined {channel}")
         except Exception as e:
             print(f"An error occurred when trying to join the channel. {e}")
@@ -48,6 +51,15 @@ class Utility():
 
         
     async def leave(self, interactions):
+        """
+        Disconnects the bot from the voice channel it is currently in.
+
+        Parameters:
+        - interactions: The interaction object representing the command invocation.
+
+        Returns:
+        None
+        """
         try:
             # Check if the bot is in a voice channel
             if interactions.guild.voice_client is None:

@@ -1,8 +1,18 @@
+# Purpose: Command to display an user informations (Username, userID, server joined date, account creation date).
 import discord 
 class UserInfo:
     async def fetch_user_information(self, interactions, *, member):
-            try:
+            """
+            Fetches and displays user information.
 
+            Parameters:
+            - interactions: The interaction object.
+            - member: The member whose information is to be fetched.
+
+            Returns:
+            None
+            """
+            try:
                 # If no member is mentioned, default to the author of the command
                 if member is None:
                     member = interactions.author

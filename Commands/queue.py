@@ -1,3 +1,5 @@
+# Purpose: Contains the queue operations class and its methods.
+
 from collections import deque
 import random # Random is used to shuffle the queue
 
@@ -22,20 +24,30 @@ class QueueOperations:
         return [song["title"] for song in self.queue]
         
     async def display_queue_command(self, interactions, discord):
-        try:
-            # Check if the queue is empty
-            if self.return_queue() == 0:
-                await interactions.response.send_message("No songs in queue.")
-                return
-            # Get the queue
-            queue = self.display_queue()
-            # Create an embed message that contains the queue
-            embed = discord.Embed(title="Queue", description="\n".join(queue), color=discord.Color.green())
-            # Send the embed
-            await interactions.response.send_message(embed=embed)
-        except Exception as e:
-            print(f"An error occurred when trying to display the queue. {e}")
-            raise e
+            """
+            Displays the current queue of songs.
+
+            Parameters:
+            - interactions: The interaction object for sending messages.
+            - discord: The discord module for creating embed messages.
+
+            Returns:
+            None
+            """
+            try:
+                # Check if the queue is empty
+                if self.return_queue() == 0:
+                    await interactions.response.send_message("No songs in queue.")
+                    return
+                # Get the queue
+                queue = self.display_queue()
+                # Create an embed message that contains the queue
+                embed = discord.Embed(title="Queue", description="\n".join(queue), color=discord.Color.green())
+                # Send the embed
+                await interactions.response.send_message(embed=embed)
+            except Exception as e:
+                print(f"An error occurred when trying to display the queue. {e}")
+                raise e
         
     def clear_queue(self):
         """
@@ -91,6 +103,20 @@ class QueueOperations:
             return
     
     def check_queue_skipped_status(self, vc, skipped_status):
+        """
+        Check the status of the queue and handle skipped songs.
+
+        Args:
+            vc (object): The voice client object.
+            skipped_status (bool): Indicates if the song was skipped.
+
+        Returns:
+            None
+
+        Raises:
+            Exception: If an error occurs while checking the queue.
+
+        """
         try:
             # Check if the queue is empty or if the song was skipped
             if self.return_queue() == 0:
@@ -106,6 +132,13 @@ class QueueOperations:
             return
         
     def get_next_song(self):
+        """
+        Retrieves the next song from the queue.
+
+        Returns:
+            A tuple containing the source, title, duration, and thumbnail of the next song.
+            If the queue is empty or if any song information is missing, returns None for all values.
+        """
         try:
             print("Getting next song.")
             # Check if the queue is empty
@@ -132,25 +165,34 @@ class QueueOperations:
 
 
     async def shuffle_queue_command(self, interactions):
-        try:
-            # Check if the bot is playing something
-            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
-                await interactions.response.send_message("No music is currently playing.")
+            """
+            Shuffles the music queue.
+
+            Parameters:
+            - interactions: The interaction object representing the user's command.
+
+            Returns:
+            None
+            """
+            try:
+                # Check if the bot is playing something
+                if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
+                    await interactions.response.send_message("No music is currently playing.")
+                    return
+                
+                # Check if the queue contains music
+                if self.return_queue() == 0:
+                    await interactions.response.send_message("Queue is empty.")
+                    return    
+           
+                # Shuffle the queue
+                random.shuffle(self.queue)
+                
+                # Send a message that the queue was shuffled
+                await interactions.response.send_message("Shuffled the queue.")
+            except Exception as e:
+                print(f"Error in the shuffle_queue_command function in queue.py: {e}")
                 return
-            
-            # Check if the queue contains music
-            if self.return_queue() == 0:
-                await interactions.response.send_message("Queue is empty.")
-                return    
-       
-            # Shuffle the queue
-            random.shuffle(self.queue)
-            
-            # Send a message that the queue was shuffled
-            await interactions.response.send_message("Suffled the queue.")
-        except Exception as e:
-            print(f"Error in the shuffle_queue_command function in queue.py: {e}")
-            return
         
     
         
