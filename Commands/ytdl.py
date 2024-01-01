@@ -2,7 +2,7 @@ import discord
 from yt_dlp import YoutubeDL
 from dotenv import load_dotenv
 import asyncio
-
+import Config.config as conf
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -13,7 +13,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.title = data.get("title")
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def extract_info_from_url(cls, url, *, loop=None, stream=False):
         """
         Extracts information from a given URL using YoutubeDL.
 
@@ -27,17 +27,18 @@ class YTDLSource(discord.PCMVolumeTransformer):
                    If an error occurs during extraction, returns (None, None).
         """
         try:
-            # Set the options for YoutubeDL
-            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
             # Create a YoutubeDL instance with the options 
-            with YoutubeDL(YDL_OPTIONS) as ydl:
+            with YoutubeDL(conf.YDL_OPTIONS) as ydl:
                 # Extract the info from the URL
                 info = ydl.extract_info(url, download=False)
             
             # Get the URL of the song
             URL = info["url"]
+            # Get the title of the song
             song_title = info["title"] 
+            # Get the duration of the song
             song_duration = info["duration_string"]
+            # Get the thumbnail of the song
             thumbnail = info["thumbnails"][0]["url"]
             # Return the URL and the title of the song
             return URL, song_title, song_duration, thumbnail 

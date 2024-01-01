@@ -236,7 +236,7 @@ class SongSession:
                 return
 
             # Get the URL and the title of the song
-            URL, song_title, song_duration, thumbnail = await YTDLSource.from_url(url, loop=loop, stream=True)
+            URL, song_title, song_duration, thumbnail = await YTDLSource.extract_info_from_url(url, loop=loop, stream=True)
 
             # This will return False if the URL or song_title is invalid
             if not CommandErrorHandler.check_url_song_correct(URL, song_title):
