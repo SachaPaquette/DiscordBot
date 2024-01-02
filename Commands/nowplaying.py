@@ -1,31 +1,8 @@
 import discord
+from Commands.utility import Utility
 class NowPlaying():    
     
-    def create_embed_message(self, song_title, thumbnail, song_duration):
-        """
-        Create an embed message that contains the title of the song, the thumbnail, and the duration.
 
-        Args:
-            song_title (str): The title of the song.
-            thumbnail (str): The URL of the thumbnail image.
-            song_duration (str): The duration of the song.
-
-        Returns:
-            discord.Embed: The embed message containing the song information.
-        """
-        try:
-            embed = discord.Embed(
-                title="Now Playing", description=song_title, color=discord.Color.green())
-
-            if thumbnail is not None:
-                embed.set_thumbnail(url=thumbnail)
-            if song_duration is not None:
-                embed.add_field(name="Duration", value=song_duration)
-
-            return embed
-        except Exception as e:
-            print(f"Error while trying to create an embed message in nowplaying.py: {e}")
-            return
     
     async def nowplaying_command(self, interactions, session):
             """
@@ -56,7 +33,7 @@ class NowPlaying():
                     return
 
                 # Create an embed message that contains the title of the song, the thumbnail, and the duration
-                embed = self.create_embed_message(song_title, session.thumbnail, session.song_duration)
+                embed = Utility.now_playing_song_embed(song_title, session.thumbnail, session.song_duration)
                     
                 # Send the embed
                 await interactions.response.send_message(embed=embed)

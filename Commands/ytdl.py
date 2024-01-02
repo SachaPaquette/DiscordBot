@@ -28,7 +28,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         """
         try:
             # Set the YoutubeDL options
-            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True", "quiet": "True", "no_warnings": "True", "default_search": "auto"}
+            
             # Create a YoutubeDL instance with the options 
             with YoutubeDL(YDL_OPTIONS) as ydl:
                 # Extract the info from the URL

@@ -235,9 +235,13 @@ class SongSession:
             if await self.utility.join(interactions) is False:
                 return
 
-            # Get the URL and the title of the song
-            URL, song_title, song_duration, thumbnail = await YTDLSource.extract_info_from_url(url, loop=loop, stream=True)
-
+            try:
+                # Get the URL and the title of the song
+                URL, song_title, song_duration, thumbnail = await YTDLSource.extract_info_from_url(url, loop=loop, stream=True)
+            except Exception as e:
+                print(f"Error while trying to extract info from URL in play_command function in music.py: {e}")
+                return
+            
             # This will return False if the URL or song_title is invalid
             if not CommandErrorHandler.check_url_song_correct(URL, song_title):
                 await interactions.response.send_message("No song found.")

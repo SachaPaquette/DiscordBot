@@ -99,3 +99,4 @@ class Utility():
         except Exception as e:
             print(f"Error while trying to create an embed message in nowplaying.py: {e}")
             return
+        

@@ -196,7 +196,7 @@ async def nowplaying( interactions):
 @bot.tree.command(name='lyrics')
 async def lyrics( interactions):
     try:
-        await lyrics_operations.lyrics_command(interactions)
+        await lyrics_operations.lyrics_command(interactions, session)
     except Exception as e:
         logger.error(
             f"An error occurred when trying to display the lyrics. {e}")
