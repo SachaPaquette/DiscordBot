@@ -43,7 +43,7 @@ class Utility():
             await user_voice.channel.connect(reconnect=True)
 
             # Send a message that the bot joined the channel
-            await interactions.response.send_message(f"Joined {channel}")
+            #await interactions.response.send_message(f"Joined {channel}")
         except Exception as e:
             print(f"An error occurred when trying to join the channel. {e}")
             raise e
@@ -73,3 +73,29 @@ class Utility():
         except Exception as e:
             print(f"Error in the leave command: {e}")
             raise e
+        
+    def now_playing_song_embed(song_title, thumbnail, song_duration):
+        """
+        Create an embed message that contains the title of the song, the thumbnail, and the duration.
+
+        Args:
+            song_title (str): The title of the song.
+            thumbnail (str): The URL of the thumbnail image.
+            song_duration (str): The duration of the song.
+
+        Returns:
+            discord.Embed: The embed message containing the song information.
+        """
+        try:
+            embed = discord.Embed(
+                title="Now Playing", description=song_title, color=discord.Color.green())
+
+            if thumbnail is not None:
+                embed.set_thumbnail(url=thumbnail)
+            if song_duration is not None:
+                embed.add_field(name="Duration", value=song_duration)
+
+            return embed
+        except Exception as e:
+            print(f"Error while trying to create an embed message in nowplaying.py: {e}")
+            return

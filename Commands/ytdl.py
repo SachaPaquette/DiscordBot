@@ -27,11 +27,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
                    If an error occurs during extraction, returns (None, None).
         """
         try:
+            # Set the YoutubeDL options
+            YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
             # Create a YoutubeDL instance with the options 
-            with YoutubeDL(conf.YDL_OPTIONS) as ydl:
+            with YoutubeDL(YDL_OPTIONS) as ydl:
                 # Extract the info from the URL
                 info = ydl.extract_info(url, download=False)
-            
+
             # Get the URL of the song
             URL = info["url"]
             # Get the title of the song

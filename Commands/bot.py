@@ -3,6 +3,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from discord import app_commands
 from Commands.music import SongSession
+from Commands.lyrics import LyricsOperations
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
 from Commands.linkmessage import LinkMessage
@@ -10,6 +11,7 @@ from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
 from Config.config import conf
+
 # Import logging
 from Config.logging import setup_logging
 
@@ -43,6 +45,7 @@ playing_operations = NowPlaying()
 # Create an instance of HealthCheck to handle the health command
 health_check = HealthCheck(bot)
 
+lyrics_operations = LyricsOperations(bot)
 @bot.event
 async def on_ready():
     """
@@ -193,7 +196,7 @@ async def nowplaying( interactions):
 @bot.tree.command(name='lyrics')
 async def lyrics( interactions):
     try:
-        pass
+        await lyrics_operations.lyrics_command(interactions)
     except Exception as e:
         logger.error(
             f"An error occurred when trying to display the lyrics. {e}")

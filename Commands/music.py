@@ -260,11 +260,12 @@ class SongSession:
                     await interactions.response.send_message(f"Added {song_title} to the queue.")
                     print("Added to queue")
             else:
- 
+                embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
+                await interactions.response.send_message(embed=embed)
                 # Use the instance to play the song
                 await self.play(URL, vc, None, song_title,
                                   song_duration, thumbnail)
-
+                
         except Exception as e:
             # Leave the channel if an error occurs
             await self.utility.leave(interactions)

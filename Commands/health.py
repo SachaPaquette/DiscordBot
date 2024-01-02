@@ -6,6 +6,32 @@ class HealthCheck():
         self.bot = bot
         self.start_time = datetime.datetime.utcnow()
         
+    def create_bot_uptime(self):
+        """
+        Calculates the uptime of the bot based on the start time.
+
+        Returns:
+            str: A string representation of the bot's uptime in the format "X days, X hours, X minutes, X seconds".
+        
+        Raises:
+            Exception: If there is an error during the calculation.
+        """
+        try:
+            # Get the current time for reference
+            current_time = datetime.datetime.utcnow()
+            # Calculate the uptime
+            uptime_delta = current_time - self.start_time
+            # Calculate the days, hours, minutes, and seconds that make up the uptime
+            days, hours, minutes, seconds = self.calculate_time_components(uptime_delta)
+            # Create a string representation of the uptime
+            uptime_str = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
+
+            return uptime_str
+        except Exception as e:
+            print(f"Error in create_bot_uptime in health.py: {e}")
+            raise e
+        
+    
     async def health_command(self, interactions, bot):
         """
         Check if the bot is running and provide detailed health information.
@@ -14,12 +40,8 @@ class HealthCheck():
             # Get the bot's latency
             latency = round(bot.latency * 1000)  # in milliseconds
 
-            # Get the current time for reference
-            current_time = datetime.datetime.utcnow()
-            # Calculate the uptime
-            uptime_delta = current_time - self.start_time
-            days, hours, minutes, seconds = self.calculate_time_components(uptime_delta)
-            uptime_str = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
+            # Get the bot's uptime
+            uptime_str = self.create_bot_uptime()
 
             # Create an embed with health information
             embed = discord.Embed(title="**Bot Health Check**", color=discord.Color.green())
