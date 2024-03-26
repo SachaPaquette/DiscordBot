@@ -11,10 +11,6 @@ class FetchLyrics(Requester):
         self.artist = ''
         self.title = ''
         
-        
-    
-
-    # v3.0.5: Re-coded ParseLyrics to be more efficient
     def parseLyric(page):
         divs = [i.text for i in soup_find_all_element(page)('div', {'class': None})]
         return max(divs, key=len)
@@ -35,13 +31,12 @@ class FetchLyrics(Requester):
             lyrics (str): Lyrics of the detected song.
         """
 
-        # Best cooldown is 5 sec
+        
         time.sleep(sleep)
 
         link = url
 
         if not url:
-            # v3.0.5: No need for artist and title if url is found
             if not self.artist + self.title:
                 raise ValueError("Both artist and title can't be empty!")
             if self.search_engine:
@@ -88,7 +83,6 @@ class FetchLyrics(Requester):
             print('Error', 'no metadata')
             return 1
         
-        # v3.0.4: Update title and artist attributes with exact names
         self.artist = filter(metadata[0][:-7], True)
         self.title = filter(metadata[1][1:-1], True)
 
@@ -98,7 +92,6 @@ class FetchLyrics(Requester):
         # Saving Lyrics
         if lyrics:
             if save:
-                # v3.0.2: Adding custom path
                 p = os.path.join(
                                 path,
                                 '{} - {}.{}'.format(
