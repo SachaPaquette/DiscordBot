@@ -193,7 +193,7 @@ async def nowplaying( interactions):
         raise e
 
 # TODO - Add a command to display the lyrics of the current song
-@bot.tree.command(name='lyrics')
+@bot.tree.command(name='lyrics', description='Display the lyrics of the current song.')
 async def lyrics( interactions):
     try:
         await lyrics_operations.lyrics_command(interactions, session)

@@ -1,17 +1,19 @@
-import azapi
+
 from Commands.music import SongSession
 import re
+from .Scripts import azlyrics
 class LyricsOperations: 
     def __init__(self, bot):
         self.bot = bot
-
+        self.fetch_lyrics = azlyrics.FetchLyrics('google', accuracy=0.5)
     def parse_song_title(self, song_title):
         try:
             # The song title is the Youtube video title. There is no specific format for it. (ex. "Song Title - Artist")
             regex_pattern = f"^(.+?)[-\|♦\(](.+?)(?:(?<=\()\b[^\)]+\b(?=\)))?.*$"
             # Get the song title and artist name from the Youtube video title
             song_title, artist_name = re.search(regex_pattern, song_title).groups()
-            
+            print(artist_name)
+            print(song_title)
             # Return the song title
             return song_title
         except Exception as e:
@@ -21,15 +23,15 @@ class LyricsOperations:
     async def get_lyrics(self, song_title):
         try:
             # Create an AZlyrics object
-            API = azapi.AZlyrics('google', accuracy=0.5)
+            
 
             # Get the song's title
             song_title= self.parse_song_title(song_title)
             
             # Assign the song title to the AZlyrics object
-            API.title = song_title
+            self.fetch_lyrics.title = song_title
             # Get the lyrics of the song
-            lyrics = API.getLyrics(save=False)
+            lyrics = self.fetch_lyrics.getLyrics(save=False)
             # Return the lyrics
             return lyrics
         except Exception as e:
@@ -46,7 +48,6 @@ class LyricsOperations:
             
             # get the lyrics of the song
             lyrics = await self.get_lyrics(song_session.get_song_title())
-            print(lyrics)
             
             # Check if the lyrics is None
             if lyrics is None:
