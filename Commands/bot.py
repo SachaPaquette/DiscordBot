@@ -330,7 +330,7 @@ async def volume( interactions, volume: int):
         raise e
 
 @bot.tree.command(name="userinfo", description="Get information about a user.")
-async def user_information( interactions, *, member: discord.Member = None):
+async def user_information( interactions,*, member: discord.Member = None):
     """
     Fetches and displays information about a user.
 
@@ -342,7 +342,7 @@ async def user_information( interactions, *, member: discord.Member = None):
     - Exception: If there is an error in fetching the user information.
 
     Examples:
-    ` !userinfo @user -> 
+    ` /userinfo @user -> 
         User Information - Chencho
         Username
         discordusername
@@ -357,8 +357,9 @@ async def user_information( interactions, *, member: discord.Member = None):
     - None
     """
     try:
+        user_info = UserInfo()
         # Create the embed message that will display the user information (username, ID, join date, account creation date)
-        await UserInfo.fetch_user_information( interactions, member=member)
+        await user_info.fetch_user_information(interactions=interactions, member=member)
     except Exception as e:
         logger.error(f"Error in the user info command: {e}")
         raise e
@@ -369,6 +370,8 @@ def main():
     """
     try:
         token = os.environ.get("DISCORD_TOKEN")
+        if token is None:
+            raise Exception("No token found in the environment variables.")
         # Run the bot
         bot.run(token)
     except Exception as e:

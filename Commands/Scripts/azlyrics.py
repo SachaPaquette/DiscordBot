@@ -40,6 +40,10 @@ class FetchLyrics(Requester):
             if not self.artist + self.title:
                 raise ValueError("Both artist and title can't be empty!")
             if self.search_engine:
+                print('Searching for lyrics...')
+                print('Artist:', self.artist)
+                print('Title:', self.title)
+                
                 # If user can't remember the artist,
                 # he can search by title only
                 
