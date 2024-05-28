@@ -30,19 +30,19 @@ pip install -r requirements.txt
 python discordbot.py
 ```
 ## Commands Available
-    !health: Health check for the bot.
-    !join: Join the voice channel.
-    !leave: Leave the voice channel.
-    !ping <username>: Ping a user.
-    !play <url>: Play a song.
-    !skip: Skip the current song.
-    !nowplaying: Display the current song.
-    !queue: Display the queue.
-    !clear: Clear the queue.
-    !pause: Pause the current song.
-    !resume: Resume the current song.
-    !shuffle: Shuffle the queue.
-    !userinfo <member>: Display user information.
+    /health: Health check for the bot.
+    /join: Join the voice channel.
+    /leave: Leave the voice channel.
+    /ping <username>: Ping a user.
+    /play <url>: Play a song.
+    /skip: Skip the current song.
+    /nowplaying: Display the current song.
+    /queue: Display the queue.
+    /clear: Clear the queue.
+    /pause: Pause the current song.
+    /resume: Resume the current song.
+    /shuffle: Shuffle the queue.
+    /userinfo <member>: Display user information.
 
 ## Dependencies
 
@@ -53,6 +53,7 @@ List of external libraries the project relies on.
     yt-dlp
     nacl
     dotenv
+    whois
 
 ## Configuration
 

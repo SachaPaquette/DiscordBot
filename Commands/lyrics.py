@@ -9,19 +9,11 @@ class LyricsOperations:
     def parse_song_title(self, song_title):
         try:
             # The song title is the Youtube video title. There is no specific format for it. (ex. "Song Title - Artist")
-            regex_pattern = f"^(.+?)[-\|♦\(](.+?)(?:(?<=\()\b[^\)]+\b(?=\)))?.*$"
-            pattern = re.compile(
-            r'^(?P<artist>.+?)\s*[-|:|by|]\s*(?P<title>.+?)(\s*\(.*?\)|\s*\[.*?\]|\s*Official.*|)$', re.IGNORECASE)
-            match = pattern.match(song_title)
-            if match:
-                artist_name = match.group('artist')
-                song_title = match.group('title')
-            else:
-                artist_name = None
-                song_title = None
- 
+            match = re.compile(r'^(?P<artist>.+?)\s*[-|:|by|]\s*(?P<title>.+?)(\s*\(.*?\)|\s*\[.*?\]|\s*Official.*|)$', re.IGNORECASE).match(song_title)
+            if match is None:
+                raise Exception("Invalid song title format")
             # Return the song title
-            return song_title, artist_name
+            return match.group('title'), match.group('artist')
         except Exception as e:
             print(f"Error while parsing song title: {e}")
             return None
@@ -29,15 +21,14 @@ class LyricsOperations:
     async def get_lyrics(self, song_title):
         try:
             # Get the song's title
-            song_title, artist_name = self.parse_song_title(song_title)
+            song_name, artist_name = self.parse_song_title(song_title)
             
             # Assign the song title to the AZlyrics object
-            self.fetch_lyrics.title = song_title
+            self.fetch_lyrics.title = song_name
             self.fetch_lyrics.artist = artist_name
-            # Get the lyrics of the song
-            lyrics = self.fetch_lyrics.getLyrics(save=False)
+
             # Return the lyrics
-            return lyrics
+            return self.fetch_lyrics.getLyrics(save=False)
         except Exception as e:
             print(f"Error while getting lyrics: {e}")
             return None
