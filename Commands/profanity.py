@@ -1,11 +1,12 @@
 from .Profanity.better_profanity import profane
+from Commands.utility import Utility
 # Used to check for profanity in messages and warn users
 class Profanity():
     def __init__(self, bot):
         self.bot = bot
         self.profanity_filter = profane()
-
-    async def on_message_command(self, message):
+        self.utility = Utility()
+    async def on_message_command(self, message, commands):
         try:
             
             # Ignore messages sent by the bot
@@ -17,11 +18,10 @@ class Profanity():
             if message.content.startswith("/"):
                 return
             
-            
             # Check if the message contains profanity
             if self.profanity_filter.contains_profanity(message.content):
-                # Send a warning message
-                await message.channel.send(f"{message.author.mention}, please refrain from using profanity.")
+                # Put a reaction on the user's message to warn them
+                await message.add_reaction("🚫")
         except Exception as e:
             print(f"Error while handling message: {e}")
             return

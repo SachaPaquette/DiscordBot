@@ -106,4 +106,52 @@ class Gambling():
         self.database.update_user_balance(user_id, user["balance"], True)
         await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
             
-            
+class Slot9x9Machine():
+    def __init__(self):
+        self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
+        self.grid = []
+
+    def spin(self):
+        self.grid = [[random.choice(self.reels) for _ in range(3)] for _ in range(3)]
+        return self.grid
+
+    def check_winnings(self):
+        # Define payouts for specific patterns
+        payouts = {
+            '🍒': 10,
+            '🍋': 5,
+            '🍊': 5,
+            '🍉': 20,
+            '🍇': 15,
+            '⭐': 25,
+            '🔔': 30,
+            '💎': 50,
+            '7️⃣': 100
+        }
+        
+        total_payout = 0
+
+        # Check rows and columns for identical symbols
+        for i in range(3):
+            if len(set(self.grid[i])) == 1:
+                total_payout += payouts[self.grid[i][0]]
+            if len(set([self.grid[j][i] for j in range(3)])) == 1:
+                total_payout += payouts[self.grid[0][i]]
+
+        # Check diagonals for identical symbols
+        if len(set([self.grid[i][i] for i in range(3)])) == 1:
+            total_payout += payouts[self.grid[0][0]]
+        if len(set([self.grid[i][2 - i] for i in range(3)])) == 1:
+            total_payout += payouts[self.grid[0][2]]
+
+        return total_payout
+    
+    async def play(self, interactions):
+        slot_machine = Slot9x9Machine()
+        slot_machine.spin()
+        payout = slot_machine.check_winnings()
+        if payout > 0:
+            await interactions.response.send_message(f'Congratulations! You won {payout} dollars!')
+        else:
+            await interactions.response.send_message('Better luck next time!')
+        return

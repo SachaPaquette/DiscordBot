@@ -4,7 +4,7 @@ import discord
 class HealthCheck():    
     def __init__(self, bot):
         self.bot = bot
-        self.start_time = datetime.datetime.utcnow()
+        self.start_time = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
         
     def create_bot_uptime(self):
         """
@@ -18,7 +18,7 @@ class HealthCheck():
         """
         try:
             # Get the current time for reference
-            current_time = datetime.datetime.utcnow()
+            current_time = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
             # Calculate the uptime
             uptime_delta = current_time - self.start_time
             # Calculate the days, hours, minutes, and seconds that make up the uptime
@@ -77,4 +77,3 @@ class HealthCheck():
             return days, hours, minutes, seconds    
         except Exception as e:
             print(f"Error in calculate_time_components in health.py: {e}")
-            raise e

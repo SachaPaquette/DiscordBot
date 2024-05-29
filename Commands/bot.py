@@ -11,8 +11,10 @@ from Commands.profanity import Profanity
 from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
-from Commands.gambling import Gambling
+from Commands.gambling import Gambling, Slot9x9Machine
+from Commands.leaderboard import Leaderboard
 from Config.config import conf
+
 
 # Import logging
 from Config.logging import setup_logging
@@ -32,7 +34,7 @@ intents = discord.Intents.all()
 # Create a discord client instance and give it the intents 
 #client = discord.Client(intents=intents)
 #tree = app_commands.CommandTree(client)
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 session = None
 # Create an instance of QueueOperations to handle the music queue
@@ -50,6 +52,10 @@ health_check = HealthCheck(bot)
 lyrics_operations = LyricsOperations(bot)
 
 profanity = Profanity(bot)
+leaderboard = Leaderboard()
+gambling = Gambling()
+commands_list = []
+
 @bot.event
 async def on_ready():
     """
@@ -58,17 +64,27 @@ async def on_ready():
     This function prints the bot's name and ID to the console.
     """
     try:
-        print(f'{bot.user} has connected to Discord!')
         # Change the bot's status to "Listening to /help"
-        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="/help"))
-        
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="depression"))
         # Synchornize the bot's commands with the Discord API
-        await bot.tree.sync()
+        #await bot.tree.sync()
        
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")
         raise e
+    
 
+def return_commands():
+    """
+    Return the commands list.
+    """
+    try:
+        return commands_list
+    except Exception as e:
+        logger.error(f"Error in the return commands function: {e}")
+        raise e
+    
+    
 @bot.event
 async def on_message(message):
     """
@@ -95,9 +111,13 @@ async def on_message(message):
     Organization: Google LLC
     """
     try:
+        # Ignore messages sent by the bot
+        if message.author == bot.user:
+            return
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
-        await profanity.on_message_command(message)
+        # Check for profanity in the message
+        await profanity.on_message_command(message, commands_list)
     except Exception as e:
         logger.error(f"Error in the on message event: {e}")
         raise e
@@ -109,6 +129,7 @@ async def health(interactions):
     """
     try:
         await health_check.health_command(interactions, bot)
+        await bot.tree.sync()
         
     except Exception as e:
         print(f"Error in the health command: {e}")
@@ -382,13 +403,50 @@ async def gamble( interactions, amount: int):
     - None
     """
     try:
-        gambling = Gambling()
+        
         # Call the gamble function in Gambling
         await gambling.gamble(interactions, amount)
     except Exception as e:
         logger.error(f"Error in the gamble command: {e}")
         raise e
+
+@bot.tree.command(name='leaderboard', description='Display the leaderboard.')
+async def leaderboard(interactions):
+    """
+    Display the leaderboard.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        
+        # Call the leaderboard function in Leaderboard
+        await leaderboard.leaderboard_command(interactions)
+    except Exception as e:
+        logger.error(f"Error in the leaderboard command: {e}")
+        raise e
     
+@bot.tree.command(name='rank', description='Display your rank.')
+async def rank(interactions):
+    """
+    Display the user's rank.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        # Call the rank function in Gambling
+        await leaderboard.rank_command(interactions)
+    except Exception as e:
+        logger.error(f"Error in the rank command: {e}")
+        raise e
+
 @bot.tree.command(name='work', description='Work to earn money.')
 async def work(interactions):
     """
@@ -401,7 +459,7 @@ async def work(interactions):
     - None
     """
     try:
-        gambling = Gambling()
+        
         # Call the work function in Gambling
         await gambling.work(interactions)
     except Exception as e:
@@ -420,13 +478,31 @@ async def balance(interactions):
     - None
     """
     try:
-        gambling = Gambling()
+        
         # Call the balance function in Gambling
         await gambling.balance(interactions)
     except Exception as e:
         logger.error(f"Error in the balance command: {e}")
         raise e
+ 
+@bot.tree.command(name='slots', description='Play the slots.')
+async def slots(interactions):
+    """
+    Play the slots.
 
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        slots = Slot9x9Machine()
+        # Call the slots function in Gambling
+        await slots.play(interactions)
+    except Exception as e:
+        logger.error(f"Error in the slots command: {e}")
+        raise e
 
 def main():
     """

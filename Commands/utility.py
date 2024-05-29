@@ -148,5 +148,63 @@ class Utility():
         embed.set_footer(text="Feeling lucky? Spin again!")
 
         return embed
+    
+    @staticmethod
+    def create_slots_9x9_embed_message(grid, payout):
+        """
+        Create an embed message for the 9x9 slot machine game result.
+
+        Parameters:
+        - grid (list): The grid representing the slot machine result.
+        - payout (int): The payout amount.
+
+        Returns:
+        - discord.Embed: The embed message.
+        """
+        # Create the embed message
+        embed = discord.Embed(
+            title="Slot Machine Result",
+            description="Here's the result of the 9x9 slot machine game:",
+            color=discord.Color.blue()
+        )
+
+        # Add the grid to the embed message
+        for row in grid:
+            embed.add_field(name="\u200b", value=" | ".join(row), inline=False)
+
+        # Add the payout amount to the embed message
+        if payout > 0:
+            embed.add_field(name="Congratulations!", value=f"You won {payout} dollars!", inline=False)
+        else:
+            embed.add_field(name="Better luck next time!", value="\u200b", inline=False)
+
+        return embed
         
+    def create_leaderboard_embed(self, users):
+        # Create an embed message that contains the top 10 users
+        embed = discord.Embed(title="Leaderboard", color=discord.Color.gold())
+        
+        # Add the users to the embed message
+        for i, user in enumerate(users):
+            embed.add_field(name=f"{i + 1}. {user['name']}", value=f"Experience: {user['experience']}", inline=False)
+        
+        return embed
+        
+    def create_rank_embed(self, rank):
+        # Create an embed message that contains the user's rank
+        embed = discord.Embed(title="Rank", color=discord.Color.gold())
+        
+        
+        # Add the user's rank to the embed message
+        embed.add_field(name="Your Rank", value=f"{rank}", inline=False)
+        
+        return embed
+    
+    def is_message_command(self, message, commands):
+        # Get all commands
+        
+        print(commands)
+        # Check if the the string after the / is a command
+        return message.content.split()[0][1:] in commands
+    
         

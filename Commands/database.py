@@ -91,4 +91,10 @@ class Database():
         """
         self.collection.update_one({"user_id": user_id}, {"$inc": {"experience": experience}})
         
+    def get_top_users(self, limit):
+        """
+        Retrieves the top users by experience.
+        """
+        return list(self.collection.find().sort("experience", -1).limit(limit))
+        
     

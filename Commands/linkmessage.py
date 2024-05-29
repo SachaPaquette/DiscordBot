@@ -10,9 +10,7 @@ class LinkMessage:
     async def on_message_command(self, message):
         try:
             
-            # Ignore messages sent by the bot
-            if message.author == self.bot.user:
-                return
+            
             
             # Ignore message that is a command
             if message.content.startswith("/"):
