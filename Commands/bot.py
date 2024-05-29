@@ -10,6 +10,7 @@ from Commands.linkmessage import LinkMessage
 from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
+from Commands.gambling import Gambling
 from Config.config import conf
 
 # Import logging
@@ -363,6 +364,65 @@ async def user_information( interactions,*, member: discord.Member = None):
     except Exception as e:
         logger.error(f"Error in the user info command: {e}")
         raise e
+
+@bot.tree.command(name='gamble', description='Gamble your money.')
+async def gamble( interactions, amount: int):
+    """
+    Allows a user to gamble a certain amount of money.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+    - amount (int): The amount of money to gamble.
+
+    Returns:
+    - None
+    """
+    try:
+        gambling = Gambling()
+        # Call the gamble function in Gambling
+        await gambling.gamble(interactions, amount)
+    except Exception as e:
+        logger.error(f"Error in the gamble command: {e}")
+        raise e
+    
+@bot.tree.command(name='work', description='Work to earn money.')
+async def work(interactions):
+    """
+    Allows a user to work to earn money.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        gambling = Gambling()
+        # Call the work function in Gambling
+        await gambling.work(interactions)
+    except Exception as e:
+        logger.error(f"Error in the work command: {e}")
+        raise e
+
+@bot.tree.command(name='balance', description='Display your bank balance.')
+async def balance(interactions):
+    """
+    Display the user's bank balance.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        gambling = Gambling()
+        # Call the balance function in Gambling
+        await gambling.balance(interactions)
+    except Exception as e:
+        logger.error(f"Error in the balance command: {e}")
+        raise e
+
 
 def main():
     """

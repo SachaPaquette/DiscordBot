@@ -100,3 +100,18 @@ class Utility():
             print(f"Error while trying to create an embed message in nowplaying.py: {e}")
             return
         
+    def get_userid_from_sender(sender):
+        """
+        Get the user ID from the sender object.
+
+        Args:
+            sender (discord.User): The sender object.
+
+        Returns:
+            int: The user ID.
+        """
+        try:
+            return sender.id
+        except Exception as e:
+            print(f"Error while trying to get the user ID from the sender object: {e}")
+            return None
