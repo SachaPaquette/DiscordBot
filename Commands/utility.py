@@ -115,3 +115,38 @@ class Utility():
         except Exception as e:
             print(f"Error while trying to get the user ID from the sender object: {e}")
             return None
+
+    def create_gambling_embed_message(symbols, profit, balance):
+        # Determine the color based on profit
+        if profit > 0:
+            color = discord.Color.green()
+            result = "YOU WON!"
+            field_value = f"**Profit:** {profit} dollars :moneybag:"
+        elif profit < 0:
+            color = discord.Color.red()
+            result = "YOU LOST!"
+            field_value = f"**Loss:** {-profit} dollars :money_with_wings:"
+        else:
+            color = discord.Color.gold()
+            field_value = "**No Profit or Loss**"
+
+        # Create the embed
+        embed = discord.Embed(title="Slot Machine", color=color)
+
+        # Add slot symbols
+        symbols_str = " | ".join(symbols)
+        embed.add_field(name="Slot Symbols", value=f"```{symbols_str}```", inline=False)
+
+        # Add result without a title
+        embed.add_field(name=" ", value=f"**{result}**", inline=False)
+        
+        # Add profit/loss and balance
+        embed.add_field(name="Result", value=field_value, inline=False)
+        embed.add_field(name="Balance", value=f"{balance} :coin:", inline=False)
+
+        # Add footer with additional information
+        embed.set_footer(text="Feeling lucky? Spin again!")
+
+        return embed
+        
+        

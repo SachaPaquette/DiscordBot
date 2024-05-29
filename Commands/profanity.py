@@ -12,9 +12,11 @@ class Profanity():
             if message.author == self.bot.user:
                 return
             
+            #TODO Make sure the message is a command otherwise people can abuse this
             # Ignore message that is a command
             if message.content.startswith("/"):
                 return
+            
             
             # Check if the message contains profanity
             if self.profanity_filter.contains_profanity(message.content):

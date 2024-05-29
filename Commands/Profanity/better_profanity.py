@@ -10,9 +10,10 @@ from .utils import (
     read_wordlist,
 )
 from .varying_string import VaryingString
-
+text_file = "profanity_wordlist.txt"
 
 class profane():
+
     def __init__(self, words=None):
         """
         Args:
@@ -31,28 +32,26 @@ class profane():
             raise TypeError("words must be of type str, list, or None")
         self.CENSOR_WORDSET = []
         self.CHARS_MAPPING = {
-            "a": ("a", "@", "*", "4"),
-            "i": ("i", "*", "l", "1"),
-            "o": ("o", "*", "0", "@"),
-            "u": ("u", "*", "v"),
-            "v": ("v", "*", "u"),
-            "l": ("l", "1"),
-            "e": ("e", "*", "3"),
-            "s": ("s", "$", "5"),
-            "t": ("t", "7"),
+            "a": ("a", "@", "*", "4", "á", "à", "â", "ä", "æ", "ã", "å", "ā", "ă", "ą"),
+            "i": ("i", "*", "l", "1", "!", "|", "í", "ï", "î", "ì", "ī", "į", "ĭ"),
+            "o": ("o", "*", "0", "@", "ó", "ô", "ö", "ò", "ø", "ō", "õ", "œ"),
+            "u": ("u", "*", "v", "ü", "ú", "û", "ù", "ū", "ų", "ŭ"),
+            "v": ("v", "*", "u", "ü", "ú", "û", "ù", "ū", "ų", "ŭ"),
+            "l": ("l", "1", "!", "|", "i", "í", "ï", "î", "ì", "ī", "į", "ĭ"),
+            "e": ("e", "*", "3", "é", "ê", "ë", "ē", "ė", "ę"),
+            "s": ("s", "$", "5", "z", "§"),
+            "t": ("t", "7", "+"),
         }
         self.MAX_NUMBER_COMBINATIONS = 1
         self.ALLOWED_CHARACTERS = ALLOWED_CHARACTERS
         self._default_wordlist_filename = get_complete_path_of_file(
-            "profanity_wordlist.txt"
+            text_file
         )
         if type(words) == str:
             self.load_censor_words_from_file(words)
         else:
             self.load_censor_words(custom_words=words)
-
-    ## PUBLIC ##
-
+            
     def censor(self, text, censor_char="*"):
         """Replace the swear words in the text with `censor_char`."""
 
@@ -75,13 +74,6 @@ class profane():
         custom_words = custom_words or read_wordlist(self._default_wordlist_filename)
         self._populate_words_to_wordset(custom_words, **kwargs)
 
-    def add_censor_words(self, custom_words):
-        if not isinstance(custom_words, (list, tuple, set)):
-            raise TypeError(
-                "Function 'add_censor_words' only accepts list, tuple or set."
-            )
-        for w in custom_words:
-            self.CENSOR_WORDSET.append(VaryingString(w, char_map=self.CHARS_MAPPING))
 
     def contains_profanity(self, text):
         """Return True if  the input text has any swear words."""

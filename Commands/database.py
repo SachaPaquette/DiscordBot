@@ -1,8 +1,8 @@
 # Used to interact with the mongodb database
-import pymongo
+import pymongo, time
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from .UserProfile.user import User
 
 # Connect to the database
 class Database():
@@ -46,8 +46,7 @@ class Database():
         
     def insert_user(self, user_id):
         # Insert a user into the database
-        user = {"user_id": user_id, "balance": 100}
-        self.collection.insert_one(user)
+        self.collection.insert_one(User(user_id, 100, 0).return_user())
         
     def get_user(self, user_id):
         """
@@ -67,6 +66,29 @@ class Database():
             user = self.collection.find_one({"user_id": user_id})
         return user
     
-    
-    
+
+    def update_user_balance(self, user_id, balance, update_last_work_time=False):
+        """
+        Updates the balance of a user.
+        
+        Parameters:
+        - user_id: The id of the user to update.
+        - balance: The balance of the user.
+        - update_last_work_time: Whether to update the last work time.
+        """
+        update_fields = {"balance": balance}
+        if update_last_work_time:
+            update_fields["last_work"] = time.time()
+        self.collection.update_one({"user_id": user_id}, {"$set": update_fields})
+        
+    def update_user_experience(self, user_id, experience):
+        """
+        Updates the experience of a user.
+        
+        Parameters:
+        - user_id: The id of the user to update.
+        - experience: The experience to add to the user.
+        """
+        self.collection.update_one({"user_id": user_id}, {"$inc": {"experience": experience}})
+        
     

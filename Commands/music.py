@@ -276,20 +276,6 @@ class SongSession:
             print(f"An error occurred when trying to play the song. {e}")
             raise e
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     async def play_next(self, vc):
         """
         Plays the next song in the queue.

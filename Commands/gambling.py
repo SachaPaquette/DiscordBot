@@ -1,6 +1,9 @@
 from Commands.database import Database
+from Commands.utility import Utility
+from .UserProfile.user import User
 import random
 import time
+
 
 class Gambling():
     
@@ -53,44 +56,33 @@ class Gambling():
         user_id = self.get_user_id(interactions)
         user = self.database.get_user(user_id)
         
-        if user is None:
-            self.insert_user(user_id)
-            user = self.collection.find_one({"user_id": user_id})
-
         if user["balance"] < bet:
             await interactions.response.send_message("You don't have enough money to bet that amount.")
             return
 
         symbols = self.get_slot_symbols()
+        
         payout = self.calculate_payout(symbols, bet)
         user["balance"] += payout
+        # Update the user's balance
+        self.database.update_user_balance(user_id, user["balance"])
         
+        if payout > 0: 
+            # Update the user's experience
+            self.database.update_user_experience(user_id, User(user_id=user_id, balance=user["balance"], experience=self.database.get_user(user_id)["experience"]).give_experience(payout))
         # Send initial message
         result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
-
+        
         # React to the message with slot symbols
         result_message = await interactions.original_response()
-        for symbol in symbols:
-            await result_message.add_reaction(symbol)
-
-        # Construct the result message
-        if payout > 0:
-            result_message_text = f'You won {payout} coins! Your new balance is {user["balance"]} coins.'
-        elif payout < 0:
-            result_message_text = f'You lost {bet} coins. Your new balance is {user["balance"]} coins.'
-        else:
-            result_message_text = f'You broke even. Your balance is still {user["balance"]} coins.'
 
         # Edit the original message to include the result
-        await result_message.edit(content=result_message.content + "\n" + result_message_text)
+        await result_message.edit(content=None, embed=Utility.create_gambling_embed_message(symbols, payout, user["balance"]))
        
     async def balance(self, interactions):
         user_id = self.get_user_id(interactions)
         user = self.database.get_user(user_id)
         
-        if user is None:
-            self.insert_user(user_id)
-            user = self.collection.find_one({"user_id": user_id})
         
         await interactions.response.send_message(f'Your balance is {user["balance"]} dollars.')
             
@@ -100,9 +92,7 @@ class Gambling():
         user_id = self.get_user_id(interactions)
         user = self.database.get_user(user_id)
 
-        if user is None:
-            self.insert_user(user_id)
-            user = self.collection.find_one({"user_id": user_id})
+  
         
         # Check if the user has worked in the last 10 minutes
         if "last_work" in user:
@@ -112,8 +102,8 @@ class Gambling():
         
         user["balance"] += random.randint(1, 100)
         
-        self.collection.update_one({"user_id": user_id}, {"$set": {"balance": user["balance"], "last_work": time.time()}})
         
-        await interactions.response.send_message(f"Congratulations! You earned {user['balance']} dollars.")
+        self.database.update_user_balance(user_id, user["balance"], True)
+        await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
             
             
