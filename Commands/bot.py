@@ -7,6 +7,7 @@ from Commands.lyrics import LyricsOperations
 from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
 from Commands.linkmessage import LinkMessage
+from Commands.profanity import Profanity
 from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
@@ -47,6 +48,8 @@ playing_operations = NowPlaying()
 health_check = HealthCheck(bot)
 
 lyrics_operations = LyricsOperations(bot)
+
+profanity = Profanity(bot)
 @bot.event
 async def on_ready():
     """
@@ -94,6 +97,7 @@ async def on_message(message):
     try:
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
+        await profanity.on_message_command(message)
     except Exception as e:
         logger.error(f"Error in the on message event: {e}")
         raise e
