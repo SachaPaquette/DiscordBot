@@ -37,6 +37,9 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 session = None
+
+
+
 # Create an instance of QueueOperations to handle the music queue
 queue_operations = QueueOperations(session)
 
@@ -52,8 +55,8 @@ health_check = HealthCheck(bot)
 lyrics_operations = LyricsOperations(bot)
 
 profanity = Profanity(bot)
-leaderboard = Leaderboard()
-gambling = Gambling()
+
+
 commands_list = []
 
 @bot.event
@@ -64,24 +67,10 @@ async def on_ready():
     This function prints the bot's name and ID to the console.
     """
     try:
-        # Change the bot's status to "Listening to /help"
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="depression"))
-        # Synchornize the bot's commands with the Discord API
-        #await bot.tree.sync()
        
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")
-        raise e
-    
-
-def return_commands():
-    """
-    Return the commands list.
-    """
-    try:
-        return commands_list
-    except Exception as e:
-        logger.error(f"Error in the return commands function: {e}")
         raise e
     
     
@@ -403,7 +392,7 @@ async def gamble( interactions, amount: int):
     - None
     """
     try:
-        
+        gambling = Gambling(interactions.guild.id)
         # Call the gamble function in Gambling
         await gambling.gamble(interactions, amount)
     except Exception as e:
@@ -423,6 +412,7 @@ async def leaderboard(interactions):
     """
     try:
         
+        leaderboard = Leaderboard(interactions.guild.id)
         # Call the leaderboard function in Leaderboard
         await leaderboard.leaderboard_command(interactions)
     except Exception as e:
@@ -441,6 +431,7 @@ async def rank(interactions):
     - None
     """
     try:
+        leaderboard = Leaderboard(interactions.guild.id)
         # Call the rank function in Gambling
         await leaderboard.rank_command(interactions)
     except Exception as e:
@@ -459,7 +450,7 @@ async def work(interactions):
     - None
     """
     try:
-        
+        gambling = Gambling(interactions.guild.id)
         # Call the work function in Gambling
         await gambling.work(interactions)
     except Exception as e:
@@ -478,7 +469,7 @@ async def balance(interactions):
     - None
     """
     try:
-        
+        gambling = Gambling(interactions.guild.id)
         # Call the balance function in Gambling
         await gambling.balance(interactions)
     except Exception as e:

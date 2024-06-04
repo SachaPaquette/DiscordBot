@@ -180,23 +180,52 @@ class Utility():
 
         return embed
         
-    def create_leaderboard_embed(self, users):
-        # Create an embed message that contains the top 10 users
-        embed = discord.Embed(title="Leaderboard", color=discord.Color.gold())
+    async def create_leaderboard_embed(self, interactions, users):
+        """
+        Creates an embed message that contains the top 10 users.
+
+        Args:
+            interactions (discord.Interaction): The interaction object to fetch user information.
+            users (list): A list of user dictionaries containing 'user_id', 'level', and 'experience'.
+
+        Returns:
+            discord.Embed: The constructed leaderboard embed message.
+        """
+        # Create an embed message with a title and color
+        embed = discord.Embed(title="🏆 Leaderboard", color=discord.Color.gold())
+
+        # Emojis for the top 3 ranks
+        rank_emojis = ["🥇", "🥈", "🥉"]
         
-        # Add the users to the embed message
         for i, user in enumerate(users):
-            embed.add_field(name=f"{i + 1}. {user['name']}", value=f"Experience: {user['experience']}", inline=False)
-        
+            # Get the user using their user_id
+            user_obj = await interactions.client.fetch_user(user["user_id"])
+
+            # Determine the rank emoji
+            rank_emoji = rank_emojis[i] if i < len(rank_emojis) else f"{i + 1}."
+
+            # Add the user to the embed with their rank, level, and experience
+            embed.add_field(
+                name=f"{rank_emoji} {user_obj.display_name}",
+                value=f"**Level:** {user['level']} | **Experience:** {user['experience']}",
+                inline=False
+            )
+
         return embed
         
-    def create_rank_embed(self, rank):
+    def create_rank_embed(self, interactions,  rank):
         # Create an embed message that contains the user's rank
         embed = discord.Embed(title="Rank", color=discord.Color.gold())
         
+        # Get the user profile picture
+        embed.set_thumbnail(url=interactions.user.avatar)
+        # Put a border around the user's profile picture
+        
+        # Add the user's name to the embed message
+        embed.add_field(name="Your Name", value=f"{interactions.user.name}", inline=False)
         
         # Add the user's rank to the embed message
-        embed.add_field(name="Your Rank", value=f"{rank}", inline=False)
+        embed.add_field(name="Your level", value=f"{rank}", inline=False)
         
         return embed
     

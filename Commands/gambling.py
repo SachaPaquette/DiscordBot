@@ -7,8 +7,8 @@ import time
 
 class Gambling():
     
-    def __init__(self):
-        self.database = Database.getInstance()
+    def __init__(self, server_id):
+        self.database = Database.getInstance(server_id)
         self.collection = self.database.collection
         self.users = {}
         
@@ -69,7 +69,7 @@ class Gambling():
         
         if payout > 0: 
             # Update the user's experience
-            self.database.update_user_experience(user_id, User(user_id=user_id, balance=user["balance"], experience=self.database.get_user(user_id)["experience"]).give_experience(payout))
+            self.database.update_user_experience(user_id, payout)
         # Send initial message
         result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
         
@@ -150,6 +150,9 @@ class Slot9x9Machine():
         slot_machine = Slot9x9Machine()
         slot_machine.spin()
         payout = slot_machine.check_winnings()
+        
+        Utility.create_slots_9x9_embed_message(slot_machine.grid, payout)
+        
         if payout > 0:
             await interactions.response.send_message(f'Congratulations! You won {payout} dollars!')
         else:

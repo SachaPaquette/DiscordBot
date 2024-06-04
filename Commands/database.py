@@ -3,35 +3,35 @@ import pymongo, time
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from .UserProfile.user import User
-
+import re
 # Connect to the database
 class Database():
     # Instatiate a singleton instance of the database
     __instance = None
     @staticmethod
-    def getInstance():
+    def getInstance(server_id):
         """ Static access method. """
         if Database.__instance == None:
-            Database()
+            Database(server_id)
         return Database.__instance
-    def __init__(self):
+    def __init__(self, server_id):
         """ Virtually private constructor. """
         if Database.__instance == None:
             Database.__instance = self
             self.client = None
             self.db = None
             self.collection = None
-            self.connect()
+            self.connect(server_id)
             
 
             
-    def connect(self):
+    def connect(self, server_id: str):
         try:
             # Connect to the database
             self.client = MongoClient("mongodb://localhost:27017/")
             # if the database does not exist, it will be created    
             self.db = self.client["discord"]
-            self.collection = self.db["users"]
+            self.collection = self.db[str(server_id)]
             print("Database connected.")
         except Exception as e:
             print(f"Error connecting to the database: {e}")
@@ -64,6 +64,10 @@ class Database():
         if not user:
             self.insert_user(user_id)
             user = self.collection.find_one({"user_id": user_id})
+        
+        # Update the user's level
+        user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
+        
         return user
     
 
@@ -81,7 +85,7 @@ class Database():
             update_fields["last_work"] = time.time()
         self.collection.update_one({"user_id": user_id}, {"$set": update_fields})
         
-    def update_user_experience(self, user_id, experience):
+    def update_user_experience(self, user_id, payout):
         """
         Updates the experience of a user.
         
@@ -89,12 +93,16 @@ class Database():
         - user_id: The id of the user to update.
         - experience: The experience to add to the user.
         """
-        self.collection.update_one({"user_id": user_id}, {"$inc": {"experience": experience}})
+        self.collection.update_one({"user_id": user_id}, {"$inc": {"experience": payout}})
         
     def get_top_users(self, limit):
         """
         Retrieves the top users by experience.
         """
-        return list(self.collection.find().sort("experience", -1).limit(limit))
+        lists = list(self.collection.find().sort("experience", -1).limit(limit))
+        # Change the user's level to the correct level
+        for user in lists:
+            user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
+        return lists
         
     
