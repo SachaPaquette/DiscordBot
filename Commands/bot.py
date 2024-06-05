@@ -145,7 +145,7 @@ async def join(interactions: discord.Interaction):
         raise e
 
 @bot.tree.command(name='leave', description='Makes the bot leave the voice channel.')
-async def leave( interactions):
+async def leave(interactions):
     try:
         await utility.leave(interactions)
     except Exception as e:
@@ -162,7 +162,7 @@ async def ping(interactions, username: discord.User):
         raise e
 
 @bot.tree.command(name='skip', description='Skip the current song.')
-async def skip( interactions):
+async def skip(interactions):
     try:
         # Call the skip function in SongSession
         await session.skip(interactions)
@@ -171,7 +171,7 @@ async def skip( interactions):
         raise e
 
 @bot.tree.command(name='play', description='Play a song.')
-async def play( interactions, url: str):
+async def play(interactions, url: str):
     """
     Play a song.
 
@@ -199,7 +199,7 @@ async def play( interactions, url: str):
         raise e
 
 @bot.tree.command(name='nowplaying', description='Display the current playing song.')
-async def nowplaying( interactions):
+async def nowplaying(interactions):
     try:
         await playing_operations.nowplaying_command(interactions, session)
     except Exception as e:
@@ -207,9 +207,8 @@ async def nowplaying( interactions):
             f"An error occurred when trying to display the song. {e}")
         raise e
 
-# TODO - Add a command to display the lyrics of the current song
 @bot.tree.command(name='lyrics', description='Display the lyrics of the current song.')
-async def lyrics( interactions):
+async def lyrics(interactions):
     try:
         await lyrics_operations.lyrics_command(interactions, session)
     except Exception as e:
@@ -218,7 +217,7 @@ async def lyrics( interactions):
         raise e
 
 @bot.tree.command(name='queue', description='Display the queue.')
-async def queue( interactions):
+async def queue(interactions):
     """
     Display the queue.
 
@@ -239,7 +238,7 @@ async def queue( interactions):
         raise e
 
 @bot.tree.command(name="clear", description="Clear the music queue.")
-async def clear( interactions):
+async def clear(interactions):
 
     """
     This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
@@ -258,7 +257,7 @@ async def clear( interactions):
         raise e
 
 @bot.tree.command(name='pause', description='Pause the current song.')
-async def pause( interactions):
+async def pause(interactions):
     """
     Pauses the current song.
 
@@ -276,7 +275,7 @@ async def pause( interactions):
         raise e
 
 @bot.tree.command(name='resume', description='Resume the current song.')
-async def resume( interactions):
+async def resume(interactions):
     """
     Resumes the current song.
 
@@ -298,7 +297,7 @@ async def resume( interactions):
         raise e
 
 @bot.tree.command(name='shuffle', description='Shuffle the queue.')
-async def shuffle( interactions):
+async def shuffle(interactions):
     """
     Shuffles the queue.
 
@@ -321,7 +320,7 @@ async def shuffle( interactions):
         raise e
 
 @bot.tree.command(name='volume', description="Change the music's volume.")
-async def volume( interactions, volume: int):
+async def volume(interactions, volume: int):
     """
     Change the volume.
 
@@ -345,7 +344,7 @@ async def volume( interactions, volume: int):
         raise e
 
 @bot.tree.command(name="userinfo", description="Get information about a user.")
-async def user_information( interactions,*, member: discord.Member = None):
+async def user_information(interactions,*, member: discord.Member = None):
     """
     Fetches and displays information about a user.
 
@@ -380,7 +379,7 @@ async def user_information( interactions,*, member: discord.Member = None):
         raise e
 
 @bot.tree.command(name='gamble', description='Gamble your money.')
-async def gamble( interactions, amount: int):
+async def gamble(interactions, amount: int):
     """
     Allows a user to gamble a certain amount of money.
 

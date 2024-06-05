@@ -18,10 +18,10 @@ class Database():
         """ Virtually private constructor. """
         if Database.__instance == None:
             Database.__instance = self
-            self.client = None
-            self.db = None
-            self.collection = None
-            self.connect(server_id)
+            self.client = MongoClient("mongodb://localhost:27017/")
+            self.db = self.client["discord"]
+            self.collections = {}
+            #self.connect(server_id)
             
 
             
@@ -31,12 +31,19 @@ class Database():
             self.client = MongoClient("mongodb://localhost:27017/")
             # if the database does not exist, it will be created    
             self.db = self.client["discord"]
-            self.collection = self.db[str(server_id)]
+            
+            
             print("Database connected.")
         except Exception as e:
             print(f"Error connecting to the database: {e}")
             raise e
-    
+        
+    def get_collection(self, server_id):
+        if server_id not in self.collections:
+            self.collections[server_id] = self.db[str(server_id)]
+            print(f"Connected to collection for server_id: {server_id}")
+        return self.collections[server_id]
+        
     def close(self):
         try:
             self.client.close()
@@ -44,11 +51,12 @@ class Database():
             print(f"Error closing the database connection: {e}")
             raise e
         
-    def insert_user(self, user_id):
+    def insert_user(self,server_id, user_id):
+        collection = self.get_collection(server_id)
         # Insert a user into the database
-        self.collection.insert_one(User(user_id, 100, 0).return_user())
+        collection.insert_one(User(user_id, 100, 0).return_user())
         
-    def get_user(self, user_id):
+    def get_user(self,server_id, user_id):
         """
         Retrieves a user from the database.
         
@@ -59,11 +67,11 @@ class Database():
         - user: The user object.
         """
         # Check if were connected to the database
-        
-        user = self.collection.find_one({"user_id": user_id})
+        collection = self.get_collection(server_id)
+        user = collection.find_one({"user_id": user_id})
         if not user:
-            self.insert_user(user_id)
-            user = self.collection.find_one({"user_id": user_id})
+            self.insert_user(server_id, user_id)
+            user = collection.find_one({"user_id": user_id})
         
         # Update the user's level
         user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
@@ -71,7 +79,7 @@ class Database():
         return user
     
 
-    def update_user_balance(self, user_id, balance, update_last_work_time=False):
+    def update_user_balance(self,server_id, user_id, balance, update_last_work_time=False):
         """
         Updates the balance of a user.
         
@@ -80,12 +88,13 @@ class Database():
         - balance: The balance of the user.
         - update_last_work_time: Whether to update the last work time.
         """
+        collection = self.get_collection(server_id)
         update_fields = {"balance": balance}
         if update_last_work_time:
             update_fields["last_work"] = time.time()
-        self.collection.update_one({"user_id": user_id}, {"$set": update_fields})
+        collection.update_one({"user_id": user_id}, {"$set": update_fields})
         
-    def update_user_experience(self, user_id, payout):
+    def update_user_experience(self,server_id, user_id, payout):
         """
         Updates the experience of a user.
         
@@ -93,13 +102,15 @@ class Database():
         - user_id: The id of the user to update.
         - experience: The experience to add to the user.
         """
-        self.collection.update_one({"user_id": user_id}, {"$inc": {"experience": payout}})
+        collection = self.get_collection(server_id)
+        collection.update_one({"user_id": user_id}, {"$inc": {"experience": payout}})
         
-    def get_top_users(self, limit):
+    def get_top_users(self,server_id, limit):
         """
         Retrieves the top users by experience.
         """
-        lists = list(self.collection.find().sort("experience", -1).limit(limit))
+        collection = self.get_collection(server_id)
+        lists = list(collection.find().sort("experience", -1).limit(limit))
         # Change the user's level to the correct level
         for user in lists:
             user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()

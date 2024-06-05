@@ -9,7 +9,7 @@ class Gambling():
     
     def __init__(self, server_id):
         self.database = Database.getInstance(server_id)
-        self.collection = self.database.collection
+        self.collection = self.database.get_collection(server_id)
         self.users = {}
         
     def get_user_id(self, interaction):
@@ -54,7 +54,7 @@ class Gambling():
             return
         
         user_id = self.get_user_id(interactions)
-        user = self.database.get_user(user_id)
+        user = self.database.get_user(interactions.guild.id,user_id)
         
         if user["balance"] < bet:
             await interactions.response.send_message("You don't have enough money to bet that amount.")
@@ -65,11 +65,11 @@ class Gambling():
         payout = self.calculate_payout(symbols, bet)
         user["balance"] += payout
         # Update the user's balance
-        self.database.update_user_balance(user_id, user["balance"])
+        self.database.update_user_balance(interactions.guild.id,user_id, user["balance"])
         
         if payout > 0: 
             # Update the user's experience
-            self.database.update_user_experience(user_id, payout)
+            self.database.update_user_experience(interactions.guild.id,user_id, payout)
         # Send initial message
         result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
         
@@ -81,7 +81,7 @@ class Gambling():
        
     async def balance(self, interactions):
         user_id = self.get_user_id(interactions)
-        user = self.database.get_user(user_id)
+        user = self.database.get_user(interactions.guild.id,user_id)
         
         
         await interactions.response.send_message(f'Your balance is {user["balance"]} dollars.')
@@ -90,7 +90,7 @@ class Gambling():
     async def work(self, interactions):
         # Simulate working and gives a random amount of money
         user_id = self.get_user_id(interactions)
-        user = self.database.get_user(user_id)
+        user = self.database.get_user(interactions.guild.id,user_id)
 
   
         
@@ -103,7 +103,7 @@ class Gambling():
         user["balance"] += random.randint(1, 100)
         
         
-        self.database.update_user_balance(user_id, user["balance"], True)
+        self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
         await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
             
 class Slot9x9Machine():

@@ -236,4 +236,11 @@ class Utility():
         # Check if the the string after the / is a command
         return message.content.split()[0][1:] in commands
     
+    def is_emoji(self, message):
+        # Check if the message is an emoji reaction
+        return message.startswith(":") and message.endswith(":")
+    
+    def is_command(self, message):
+        # Check if the message is a command
+        return message.startswith("/")
         
