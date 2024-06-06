@@ -3,6 +3,10 @@ import aiohttp
 import whois
 import tldextract
 from Config.config import conf
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("linkmessage.py", conf.LOGS_PATH)
 class LinkMessage:
     def __init__(self, bot):
         self.bot = bot
@@ -34,7 +38,7 @@ class LinkMessage:
                 # Send the domain information
                 await message.channel.send(formatted_domain_info)
         except Exception as e:
-            print(f"Error while handling message: {e}")
+            logger.error(f"Error while handling message: {e}")
             return
         
     
@@ -86,7 +90,7 @@ class LinkMessage:
                 'ORGANIZATION': organization
             }
         except Exception as e:
-            print(f"Error while getting domain information: {e}")
+            logger.error(f"Error while getting domain information: {e}")
             return None
                 
     
@@ -101,5 +105,5 @@ class LinkMessage:
                 )
             
         except Exception as e:
-            print(f"Error while formatting domain info message: {e}")
+            logger.error(f"Error while formatting domain info message: {e}")
             return None

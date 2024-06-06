@@ -3,7 +3,10 @@ from Commands.utility import Utility
 from .UserProfile.user import User
 import random
 import time
-
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("gambling.py", conf.LOGS_PATH)
 
 class Gambling():
     
@@ -39,63 +42,75 @@ class Gambling():
             return -bet
         
     async def gamble(self, interactions, bet: int):
-        if bet <= 0:
-            await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
-            return
-        
-        user_id = self.get_user_id(interactions)
-        user = self.database.get_user(interactions.guild.id,user_id)
-        
-        if user["balance"] < bet:
-            await interactions.response.send_message("You don't have enough money to bet that amount.")
-            return
-
-        symbols = self.get_slot_symbols()
-        
-        payout = self.calculate_payout(symbols, bet)
-        user["balance"] += payout
-        # Update the user's balance
-        self.database.update_user_balance(interactions.guild.id,user_id, user["balance"])
-        
-        if payout > 0: 
-            # Update the user's experience
-            self.database.update_user_experience(interactions.guild.id,user_id, payout)
-        # Send initial message
-        result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
-        
-        # React to the message with slot symbols
-        result_message = await interactions.original_response()
-
-        # Edit the original message to include the result
-        await result_message.edit(content=None, embed=Utility.create_gambling_embed_message(symbols, payout, user["balance"]))
-       
-    async def balance(self, interactions):
-        user_id = self.get_user_id(interactions)
-        user = self.database.get_user(interactions.guild.id,user_id)
-        
-        
-        await interactions.response.send_message(f'Your balance is {user["balance"]} dollars.')
+        try:
+            if bet <= 0:
+                await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
+                return
             
+            user_id = self.get_user_id(interactions)
+            user = self.database.get_user(interactions.guild.id,user_id)
+            
+            if user["balance"] < bet:
+                await interactions.response.send_message("You don't have enough money to bet that amount.")
+                return
+
+            symbols = self.get_slot_symbols()
+            
+            payout = self.calculate_payout(symbols, bet)
+            user["balance"] += payout
+            # Update the user's balance
+            self.database.update_user_balance(interactions.guild.id,user_id, user["balance"])
+            
+            if payout > 0: 
+                # Update the user's experience
+                self.database.update_user_experience(interactions.guild.id,user_id, payout)
+            # Send initial message
+            result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
+            
+            # React to the message with slot symbols
+            result_message = await interactions.original_response()
+
+            # Edit the original message to include the result
+            await result_message.edit(content=None, embed=Utility.create_gambling_embed_message(symbols, payout, user["balance"]))
+        except Exception as e:
+            logger.error(f"Error in the gamble function in gambling.py: {e}")
+            return
+        
+    async def balance(self, interactions):
+        try:
+            
+            user_id = self.get_user_id(interactions)
+            user = self.database.get_user(interactions.guild.id,user_id)
+            
+            
+            await interactions.response.send_message(f'Your balance is {user["balance"]} dollars.')
+        except Exception as e:
+            logger.error(f"Error in the balance function in gambling.py: {e}")
+            return
             
     async def work(self, interactions):
-        # Simulate working and gives a random amount of money
-        user_id = self.get_user_id(interactions)
-        user = self.database.get_user(interactions.guild.id,user_id)
+        try:
+            # Simulate working and gives a random amount of money
+            user_id = self.get_user_id(interactions)
+            user = self.database.get_user(interactions.guild.id,user_id)
 
-  
-        
-        # Check if the user has worked in the last 10 minutes
-        if "last_work" in user:
-            if user["last_work"] + 600 > time.time():
-                await interactions.response.send_message("You can only work every 10 minutes.")
-                return
-        
-        user["balance"] += random.randint(1, 100)
-        
-        
-        self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
-        await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
+    
             
+            # Check if the user has worked in the last 10 minutes
+            if "last_work" in user:
+                if user["last_work"] + 600 > time.time():
+                    await interactions.response.send_message("You can only work every 10 minutes.")
+                    return
+            
+            user["balance"] += random.randint(1, 100)
+            
+            
+            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
+            await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
+        except Exception as e:
+            logger.error(f"Error in the work function in gambling.py: {e}")
+            return
+        
 class Slot9x9Machine():
     def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']

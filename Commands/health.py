@@ -1,6 +1,9 @@
 import datetime
 import discord
-
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("health.py", conf.LOGS_PATH)
 class HealthCheck():    
     def __init__(self, bot):
         self.bot = bot
@@ -28,7 +31,7 @@ class HealthCheck():
 
             return uptime_str
         except Exception as e:
-            print(f"Error in create_bot_uptime in health.py: {e}")
+            logger.error(f"Error in create_bot_uptime in health.py: {e}")
             raise e
         
     
@@ -55,7 +58,7 @@ class HealthCheck():
             await interactions.response.send_message(embed=embed)
 
         except Exception as e:
-            print(f"Error in the health command in health.py: {e}")
+            logger.error(f"Error in the health command in health.py: {e}")
             raise e
         
     @staticmethod
@@ -76,4 +79,4 @@ class HealthCheck():
             minutes, seconds = divmod(seconds, 60)
             return days, hours, minutes, seconds    
         except Exception as e:
-            print(f"Error in calculate_time_components in health.py: {e}")
+            logger.error(f"Error in calculate_time_components in health.py: {e}")

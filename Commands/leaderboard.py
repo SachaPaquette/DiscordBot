@@ -2,6 +2,10 @@
 from Commands.utility import Utility
 from Commands.database import Database
 from .UserProfile.user import UserCard
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("leaderboard.py", conf.LOGS_PATH)
 class Leaderboard():
     def __init__(self):
         self.utility = Utility()
@@ -21,7 +25,7 @@ class Leaderboard():
             # Send the embed
             await interactions.response.send_message(embed=embed)
         except Exception as e:
-            print(f"An error occurred when trying to display the leaderboard. {e}")
+            logger.error(f"An error occurred when trying to display the leaderboard. {e}")
             raise e
         
     async def rank_command(self, interactions):
@@ -35,5 +39,5 @@ class Leaderboard():
             # Send the embed
             await interactions.response.send_message(embed=embed)
         except Exception as e:
-            print(f"An error occurred when trying to display the rank. {e}")
+            logger.error(f"An error occurred when trying to display the rank. {e}")
             raise e
