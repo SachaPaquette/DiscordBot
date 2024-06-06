@@ -68,7 +68,6 @@ class Case():
             
             # Get a random weapon from the possible guns list
             weapon = random.choice(possible_guns_list)
-            print(weapon)
             return weapon
     
     def get_weapon_information(self, weapon):
@@ -95,7 +94,6 @@ class Case():
         # Get the minimum and maximum float values
         min_float = weapon["min_float"]
         max_float = weapon["max_float"]
-        print(min_float, max_float)
         
         # Calculate a random value between the min and max float values
         return random.uniform(min_float, max_float)
@@ -139,7 +137,6 @@ class Case():
         
         # Get the weapon price from the page (class = skin-page__best-offer best-offer)
         price_element = soup.find("div", class_=re.compile(r"skin-page__best-offer\s+best-offer"))
-        #print(price)
         if price_element:
             # Extract the site price
             site_price_element = price_element.find("div", class_="best-offer__site-price-value")
@@ -170,7 +167,8 @@ class Case():
         user = self.database.get_user(self.server_id , user_id)
         
         if user["balance"] < self.case_price:
-            print("Not enough balance")
+            interactions.followup.send("Not enough balance")
+            return
         
         # Get a random weapon from the case
         weapon = self.get_weapon_from_case()
