@@ -227,9 +227,13 @@ class SongSession:
         None
         """
         try:
+            result_message = await interactions.response.send_message("Trying to play the song...")
+            result_message = await interactions.original_response()
             # Check if the URL is valid (i.e. it is a YouTube URL)
             if not CommandErrorHandler.check_url_correct(url):
-                await interactions.response.send_message("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+                # Send a follow-up message to the user
+                await interactions.foll
+                await result_message.edit("Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
                 return
 
             # Check if the bot is already in the correct channel
@@ -241,12 +245,12 @@ class SongSession:
                 URL, song_title, song_duration, thumbnail = await YTDLSource.extract_info_from_url(url, loop=loop, stream=True)
             except Exception as e:
                 print(f"Error extracting info from URL: {e}")
-                await interactions.response.send_message("Error extracting information from the provided URL.")
+                await result_message.edit("Error extracting information from the provided URL.")
                 return
 
             # Check if the URL and song title are valid
             if not CommandErrorHandler.check_url_song_correct(URL, song_title):
-                await interactions.response.send_message("No song found.")
+                await result_message.edit("No song found.")
                 return
 
             # Get the voice client
@@ -260,19 +264,19 @@ class SongSession:
             if vc.is_playing():
                 # Add the song to the queue
                 self.queue_operations.add_to_queue(URL, song_title, vc, song_duration, thumbnail)
-                await interactions.response.send_message(f"Added {song_title} to the queue.")
+                await result_message.edit(f"Added {song_title} to the queue.")
                 print("Added to queue")
             else:
                 # Send the now playing message
                 embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
-                await interactions.response.send_message(embed=embed)
+                await result_message.edit(embed=embed)
                 # Play the song
                 await self.play(URL, vc, None, song_title, song_duration, thumbnail)
 
         except Exception as e:
             # Handle any errors gracefully
             print(f"An error occurred when trying to play the song: {e}")
-            await interactions.response.send_message("An error occurred while processing your request.")
+            await result_message.edit("An error occurred while processing your request.")
             # Leave the channel if an error occurs
             await self.utility.leave(interactions)
             raise e

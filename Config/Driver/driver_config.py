@@ -61,7 +61,7 @@ def driver_setup():
         # Set up the driver options
         options = Options()
         # Set chromium as the binary location
-        options.binary_location = DriverConfig.BINARY_CONFIG
+        #options.binary_location = DriverConfig.BINARY_CONFIG
         # Keep the browser open after the script finishes executing (for debugging)
         #options.add_experimental_option('detach', True)
         # Run in headless mode (without opening a browser window)
