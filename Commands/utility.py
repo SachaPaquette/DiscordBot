@@ -142,7 +142,8 @@ class Utility():
         
         # Add profit/loss and balance
         embed.add_field(name="Result", value=field_value, inline=False)
-        embed.add_field(name="Balance", value=f"{balance} :coin:", inline=False)
+        # Add balance with 2 decimal places
+        embed.add_field(name="Balance", value=f"{"{:.2f}".format(balance)} :coin:", inline=False)
 
         # Add footer with additional information
         embed.set_footer(text="Feeling lucky? Spin again!")
@@ -243,4 +244,36 @@ class Utility():
     def is_command(self, message):
         # Check if the message is a command
         return message.startswith("/")
+    
+    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level:str, gun_float:float, weapon_name:str, weapon_pattern:float, weapon_image:str):
+        embed = discord.Embed(title="🎉 Case Opening Results 🎉", color=discord.Color.gold())
+        
+        # Add weapon name and pattern
+        embed.add_field(name="🔫 Weapon", value=f"**{weapon_name}** | *{weapon_pattern}*", inline=False)   
+        
+        # Add weapon image     
+        embed.set_thumbnail(url=weapon_image)
+        
+        # Add wear level
+        embed.add_field(name="🛠️ Wear Level", value=f"{wear_level}", inline=True)
+        
+        # Add user balance
+        embed.add_field(name="💰 Current Balance", value=f"${balance:.2f}", inline=True)
+        
+        # Add profit or loss
+        if profit > 0:
+            embed.add_field(name="📈 Profit", value=f"+${profit:.2f}", inline=True)
+        else:
+            embed.add_field(name="📉 Loss", value=f"-${-profit:.2f}", inline=True)
+        
+        # Add weapon price
+        embed.add_field(name="💵 Weapon Price", value=f"${float(prices):.2f}", inline=True)
+        
+        # Add gun float value
+        embed.add_field(name="📊 Float Value", value=f"{gun_float:.5f}", inline=True)
+    
+        return embed
+
+
+        
         

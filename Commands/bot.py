@@ -13,6 +13,7 @@ from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
 from Commands.gambling import Gambling, Slot9x9Machine
 from Commands.leaderboard import Leaderboard
+from Commands.case import Case
 from Config.config import conf
 
 
@@ -476,7 +477,7 @@ async def balance(interactions):
         raise e
  
 @bot.tree.command(name='slots', description='Play the slots.')
-async def slots(interactions):
+async def slots(interactions, bet: int):
     """
     Play the slots.
 
@@ -487,12 +488,32 @@ async def slots(interactions):
     - None
     """
     try:
-        slots = Slot9x9Machine()
+        slots = Slot9x9Machine(interactions.guild.id)
         # Call the slots function in Gambling
-        await slots.play(interactions)
+        await slots.play(interactions, bet)
     except Exception as e:
         logger.error(f"Error in the slots command: {e}")
         raise e
+
+@bot.tree.command(name="case", description="Open a Counter-Strike case.")
+async def case(interactions):
+    """
+    Open a Counter-Strike case.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        case = Case(interactions.guild.id)
+        # Call the case function in Gambling
+        await case.open_case(interactions)
+    except Exception as e:
+        logger.error(f"Error in the case command: {e}")
+        raise e
+    
 
 def main():
     """

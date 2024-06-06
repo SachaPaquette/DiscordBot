@@ -23,16 +23,6 @@ class Gambling():
         - user_id: The user id.
         """
         return interaction.user.id
-        
-    def roll_dice(self):
-        """
-        Simulates a dice roll.
-        
-        Returns:
-        - result: The result of the dice roll.
-        """
-        import random
-        return random.choice(["win", "lose"])
 
     def get_slot_symbols(self):
         symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣']
@@ -107,9 +97,12 @@ class Gambling():
         await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
             
 class Slot9x9Machine():
-    def __init__(self):
+    def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
         self.grid = []
+        self.database = Database.getInstance(server_id)
+        self.collection = self.database.get_collection(server_id)
+        self.users = {}
 
     def spin(self):
         self.grid = [[random.choice(self.reels) for _ in range(3)] for _ in range(3)]
@@ -146,15 +139,37 @@ class Slot9x9Machine():
 
         return total_payout
     
-    async def play(self, interactions):
-        slot_machine = Slot9x9Machine()
-        slot_machine.spin()
-        payout = slot_machine.check_winnings()
-        
-        Utility.create_slots_9x9_embed_message(slot_machine.grid, payout)
-        
-        if payout > 0:
-            await interactions.response.send_message(f'Congratulations! You won {payout} dollars!')
-        else:
-            await interactions.response.send_message('Better luck next time!')
-        return
+    async def play(self, interactions, bet: int):
+            if bet <= 0:
+                await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
+                return
+            
+            user_id = str(interactions.user.id)
+            user = self.database.get_user(interactions.guild.id, user_id)
+            
+            if user["balance"] < bet:
+                await interactions.response.send_message("You don't have enough money to bet that amount.")
+                return
+            
+            slot_machine = Slot9x9Machine()
+            slot_machine.spin()
+            payout = slot_machine.check_winnings()
+            
+            user["balance"] += (payout - bet)
+            
+            # Update the user's balance
+            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"])
+            
+            if payout > 0:
+                # Update the user's experience
+                self.database.update_user_experience(interactions.guild.id, user_id, payout)
+            
+            # Send initial message
+            result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
+            
+            # React to the message with slot symbols
+            result_message = await interactions.original_response()
+
+            # Edit the original message to include the result
+            embed = Utility.create_slots_9x9_embed_message(slot_machine.grid, bet, payout, user["balance"])
+            await result_message.edit(content=None, embed=embed)
