@@ -63,7 +63,6 @@ class Case():
             """
             # Use the rarity to get a weapon
             rarity = self.gamble_rarity()
-            print(rarity)
             possible_guns_list = []
             # Using the rarity obtained, get a weapon from this rarity in the case
             for case in self.cases:
@@ -97,7 +96,7 @@ class Case():
                     return skin
             return None
         except Exception as e:
-            logger.error(f"Error getting weapon information: {e}")
+            print(f"Error getting weapon information: {e}")
             return None
     
     def calculate_float(self, weapon):
@@ -168,7 +167,7 @@ class Case():
             else:
                 return 0
         except Exception as e:
-            logger.error(f"Error getting weapon price: {e}")
+            print(f"Error getting weapon price: {e}")
             return 0
 
     async def open_case(self, interactions):
@@ -228,7 +227,7 @@ class Case():
             await interactions.followup.send(embed=embed)
             
         except Exception as e:
-            logger.error(f"Error opening case: {e}")
+            print(f"Error opening case: {e}")
             await interactions.followup.send("An error occurred while opening the case.")
             return
         

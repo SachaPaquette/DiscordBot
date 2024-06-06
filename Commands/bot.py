@@ -197,6 +197,7 @@ async def play(interactions, url: str):
         # Leave the channel if an error occurs
         logger.error(
             f"An error occurred when trying to play the song. {e}")
+        await interactions.response.send_message("An error occurred while processing your request.")
         raise e
 
 @bot.tree.command(name='nowplaying', description='Display the current playing song.')
@@ -521,6 +522,7 @@ def main():
     """
     try:
         token = os.environ.get("DISCORD_TOKEN")
+        print(token)
         if token is None:
             raise Exception("No token found in the environment variables.")
         # Run the bot

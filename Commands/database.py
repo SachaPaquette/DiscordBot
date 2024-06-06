@@ -28,7 +28,7 @@ class Database():
                 self.collections = {}
                 
         except Exception as e:
-            logger.error(f"Error connecting to the database: {e}")
+            print(f"Error connecting to the database: {e}")
             raise e
 
             

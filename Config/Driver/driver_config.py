@@ -60,10 +60,12 @@ def driver_setup():
     try:
         # Set up the driver options
         options = Options()
+        # Set chromium as the binary location
+        options.binary_location = DriverConfig.BINARY_CONFIG
         # Keep the browser open after the script finishes executing (for debugging)
         #options.add_experimental_option('detach', True)
         # Run in headless mode (without opening a browser window)
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         # Disable logging and configure other options
         configure_browser_options(options, DriverConfig.USER_AGENTS, DriverConfig.CRX_PATH)
         # ChromeDriverManager will install the latest version of ChromeDriver
@@ -79,23 +81,3 @@ def driver_setup():
     except Exception as e:
         # Raise the exception
         raise e
-
-
-"""def driver_setup():
-    #options = Options()
-    options = uc.ChromeOptions()
-    options.add_argument("--log-level=3")
-    #options.add_argument("--headless")
-    options.headless = False
-    options.add_argument(f"user-agent={random.choice(Config.USER_AGENTS)}")
-    options.add_extension(Config.CRX_PATH)
-    options.add_argument(f'--load-extension={Config.EXTENSION_PATH}')
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument('--no-sandbox=False')
-    options.set_capability("detach", True) # Keep the browser open after the script finishes executing (for debugging)
-    # add proxy to the driver
-    #options.add_argument(f"--proxy-server={Config.PROXY_LIST}")
-    
-    driver = uc.Chrome(options=options)
-    
-    return driver"""
