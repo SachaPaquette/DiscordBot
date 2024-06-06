@@ -148,7 +148,8 @@ class Utility():
             # Add profit/loss and balance
             embed.add_field(name="Result", value=field_value, inline=False)
             # Add balance with 2 decimal places
-            embed.add_field(name="Balance", value=f"{"{:.2f}".format(balance)} :coin:", inline=False)
+            embed.add_field(name="Balance", value=f'{"{:.2f}".format(balance)} :coin:', inline=False)
+
 
             # Add footer with additional information
             embed.set_footer(text="Feeling lucky? Spin again!")
