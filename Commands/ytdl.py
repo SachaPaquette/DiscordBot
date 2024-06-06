@@ -3,7 +3,10 @@ from yt_dlp import YoutubeDL
 from dotenv import load_dotenv
 import asyncio
 import Config.config as conf
-
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("ytdl.py", conf.LOGS_PATH)
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)

@@ -3,10 +3,10 @@ from Commands.utility import Utility
 from Commands.database import Database
 from .UserProfile.user import UserCard
 class Leaderboard():
-    def __init__(self, server_id):
+    def __init__(self):
         self.utility = Utility()
         self.user_card = UserCard()
-        self.database = Database.getInstance(server_id)
+        self.database = Database.getInstance()
         
     
     # Display a leaderboard of all the users experience

@@ -2,6 +2,10 @@
 from Commands.music import SongSession
 import re, time
 from .Scripts import azlyrics
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("lyrics.py", conf.LOGS_PATH)
 class LyricsOperations: 
     def __init__(self, bot):
         self.bot = bot
@@ -15,7 +19,7 @@ class LyricsOperations:
             # Return the song title
             return match.group('title'), match.group('artist')
         except Exception as e:
-            print(f"Error while parsing song title: {e}")
+            logger.error(f"Error while parsing song title: {e}")
             return None
         
     async def get_lyrics(self, song_title):
@@ -30,7 +34,7 @@ class LyricsOperations:
             # Return the lyrics
             return self.fetch_lyrics.getLyrics(save=False)
         except Exception as e:
-            print(f"Error while getting lyrics: {e}")
+            logger.error(f"Error while getting lyrics: {e}")
             return None
         
         
@@ -59,4 +63,4 @@ class LyricsOperations:
 
         except Exception as e:
             await interactions.followup.send('No lyrics found.')
-            print(f"Error while searching for lyrics: {e}")
+            logger.error(f"Error while searching for lyrics: {e}")

@@ -8,7 +8,7 @@ import time
 class Gambling():
     
     def __init__(self, server_id):
-        self.database = Database.getInstance(server_id)
+        self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.users = {}
         
@@ -100,7 +100,7 @@ class Slot9x9Machine():
     def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
         self.grid = []
-        self.database = Database.getInstance(server_id)
+        self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.users = {}
 

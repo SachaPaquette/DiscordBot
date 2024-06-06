@@ -5,14 +5,17 @@ from bs4 import BeautifulSoup
 import re
 from Commands.utility import Utility
 from Config.Driver.driver_config import driver_setup
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("case.py", conf.LOGS_PATH)
 class Case():
     def __init__(self, server_id):
         with open("./Commands/Case/case.json", "r") as f:
             self.cases = json.load(f)
         self.case = self.get_random_case()
-        self.database = Database.getInstance(server_id)
+        self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-        self.users = {}
         self.rarity = {
             "Mil-Spec Grade": 0.7997,
             "Restricted": 0.1598,
@@ -26,9 +29,13 @@ class Case():
             "Well-Worn": (0.38,0.45),
             "Battle-Scarred": (0.45,1)
         }
+        # The price of a case
         self.case_price = 5
+        # Create a Utility object
         self.utility = Utility()
+        # Set the server id
         self.server_id = server_id
+        # Set the Selenium driver
         self.driver = driver_setup()
             
                  
@@ -80,15 +87,18 @@ class Case():
         Returns:
         - weapon_information: The information of the weapon.
         """
-        # From the weapon id, find the weapon information in skins.json
-        with open("./Commands/Case/skins.json", "r") as f:
-            skins = json.load(f)
-            
-        for skin in skins:
-            if skin["id"] == weapon["id"]:
-                return skin
-        return None
-    
+        try:   
+            # From the weapon id, find the weapon information in skins.json
+            with open("./Commands/Case/skins.json", "r") as f:
+                skins = json.load(f)
+                
+            for skin in skins:
+                if skin["id"] == weapon["id"]:
+                    return skin
+            return None
+        except Exception as e:
+            logger.error(f"Error getting weapon information: {e}")
+            return None
     
     def calculate_float(self, weapon):
         # Get the minimum and maximum float values
@@ -125,88 +135,102 @@ class Case():
         return f"https://skin.land/market/csgo/{weapon_name}-{weapon_pattern}-{wear_level}/"
     
     def get_weapon_price(self, weapon_name, weapon_pattern, wear_level):
-        # Get the URL of the weapon
-        url = self.get_url(weapon_name, weapon_pattern, wear_level)
-        # Open the URL
-        self.driver.get(url)
-        
-        # Get the page source
-        page_source = self.driver.page_source
-        # Create a BeautifulSoup object
-        soup = BeautifulSoup(page_source, "html.parser")
-        
-        # Get the weapon price from the page (class = skin-page__best-offer best-offer)
-        price_element = soup.find("div", class_=re.compile(r"skin-page__best-offer\s+best-offer"))
-        if price_element:
-            # Extract the site price
-            site_price_element = price_element.find("div", class_="best-offer__site-price-value")
-            if site_price_element:
-                site_price = site_price_element.get_text(strip=True).replace("$", "")
-            else:
-                site_price = "Site price not found"
+        try:
+                
+            # Get the URL of the weapon
+            url = self.get_url(weapon_name, weapon_pattern, wear_level)
+            # Open the URL
+            self.driver.get(url)
+            
+            # Get the page source
+            page_source = self.driver.page_source
+            # Create a BeautifulSoup object
+            soup = BeautifulSoup(page_source, "html.parser")
+            
+            # Get the weapon price from the page (class = skin-page__best-offer best-offer)
+            price_element = soup.find("div", class_=re.compile(r"skin-page__best-offer\s+best-offer"))
+            if price_element:
+                # Extract the site price
+                site_price_element = price_element.find("div", class_="best-offer__site-price-value")
+                if site_price_element:
+                    site_price = site_price_element.get_text(strip=True).replace("$", "")
+                else:
+                    site_price = "Site price not found"
 
-            # Extract the steam price
-            steam_price_element = price_element.find("div", class_="best-offer__steam-price-value")
-            if steam_price_element:
-                steam_price = steam_price_element.get_text(strip=True).replace("$", "")
-            else:
-                steam_price = "Steam price not found"
+                # Extract the steam price
+                steam_price_element = price_element.find("div", class_="best-offer__steam-price-value")
+                if steam_price_element:
+                    steam_price = steam_price_element.get_text(strip=True).replace("$", "")
+                else:
+                    steam_price = "Steam price not found"
 
-            return steam_price if steam_price != "Steam price not found" else site_price if site_price != "Site price not found" else 0
-        else:
+                return steam_price if steam_price != "Steam price not found" else site_price if site_price != "Site price not found" else 0
+            else:
+                return 0
+        except Exception as e:
+            logger.error(f"Error getting weapon price: {e}")
             return 0
-        
 
     async def open_case(self, interactions):
-        # Send a message that the case is being bought
-        await interactions.response.send_message("Buying case for $5...")
-        
-        user_id = interactions.user.id
-        
-        # Check if the user has enough balance to buy the case
-        user = self.database.get_user(self.server_id , user_id)
-        
-        if user["balance"] < self.case_price:
-            interactions.followup.send("Not enough balance")
-            return
-        
-        # Get a random weapon from the case
-        weapon = self.get_weapon_from_case()
-        
-        # Get the weapon information
-        weapon_info = self.get_weapon_information(weapon)
-        
-        # Calculate the float value of the weapon
-        gun_float = self.calculate_float(weapon_info)
-        
-        # Calculate the wear level of the weapon
-        wear_level = self.calculate_wear_level(gun_float)
-        
-        # Get the weapon name and pattern
-        weapon_name = self.get_weapon_name(weapon_info)
-        weapon_pattern = self.get_weapon_pattern(weapon_info)
-        
-        # Get the weapon price
-        prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level)
-        
-        # Adjust the profit
-        profit = float(prices) - self.case_price
-        
-        # Update the user's balance
-        user["balance"] += profit
-        
-        # Update the user's balance
-        self.database.update_user_balance(self.server_id,user_id, user["balance"])
-        
-        # Get the weapon image
-        weapon_image = self.get_weapon_image(weapon_info)
+        try:
+            
+            # Send a message that the case is being bought
+            await interactions.response.send_message("Buying case for $5...")
+            
+            user_id = interactions.user.id
+            
+            # Check if the user has enough balance to buy the case
+            user = self.database.get_user(self.server_id , user_id)
+            
+            if user["balance"] < self.case_price:
+                interactions.followup.send("Not enough balance")
+                return
+            
+            # Get a random weapon from the case
+            weapon = self.get_weapon_from_case()
+            
+            # Get the weapon information
+            weapon_info = self.get_weapon_information(weapon)
+            
+            # Calculate the float value of the weapon
+            gun_float = self.calculate_float(weapon_info)
+            
+            # Calculate the wear level of the weapon
+            wear_level = self.calculate_wear_level(gun_float)
+            
+            # Get the weapon name and pattern
+            weapon_name = self.get_weapon_name(weapon_info)
+            weapon_pattern = self.get_weapon_pattern(weapon_info)
+            
+            # Get the weapon price
+            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level)
+            
+            # Adjust the profit
+            profit = float(prices) - self.case_price
+            
+            # Update the user's balance
+            user["balance"] += profit
+            
+            # Update the user's balance
+            self.database.update_user_balance(self.server_id,user_id, user["balance"])
+            
+            # Get the weapon image
+            weapon_image = self.get_weapon_image(weapon_info)
 
-        # Create the embed message
-        embed = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image)
-        
-        # Send the embed message
-        await interactions.followup.send(embed=embed)
-        
+            # Create the embed message
+            embed = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image)
+            
+            if embed is None:
+                await interactions.followup.send("An error occurred while opening the case.")
+                return
+            
+            # Send the embed message
+            await interactions.followup.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error opening case: {e}")
+            await interactions.followup.send("An error occurred while opening the case.")
+            return
         
         
 

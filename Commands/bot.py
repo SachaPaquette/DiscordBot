@@ -412,7 +412,7 @@ async def leaderboard(interactions):
     """
     try:
         
-        leaderboard = Leaderboard(interactions.guild.id)
+        leaderboard = Leaderboard()
         # Call the leaderboard function in Leaderboard
         await leaderboard.leaderboard_command(interactions)
     except Exception as e:
@@ -431,7 +431,7 @@ async def rank(interactions):
     - None
     """
     try:
-        leaderboard = Leaderboard(interactions.guild.id)
+        leaderboard = Leaderboard()
         # Call the rank function in Gambling
         await leaderboard.rank_command(interactions)
     except Exception as e:

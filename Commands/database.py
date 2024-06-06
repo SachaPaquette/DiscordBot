@@ -4,28 +4,35 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from .UserProfile.user import User
 import re
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("database.py", conf.LOGS_PATH)
 # Connect to the database
 class Database():
     # Instatiate a singleton instance of the database
     __instance = None
     @staticmethod
-    def getInstance(server_id):
+    def getInstance():
         """ Static access method. """
         if Database.__instance == None:
-            Database(server_id)
+            Database()
         return Database.__instance
-    def __init__(self, server_id):
-        """ Virtually private constructor. """
-        if Database.__instance == None:
-            Database.__instance = self
-            self.client = MongoClient("mongodb://localhost:27017/")
-            self.db = self.client["discord"]
-            self.collections = {}
-            #self.connect(server_id)
-            
+    def __init__(self):
+        try:
+            """ Virtually private constructor. """
+            if Database.__instance == None:
+                Database.__instance = self
+                self.client = MongoClient("mongodb://localhost:27017/")
+                self.db = self.client["discord"]
+                self.collections = {}
+                
+        except Exception as e:
+            logger.error(f"Error connecting to the database: {e}")
+            raise e
 
             
-    def connect(self, server_id: str):
+    def connect(self):
         try:
             # Connect to the database
             self.client = MongoClient("mongodb://localhost:27017/")
@@ -56,7 +63,7 @@ class Database():
         # Insert a user into the database
         collection.insert_one(User(user_id, 100, 0).return_user())
         
-    def get_user(self,server_id, user_id):
+    def get_user(self, server_id, user_id):
         """
         Retrieves a user from the database.
         
@@ -79,7 +86,7 @@ class Database():
         return user
     
 
-    def update_user_balance(self,server_id, user_id, balance, update_last_work_time=False):
+    def update_user_balance(self, server_id, user_id, balance, update_last_work_time=False):
         """
         Updates the balance of a user.
         

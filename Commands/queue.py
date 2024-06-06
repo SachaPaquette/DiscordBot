@@ -2,7 +2,10 @@
 
 from collections import deque
 import random # Random is used to shuffle the queue
-
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("queue.py", conf.LOGS_PATH)
 
 class QueueOperations:
     # Initialize the queue attribute
@@ -46,7 +49,7 @@ class QueueOperations:
                 # Send the embed
                 await interactions.response.send_message(embed=embed)
             except Exception as e:
-                print(f"An error occurred when trying to display the queue. {e}")
+                logger.error(f"An error occurred when trying to display the queue. {e}")
                 raise e
         
     def clear_queue(self):
@@ -57,7 +60,7 @@ class QueueOperations:
             # Clear the queue
             self.queue.clear()
         except Exception as e:
-            print(f"Error while trying to clear the queue in queue.py: {e}")
+            logger.error(f"Error while trying to clear the queue in queue.py: {e}")
             return
         
     def add_to_queue(self, youtube_source, title, vc, song_duration, thumbnail):
@@ -85,7 +88,7 @@ class QueueOperations:
                 self.song_session.play_next(vc)
                 pass
         except Exception as e:
-            print(f"Error while trying to add to queue in queue.py: {e}")
+            logger.error(f"Error while trying to add to queue in queue.py: {e}")
             return
         
     def return_queue(self):
@@ -99,7 +102,7 @@ class QueueOperations:
             # Return the queue length
             return len(self.queue)
         except Exception as e:
-            print(f"Error while trying to return the queue in queue.py: {e}")
+            logger.error(f"Error while trying to return the queue in queue.py: {e}")
             return
     
     def check_queue_skipped_status(self, vc, skipped_status):
@@ -128,7 +131,7 @@ class QueueOperations:
             # Stop the song's audio
             vc.stop()
         except Exception as e:
-            print(f"Error in the check_queue_skipped_status function in queue.py: {e}")
+            logger.error(f"Error in the check_queue_skipped_status function in queue.py: {e}")
             return
         
     def get_next_song(self):
@@ -140,7 +143,6 @@ class QueueOperations:
             If the queue is empty or if any song information is missing, returns None for all values.
         """
         try:
-            print("Getting next song.")
             # Check if the queue is empty
             if self.return_queue() == 0:
                 return None, None
@@ -160,7 +162,7 @@ class QueueOperations:
                 print("Some song information is None.")
                 return None, None, None, None
         except Exception as e:
-            print(f"Error in the get_next_song function in queue.py: {e}")
+            logger.error(f"Error in the get_next_song function in queue.py: {e}")
             return None, None, None, None
 
 
@@ -191,7 +193,7 @@ class QueueOperations:
                 # Send a message that the queue was shuffled
                 await interactions.response.send_message("Shuffled the queue.")
             except Exception as e:
-                print(f"Error in the shuffle_queue_command function in queue.py: {e}")
+                logger.error(f"Error in the shuffle_queue_command function in queue.py: {e}")
                 return
         
     
@@ -222,5 +224,5 @@ class QueueOperations:
             self.queue.clear()
             await interactions.response.send_message("Cleared the queue.")
         except Exception as e:
-            print(f"An error occurred when trying to clear the queue. {e}")
+            logger.error(f"An error occurred when trying to clear the queue. {e}")
             raise e

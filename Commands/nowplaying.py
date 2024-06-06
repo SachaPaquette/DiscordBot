@@ -1,9 +1,10 @@
 import discord
 from Commands.utility import Utility
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("profanity.py", conf.LOGS_PATH)
 class NowPlaying():    
-    
-
-    
     async def nowplaying_command(self, interactions, session):
             """
             Retrieves and displays the currently playing song information.
@@ -38,5 +39,5 @@ class NowPlaying():
                 # Send the embed
                 await interactions.response.send_message(embed=embed)
             except Exception as e:
-                print(f"An error occurred when trying to display the song. {e}")
+                logger.error(f"An error occurred when trying to display the song. {e}")
                 raise e

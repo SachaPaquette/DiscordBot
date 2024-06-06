@@ -6,6 +6,10 @@ from Commands.queue import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.ytdl import YTDLSource
 from Commands.utility import Utility
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("music.py", conf.LOGS_PATH)
 # Load the .env file
 load_dotenv()
 
@@ -64,7 +68,7 @@ class SongSession:
                 # Stop the audio
                 vc.stop()
         except Exception as e:
-            print(f"Error at stop function in music.py: {e}")
+            logger.error(f"Error at stop function in music.py: {e}")
             return
 
 
@@ -91,7 +95,7 @@ class SongSession:
             # Send a message that the song was paused
             await interactions.response.send_message("Paused the current song.")
         except Exception as e:
-            print(f"An error occurred when trying to pause the song. {e}")
+            logger.error(f"An error occurred when trying to pause the song. {e}")
             raise e
 
 
@@ -121,7 +125,7 @@ class SongSession:
             # Send a message that the song was resumed
             await interactions.response.send_message("Resumed the current song.")
         except Exception as e:
-            print(f"An error occurred when trying to resume the song. {e}")
+            logger.error(f"An error occurred when trying to resume the song. {e}")
             raise e
 
         
@@ -136,7 +140,7 @@ class SongSession:
             # Return whether the voice client is playing audio
             return self.voice_client.is_playing()
         except Exception as e:
-            print(f"Error at is_playing function in music.py: {e}")
+            logger.error(f"Error at is_playing function in music.py: {e}")
             return False
 
 
@@ -164,7 +168,7 @@ class SongSession:
                 # Send a message saying that the song was skipped
                 await interactions.response.send_message("Skipped to the next song.")
         except Exception as e:
-            print(f"Error in the skip command: {e}")
+            logger.error(f"Error in the skip command: {e}")
             raise e
 
 
@@ -188,7 +192,7 @@ class SongSession:
             # Define the song thumbnail object
             self.thumbnail = song_thumbnail
         except Exception as e:
-            print(f"Error at define_song_info function in music.py: {e}")
+            logger.error(f"Error at define_song_info function in music.py: {e}")
             return
 
     async def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
@@ -211,7 +215,7 @@ class SongSession:
                 source, **conf.FFMPEG_OPTIONS)), after=after)
             self.source = discord.PCMVolumeTransformer(vc.source)
         except Exception as e:
-            print(f"Error at play function in music.py: {e}")
+            logger.error(f"Error at play function in music.py: {e}")
             return
 
     async def play_command(self,interactions,url, loop):
@@ -273,7 +277,7 @@ class SongSession:
         except Exception as e:
             # Leave the channel if an error occurs
             await self.utility.leave(interactions)
-            print(f"An error occurred when trying to play the song. {e}")
+            logger.error(f"An error occurred when trying to play the song. {e}")
             raise e
 
     async def play_next(self, vc):
@@ -310,7 +314,7 @@ class SongSession:
             self.define_song_info(
                 next_title, next_song_duration, next_song_thumbnail)
         except Exception as e:
-            print(f"Error while trying to play next song in music.py: {e}")
+            logger.error(f"Error while trying to play next song in music.py: {e}")
             return
 
     async def after_playing(self, error, vc):
@@ -326,7 +330,7 @@ class SongSession:
         """
         # Check if there was an error playing the song
         if error:
-            print(f"Error at after_playing function in music.py: {error}")
+            logger.error(f"Error at after_playing function in music.py: {error}")
         else:
             # Check if the skipped flag is False (if it is, the song ended naturally and was not skipped)
             if not self.skipped:
@@ -345,7 +349,7 @@ class SongSession:
             # Return the current song
             return self.current_song
         except Exception as e:
-            print(f"Error at get_song_title function in music.py: {e}")
+            logger.error(f"Error at get_song_title function in music.py: {e}")
             return None
 
     
@@ -375,6 +379,6 @@ class SongSession:
             # Send a message that the volume was changed
             await interactions.response.send_message(f"Changed the volume to {volume * 100}%")
         except Exception as e:
-            print(f"Error at change_volume function in music.py: {e}")
+            logger.error(f"Error at change_volume function in music.py: {e}")
             return
 

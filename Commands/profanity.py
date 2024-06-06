@@ -1,6 +1,11 @@
+# Used to check for profanity in messages and warn users
 from .Profanity.better_profanity import profane
 from Commands.utility import Utility
-# Used to check for profanity in messages and warn users
+from Config.logging import setup_logging
+from Config.config import conf
+# Create a logger for this file
+logger = setup_logging("profanity.py", conf.LOGS_PATH)
+
 class Profanity():
     def __init__(self, bot):
         self.bot = bot
@@ -26,7 +31,7 @@ class Profanity():
                 # Put a reaction on the user's message to warn them
                 await message.add_reaction("🚫")
         except Exception as e:
-            print(f"Error while handling message: {e}")
+            logger.error(f"Error while handling message: {e}")
             return
         
    
