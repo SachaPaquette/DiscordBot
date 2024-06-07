@@ -21,6 +21,7 @@ class Case():
             "Restricted": 0.1598,
             "Classified": 0.032,
             "Covert": 0.0064,
+            "Rare Special Item": 0.0026,
         }
         self.wear_levels = {
             "Factory New": (0.00,0.07),
@@ -55,15 +56,24 @@ class Case():
             return rarity
             
     def get_weapon_from_case(self):
-            """
-            Randomly selects a weapon from the case.
-            
-            Returns:
-            - weapon: The weapon that was selected.
-            """
-            # Use the rarity to get a weapon
-            rarity = self.gamble_rarity()
-            possible_guns_list = []
+        """
+        Randomly selects a weapon from the case.
+
+        Returns:
+        - weapon: The weapon that was selected.
+        """
+        # Use the rarity to get a weapon
+        rarity = self.gamble_rarity()
+        possible_guns_list = []
+        is_rare = False
+
+        # Check if the rarity is for a rare special item
+        if rarity == "Rare Special Item":
+            for case in self.cases:
+                if "contains_rare" in case:
+                    possible_guns_list.extend(case["contains_rare"])
+                    is_rare = True
+        else:
             # Using the rarity obtained, get a weapon from this rarity in the case
             for case in self.cases:
                 contains = case["contains"]
@@ -71,10 +81,11 @@ class Case():
                     if contain["rarity"]["name"] == rarity:
                         possible_guns_list.append(contain)
                         break
-            
-            # Get a random weapon from the possible guns list
-            weapon = random.choice(possible_guns_list)
-            return weapon
+
+        # Get a random weapon from the possible guns list
+        weapon = random.choice(possible_guns_list)
+        return weapon, is_rare
+
     
     def get_weapon_information(self, weapon):
         """
@@ -125,19 +136,25 @@ class Case():
     def get_weapon_image(self, weapon):
         return weapon["image"]
     
-    def get_url(self, weapon_name, weapon_pattern, wear_level):
+    def get_url(self, weapon_name, weapon_pattern, wear_level, is_rare):
         # Replace the spaces in the weapon name and pattern with dashes
         weapon_name = weapon_name.replace(" ", "-")
         weapon_pattern = weapon_pattern.replace(" ", "-")
         wear_level = wear_level.replace(" ", "-")
         
-        return f"https://skin.land/market/csgo/{weapon_name}-{weapon_pattern}-{wear_level}/"
+        # Construct the base URL
+        base_url = "https://skin.land/market/csgo/"
+        
+        # Add special URL if the weapon is rare, else return the normal URL
+        if is_rare:
+            return f"{base_url}★-{weapon_name}-{weapon_pattern}-{wear_level}/"
+        return f"{base_url}{weapon_name}-{weapon_pattern}-{wear_level}/"
     
-    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level):
+    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare):
         try:
                 
             # Get the URL of the weapon
-            url = self.get_url(weapon_name, weapon_pattern, wear_level)
+            url = self.get_url(weapon_name, weapon_pattern, wear_level, is_rare)
             # Open the URL
             self.driver.get(url)
             
@@ -169,6 +186,17 @@ class Case():
         except Exception as e:
             print(f"Error getting weapon price: {e}")
             return 0
+        
+    def add_experience(self, user_id, payout):
+        if payout < 0:
+            return
+        # Get the user
+        user = self.database.get_user(self.server_id, user_id)
+        # Update the user's experience  
+        self.database.update_user_experience(self.server_id, user_id, payout)
+        
+        
+        
 
     async def open_case(self, interactions):
         try:
@@ -186,7 +214,7 @@ class Case():
                 return
             
             # Get a random weapon from the case
-            weapon = self.get_weapon_from_case()
+            weapon, is_rare = self.get_weapon_from_case()
             
             # Get the weapon information
             weapon_info = self.get_weapon_information(weapon)
@@ -202,7 +230,7 @@ class Case():
             weapon_pattern = self.get_weapon_pattern(weapon_info)
             
             # Get the weapon price
-            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level)
+            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare)
             
             # Adjust the profit
             profit = float(prices) - self.case_price
@@ -212,6 +240,9 @@ class Case():
             
             # Update the user's balance
             self.database.update_user_balance(self.server_id,user_id, user["balance"])
+            
+            # Add experience to the user
+            self.add_experience(user_id, profit)
             
             # Get the weapon image
             weapon_image = self.get_weapon_image(weapon_info)
