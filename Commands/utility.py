@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from Config.logging import setup_logging
 from Config.config import conf
+import matplotlib.pyplot as plt
 # Create a logger for this file
 logger = setup_logging("utility.py", conf.LOGS_PATH)
 class Utility():
@@ -298,8 +299,13 @@ class Utility():
             
             # Add gun float value
             embed.add_field(name="📊 Float Value", value=f"**{gun_float:.5f}**", inline=True)
-        
-            return embed
+
+            
+            # Add the graph to the embed message that is stored in ./Case/graph.png
+            file = discord.File("./Commands/Case/graph.png", filename="graph.png")
+            embed.set_image(url="attachment://graph.png")
+            
+            return embed, file
 
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in case.py: {e}")
@@ -320,8 +326,39 @@ class Utility():
         embed.add_field(name="Price", value=f"$5", inline=True)
         
         return embed
-        
-        
+    
+    def create_open_case_graph_skin_prices(self, prices):
+        # Extract time frames and price values
+        time_frames = list(prices['steam'].keys())
+        price_values = list(prices['steam'].values())
+
+        # Reorder time frames and price values
+        time_frames = time_frames[::-1]
+        price_values = price_values[::-1]
+
+        # Set a custom style
+        plt.style.use('dark_background')
+
+        # Create the line graph
+        plt.figure(figsize=(10, 6))
+        plt.plot(time_frames, price_values, marker='o', color='red', linestyle='-', linewidth=1, markersize=8)
+
+        # Add titles and labels
+        plt.title('Steam Average Prices Over Different Time Periods', fontsize=16)
+        plt.xlabel('Time Period', fontsize=12)
+        plt.ylabel('Average Price', fontsize=12)
+
+        # Display values on top of the points
+        for i, price in enumerate(price_values):
+            plt.text(i, price + 0.02, f'{price:.4f}', ha='center', va='bottom', fontsize=10)
+
+        # Show the plot
+        plt.grid(True)  # Adding grid for better readability
+
+        # Save the plot as an image file
+        plt.savefig('./Commands/Case/graph.png')
+        plt.close()
+            
         
     def bot_check_session(self, session):
         # Check if the song session is None

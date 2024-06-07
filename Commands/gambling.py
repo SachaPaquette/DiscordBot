@@ -84,7 +84,7 @@ class Gambling():
             user = self.database.get_user(interactions.guild.id,user_id)
             
             
-            await interactions.response.send_message(f'Your balance is {user["balance"]} dollars.')
+            await interactions.response.send_message(f'Your balance is {user["balance"]:.2f} dollars.')
         except Exception as e:
             logger.error(f"Error in the balance function in gambling.py: {e}")
             return
@@ -94,9 +94,6 @@ class Gambling():
             # Simulate working and gives a random amount of money
             user_id = self.get_user_id(interactions)
             user = self.database.get_user(interactions.guild.id,user_id)
-
-    
-            
             # Check if the user has worked in the last 10 minutes
             if "last_work" in user:
                 if user["last_work"] + 600 > time.time():

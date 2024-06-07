@@ -153,6 +153,29 @@ class Case():
             return f"{base_url}★-{weapon_name}-{weapon_pattern}-{wear_level}/"
         return f"{base_url}{weapon_name}-{weapon_pattern}-{wear_level}/"
     
+    
+    
+    def get_weapon_price_test(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
+        if is_stattrak:
+            weapon_name = f"StatTrak™ {weapon_name}"
+            
+        if is_rare:
+            weapon_name = f"★ {weapon_name}"
+        # Create a name for the weapon (assemble all the parameters)
+        
+        
+        weapon_title = f"{weapon_name} | {weapon_pattern} ({wear_level})"
+        print(f"Weapon title: {weapon_title}")
+        # Find the weapon in latest_data.json
+        with open("./Commands/Case/latest_data.json", "r") as f:
+            latest_date = json.load(f)
+        
+        # Get the weapon price
+        if weapon_title in latest_date:
+            return latest_date[weapon_title]
+        
+        return 0
+    
     def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         try:
                 
@@ -206,7 +229,28 @@ class Case():
         return random.random() < 0.1
         
 
+    def is_weapon_price_null(self, weapon_price):
+        # Define the order of time periods
+        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
 
+        # Iterate over time periods
+        for i in range(len(time_periods) - 1):
+            current_period = time_periods[i]
+            next_period = time_periods[i + 1]
+
+            # Check if the current period price is null
+            if weapon_price["steam"][current_period] is None:
+                # If it's null, update it with the next period price if available
+                weapon_price["steam"][current_period] = weapon_price["steam"][next_period]
+
+        # Check if the last period price is null
+        if weapon_price["steam"]["last_90d"] is None:
+            # If it's null, update it with a default value (e.g., 0)
+            weapon_price["steam"]["last_90d"] = 0  # Or another default value
+
+        return weapon_price
+
+ 
     async def open_case(self, interactions):
         try:
             embed_first_message = self.utility.create_open_case_embed_message(self.case)
@@ -219,7 +263,7 @@ class Case():
             user = self.database.get_user(self.server_id , user_id)
             
             if user["balance"] < self.case_price:
-                interactions.followup.send("Not enough balance")
+                await interactions.followup.send("Not enough balance")
                 return
             
             # Get a random weapon from the case
@@ -242,10 +286,13 @@ class Case():
             is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
             
             # Get the weapon price
-            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
+            prices = self.is_weapon_price_null(self.get_weapon_price_test(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
+            weapon_price = prices["steam"]["last_24h"]
             
+ 
+            self.utility.create_open_case_graph_skin_prices(prices)
             # Adjust the profit
-            profit = float(prices) - self.case_price
+            profit = float(weapon_price) - self.case_price
             
             # Update the user's balance
             user["balance"] += profit
@@ -260,14 +307,14 @@ class Case():
             weapon_image = self.get_weapon_image(weapon_info)
 
             # Create the embed message
-            embed = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak)
+            embed, file  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak)
             
-            if embed is None:
+            if embed is None or file is None:
                 await interactions.followup.send("An error occurred while opening the case.")
                 return
             
             # Send the embed message
-            await interactions.followup.send(embed=embed)
+            await interactions.followup.send(embed=embed, file=file)
             
         except Exception as e:
             print(f"Error opening case: {e}")
