@@ -136,7 +136,7 @@ class Case():
     def get_weapon_image(self, weapon):
         return weapon["image"]
     
-    def get_url(self, weapon_name, weapon_pattern, wear_level, is_rare):
+    def get_url(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         # Replace the spaces in the weapon name and pattern with dashes
         weapon_name = weapon_name.replace(" ", "-")
         weapon_pattern = weapon_pattern.replace(" ", "-")
@@ -145,16 +145,19 @@ class Case():
         # Construct the base URL
         base_url = "https://skin.land/market/csgo/"
         
+        if is_stattrak:
+            weapon_name = f"stattrak-{weapon_name}"
+        
         # Add special URL if the weapon is rare, else return the normal URL
         if is_rare:
             return f"{base_url}★-{weapon_name}-{weapon_pattern}-{wear_level}/"
         return f"{base_url}{weapon_name}-{weapon_pattern}-{wear_level}/"
     
-    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare):
+    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         try:
                 
             # Get the URL of the weapon
-            url = self.get_url(weapon_name, weapon_pattern, wear_level, is_rare)
+            url = self.get_url(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
             # Open the URL
             self.driver.get(url)
             
@@ -195,8 +198,14 @@ class Case():
         # Update the user's experience  
         self.database.update_user_experience(self.server_id, user_id, payout)
         
+    def can_be_stattrak(self, weapon):
+        return weapon["stattrak"]
+    
+    def roll_stattrak(self):
+        # There is a 10% chance that the weapon will be stattrak
+        return random.random() < 0.1
         
-        
+
 
     async def open_case(self, interactions):
         try:
@@ -229,8 +238,10 @@ class Case():
             weapon_name = self.get_weapon_name(weapon_info)
             weapon_pattern = self.get_weapon_pattern(weapon_info)
             
+            is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
+            
             # Get the weapon price
-            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare)
+            prices = self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
             
             # Adjust the profit
             profit = float(prices) - self.case_price
@@ -248,7 +259,7 @@ class Case():
             weapon_image = self.get_weapon_image(weapon_info)
 
             # Create the embed message
-            embed = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image)
+            embed = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak)
             
             if embed is None:
                 await interactions.followup.send("An error occurred while opening the case.")

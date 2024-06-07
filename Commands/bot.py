@@ -503,7 +503,7 @@ async def give(interactions, member: discord.Member, amount: int):
     try:
         gambling = Gambling(interactions.guild.id)
         # Call the give function in Gambling
-        await gambling.give(interactions, amount, member)
+        await gambling.give(interactions, member, amount)
     except Exception as e:
         logger.error(f"Error in the give command: {e}")
         raise e

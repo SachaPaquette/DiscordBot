@@ -112,7 +112,6 @@ class Gambling():
             logger.error(f"Error in the work function in gambling.py: {e}")
             return
         
-    # TODO test this function
     async def give(self, interactions, destination_user: discord.Member, amount: int):
         try:
             if amount <= 0:

@@ -264,10 +264,13 @@ class Utility():
         # Check if the message is a command
         return message.startswith("/")
     
-    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level:str, gun_float:float, weapon_name:str, weapon_pattern:float, weapon_image:str):
+    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level:str, gun_float:float, weapon_name:str, weapon_pattern:float, weapon_image:str, is_stattrak:bool):
         try:
             embed = discord.Embed(title="🎉 Case Opening Results 🎉", color=discord.Color.gold())
             
+            if is_stattrak:
+                weapon_name = "StatTrak™ " + weapon_name
+                
             # Add weapon name and pattern
             embed.add_field(name="🔫 Weapon", value=f"**{weapon_name}** | *{weapon_pattern}*", inline=False)   
             
