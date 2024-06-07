@@ -302,3 +302,8 @@ class Utility():
             return None
         
         
+    def bot_check_session(self, session):
+        # Check if the song session is None
+        if session is None:
+            return False
+        return True

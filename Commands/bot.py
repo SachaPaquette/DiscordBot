@@ -39,8 +39,6 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 
 session = None
 
-
-
 # Create an instance of QueueOperations to handle the music queue
 queue_operations = QueueOperations(session)
 
@@ -164,13 +162,15 @@ async def ping(interactions, username: discord.User):
 
 @bot.tree.command(name='skip', description='Skip the current song.')
 async def skip(interactions):
-    try:
-        # Call the skip function in SongSession
-        await session.skip(interactions)
-    except Exception as e:
-        logger.error(f"Error in the skip command: {e}")
-        raise e
-
+    if utility.bot_check_session(session):   
+        try:
+            # Call the skip function in SongSession
+            await session.skip(interactions)
+        except Exception as e:
+            logger.error(f"Error in the skip command: {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently playing.")
 @bot.tree.command(name='play', description='Play a song.')
 async def play(interactions, url: str):
     """
@@ -202,22 +202,27 @@ async def play(interactions, url: str):
 
 @bot.tree.command(name='nowplaying', description='Display the current playing song.')
 async def nowplaying(interactions):
-    try:
-        await playing_operations.nowplaying_command(interactions, session)
-    except Exception as e:
-        logger.error(
-            f"An error occurred when trying to display the song. {e}")
-        raise e
-
+    if utility.bot_check_session(session):
+        try:
+            await playing_operations.nowplaying_command(interactions, session)
+        except Exception as e:
+            logger.error(
+                f"An error occurred when trying to display the song. {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently playing.")
 @bot.tree.command(name='lyrics', description='Display the lyrics of the current song.')
 async def lyrics(interactions):
-    try:
-        await lyrics_operations.lyrics_command(interactions, session)
-    except Exception as e:
-        logger.error(
-            f"An error occurred when trying to display the lyrics. {e}")
-        raise e
-
+    if utility.bot_check_session(session):
+        try:
+            await lyrics_operations.lyrics_command(interactions, session)
+        except Exception as e:
+            logger.error(
+                f"An error occurred when trying to display the lyrics. {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently playing.")
+        
 @bot.tree.command(name='queue', description='Display the queue.')
 async def queue(interactions):
     """
@@ -269,13 +274,15 @@ async def pause(interactions):
     Returns:
     None
     """
-    try:
-        await session.pause_command(interactions)
-    except Exception as e:
-        logger.error(
-            f"An error occurred when trying to pause the song. {e}")
-        raise e
-
+    if utility.bot_check_session(session):
+        try:     
+            await session.pause_command(interactions)
+        except Exception as e:
+            logger.error(
+                f"An error occurred when trying to pause the song. {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently playing.")
 @bot.tree.command(name='resume', description='Resume the current song.')
 async def resume(interactions):
     """
@@ -291,13 +298,15 @@ async def resume(interactions):
     Returns:
     - None
     """
-    try:
-        await session.resume_command(interactions)
-    except Exception as e:
-        logger.error(
-            f"An error occurred when trying to resume the song. {e}")
-        raise e
-
+    if utility.bot_check_session(session):
+        try:
+            await session.resume_command(interactions)
+        except Exception as e:
+            logger.error(
+                f"An error occurred when trying to resume the song. {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently paused.")
 @bot.tree.command(name='shuffle', description='Shuffle the queue.')
 async def shuffle(interactions):
     """
@@ -338,13 +347,15 @@ async def volume(interactions, volume: int):
     Returns:
     - None
     """
-    try:
-        # Call the change volume function in SongSession
-        await session.change_volume(volume, interactions)
-    except Exception as e:
-        logger.error(f"Error in the volume command: {e}")
-        raise e
-
+    if utility.bot_check_session(session):
+        try:
+            # Call the change volume function in SongSession
+            await session.change_volume(volume, interactions)
+        except Exception as e:
+            logger.error(f"Error in the volume command: {e}")
+            raise e
+    else:
+        await interactions.response.send_message("No song is currently playing.")
 @bot.tree.command(name="userinfo", description="Get information about a user.")
 async def user_information(interactions,*, member: discord.Member = None):
     """

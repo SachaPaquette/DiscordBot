@@ -42,6 +42,11 @@ class LyricsOperations:
     async def lyrics_command(self, interactions, song_session):
         """Searches for lyrics of the song you want"""
         try:
+            # Check if the song session is None
+            if song_session is None:
+                await interactions.response.send_message('No song is currently playing.')
+                return
+            
             # Send a message that the bot is searching for lyrics (since this command takes a while to execute and the bot will timeout if it doesn't send a message within a couple of seconds)
             await interactions.response.send_message("Searching for lyrics...")
             
