@@ -21,7 +21,6 @@ class Profanity():
             #TODO Make sure the message is a command otherwise people can abuse this
             # Ignore message that is a command
             
-            
             # Check that it is not an emoji reaction (:emoji:)
             if self.utility.is_emoji(message.content):
                 return

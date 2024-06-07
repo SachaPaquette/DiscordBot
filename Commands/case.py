@@ -238,6 +238,7 @@ class Case():
             weapon_name = self.get_weapon_name(weapon_info)
             weapon_pattern = self.get_weapon_pattern(weapon_info)
             
+            # Check if the weapon can be stattrak and roll for it
             is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
             
             # Get the weapon price

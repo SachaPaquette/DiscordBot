@@ -166,8 +166,8 @@ class Utility():
             padding_title = "⠀" * 4
             # Create the embed message with a vibrant color and a dynamic title
             embed = discord.Embed(
-                title=f"{padding_title}🎰 3x3 Slots Extravaganza 🎰",
-                description=f"{padding_title}🔥 Feel the thrill of the spin! 🔥",
+                title=f"{padding_title}🎰 3x3 Slots 🎰",
+                description=f"{padding_title}🔥 Try your luck! 🔥",
                 color=discord.Color.gold()
             )
             padding = "⠀" * 8
@@ -244,7 +244,7 @@ class Utility():
             embed.add_field(name="Your Name", value=f"{interactions.user.name}", inline=False)
             
             # Add the user's rank to the embed message
-            embed.add_field(name="Your level", value=f"{rank}", inline=False)
+            embed.add_field(name="Your level", value=f"**{rank}**", inline=False)
             
             return embed
         
@@ -257,8 +257,12 @@ class Utility():
         return message.content.split()[0][1:] in commands
     
     def is_emoji(self, message):
-        # Check if the message is an emoji reaction
-        return message.startswith(":") and message.endswith(":")
+        # Check if the message is a custom Discord emoji reaction
+        if message.startswith("<:") and message.endswith(">"):
+            parts = message[2:-1].split(":")
+            return len(parts) == 2 and parts[1].isdigit()
+        return False
+
     
     def is_command(self, message):
         # Check if the message is a command
@@ -278,22 +282,22 @@ class Utility():
             embed.set_thumbnail(url=weapon_image)
             
             # Add wear level
-            embed.add_field(name="🛠️ Wear Level", value=f"{wear_level}", inline=True)
+            embed.add_field(name="🛠️ Wear Level", value=f"**{wear_level}**", inline=True)
             
             # Add user balance
-            embed.add_field(name="💰 Current Balance", value=f"${balance:.2f}", inline=True)
+            embed.add_field(name="💰 Current Balance", value=f"**${balance:.2f}**", inline=True)
             
             # Add profit or loss
             if profit > 0:
-                embed.add_field(name="📈 Profit", value=f"+${profit:.2f}", inline=True)
+                embed.add_field(name="📈 Profit", value=f"+$**{profit:.2f}**", inline=True)
             else:
-                embed.add_field(name="📉 Loss", value=f"-${-profit:.2f}", inline=True)
+                embed.add_field(name="📉 Loss", value=f"-$**{-profit:.2f}**", inline=True)
             
             # Add weapon price
-            embed.add_field(name="💵 Weapon Price", value=f"${float(prices):.2f}", inline=True)
+            embed.add_field(name="💵 Weapon Price", value=f"$**{float(prices):.2f}**", inline=True)
             
             # Add gun float value
-            embed.add_field(name="📊 Float Value", value=f"{gun_float:.5f}", inline=True)
+            embed.add_field(name="📊 Float Value", value=f"**{gun_float:.5f}**", inline=True)
         
             return embed
 
