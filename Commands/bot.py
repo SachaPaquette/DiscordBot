@@ -110,7 +110,7 @@ async def on_message(message):
         logger.error(f"Error in the on message event: {e}")
         raise e
 
-@bot.tree.command(name='health', description='Displays all the available commands.')
+@bot.tree.command(name='health', description='Display information about the bot.')
 async def health(interactions):
     """
     Check if the bot is alive and provide detailed health information.
@@ -246,7 +246,6 @@ async def queue(interactions):
 
 @bot.tree.command(name="clear", description="Clear the music queue.")
 async def clear(interactions):
-
     """
     This command clears the queue. It checks if the bot is currently playing music and if there are songs in the queue before calling the clear function from queue operations. 
 
@@ -488,6 +487,28 @@ async def balance(interactions):
         logger.error(f"Error in the balance command: {e}")
         raise e
  
+@bot.tree.command(name="give", description="Give money to another user.")
+async def give(interactions, member: discord.Member, amount: int):
+    """
+    Give money to another user.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+    - amount (int): The amount of money to give.
+    - member (discord.Member): The member to give the money to.
+
+    Returns:
+    - None
+    """
+    try:
+        gambling = Gambling(interactions.guild.id)
+        # Call the give function in Gambling
+        await gambling.give(interactions, amount, member)
+    except Exception as e:
+        logger.error(f"Error in the give command: {e}")
+        raise e
+
+
 @bot.tree.command(name='slots', description='Play the slots.')
 async def slots(interactions, bet: int):
     """

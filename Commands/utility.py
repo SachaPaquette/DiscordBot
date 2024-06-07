@@ -161,40 +161,37 @@ class Utility():
         
     
     @staticmethod
-    def create_slots_9x9_embed_message(grid, payout):
+    def create_slots_9x9_embed_message(grid, bet, payout, balance):
         try:
-            
-            """
-            Create an embed message for the 9x9 slot machine game result.
-
-            Parameters:
-            - grid (list): The grid representing the slot machine result.
-            - payout (int): The payout amount.
-
-            Returns:
-            - discord.Embed: The embed message.
-            """
-            # Create the embed message
+            padding_title = "⠀" * 4
+            # Create the embed message with a vibrant color and a dynamic title
             embed = discord.Embed(
-                title="Slot Machine Result",
-                description="Here's the result of the 9x9 slot machine game:",
-                color=discord.Color.blue()
+                title=f"{padding_title}🎰 3x3 Slots Extravaganza 🎰",
+                description=f"{padding_title}🔥 Feel the thrill of the spin! 🔥",
+                color=discord.Color.gold()
             )
+            padding = "⠀" * 8
+            # Add each row with emojis to represent the slot items
+            for i, row in enumerate(grid):
+                row_with_emojis = f"{padding}║ " + " ║ ".join(row) + " ║"
+                embed.add_field(name="\u200b", value=row_with_emojis, inline=False)
 
-            # Add the grid to the embed message
-            for row in grid:
-                embed.add_field(name="\u200b", value=" | ".join(row), inline=False)
+            # Format the bet, payout, and balance details with bold text and emojis
+            embed.add_field(name="💸 Bet Amount", value=f"**{bet}** coins", inline=True)
+            embed.add_field(name="💰 Payout", value=f"**{payout}** coins", inline=True)
+            embed.add_field(name="💼 New Balance", value=f"**{balance}** coins", inline=True)
 
-            # Add the payout amount to the embed message
+            # Add a celebratory or consoling message based on the payout
             if payout > 0:
-                embed.add_field(name="Congratulations!", value=f"You won {payout} dollars!", inline=False)
+                embed.add_field(name=f"{padding_title}🎉 Congratulations! 🎉", value=f"{padding_title}You've won **{payout}** dollars! 🥳", inline=False)
             else:
-                embed.add_field(name="Better luck next time!", value="\u200b", inline=False)
+                embed.add_field(name=f"{padding_title}💔 Better luck next time! 💔", value=f"{padding_title}A gambler never gives up! 🍀", inline=False)
 
             return embed
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in slots.py: {e}")
             return None
+
         
     async def create_leaderboard_embed(self, interactions, users):
         try:

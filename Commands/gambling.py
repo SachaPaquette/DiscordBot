@@ -5,6 +5,7 @@ import random
 import time
 from Config.logging import setup_logging
 from Config.config import conf
+import discord
 # Create a logger for this file
 logger = setup_logging("gambling.py", conf.LOGS_PATH)
 
@@ -111,6 +112,33 @@ class Gambling():
             logger.error(f"Error in the work function in gambling.py: {e}")
             return
         
+    # TODO test this function
+    async def give(self, interactions, destination_user: discord.Member, amount: int):
+        try:
+            if amount <= 0:
+                await interactions.response.send_message(f'{interactions.user.mention}, you must give a positive amount.')
+                return
+                
+            giving_user_id = self.get_user_id(interactions)
+            user = self.database.get_user(interactions.guild.id, giving_user_id)
+            
+            if user["balance"] < amount:
+                await interactions.response.send_message("You don't have enough money to give that amount.")
+                return
+                
+            user["balance"] -= amount
+            self.database.update_user_balance(interactions.guild.id, giving_user_id, user["balance"])
+            
+            receiving_user = self.database.get_user(interactions.guild.id, destination_user.id)
+            receiving_user["balance"] += amount
+            self.database.update_user_balance(interactions.guild.id, destination_user.id, receiving_user["balance"])
+            
+            await interactions.response.send_message(f'{interactions.user.mention} gave {destination_user.mention} {amount} dollars.')
+        except Exception as e:
+            logger.error(f"Error in the give function in gambling.py: {e}")
+            return
+
+        
 class Slot9x9Machine():
     def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
@@ -118,6 +146,7 @@ class Slot9x9Machine():
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.users = {}
+        self.server_id = server_id
 
     def spin(self):
         self.grid = [[random.choice(self.reels) for _ in range(3)] for _ in range(3)]
@@ -166,9 +195,9 @@ class Slot9x9Machine():
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
                 return
             
-            slot_machine = Slot9x9Machine()
-            slot_machine.spin()
-            payout = slot_machine.check_winnings()
+            
+            self.spin()
+            payout = self.check_winnings()
             
             user["balance"] += (payout - bet)
             
@@ -186,5 +215,5 @@ class Slot9x9Machine():
             result_message = await interactions.original_response()
 
             # Edit the original message to include the result
-            embed = Utility.create_slots_9x9_embed_message(slot_machine.grid, bet, payout, user["balance"])
+            embed = Utility.create_slots_9x9_embed_message(self.grid, bet, payout, user["balance"])
             await result_message.edit(content=None, embed=embed)
