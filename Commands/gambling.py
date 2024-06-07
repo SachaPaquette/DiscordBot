@@ -188,8 +188,8 @@ class Slot9x9Machine():
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
             
-            user_id = str(interactions.user.id)
-            user = self.database.get_user(interactions.guild.id, user_id)
+            
+            user = self.database.get_user(interactions.guild.id, interactions.user.id)
             
             if user["balance"] < bet:
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
@@ -202,11 +202,11 @@ class Slot9x9Machine():
             user["balance"] += (payout - bet)
             
             # Update the user's balance
-            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"])
+            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"])
             
             if payout > 0:
                 # Update the user's experience
-                self.database.update_user_experience(interactions.guild.id, user_id, payout)
+                self.database.update_user_experience(interactions.guild.id, interactions.user.id, payout)
             
             # Send initial message
             result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)

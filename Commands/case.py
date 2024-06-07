@@ -200,9 +200,9 @@ class Case():
 
     async def open_case(self, interactions):
         try:
-            
+            embed_first_message = self.utility.create_open_case_embed_message(self.case)
             # Send a message that the case is being bought
-            await interactions.response.send_message("Buying case for $5...")
+            await interactions.response.send_message(embed=embed_first_message, ephemeral=True)
             
             user_id = interactions.user.id
             

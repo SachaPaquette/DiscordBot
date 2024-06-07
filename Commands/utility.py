@@ -298,6 +298,23 @@ class Utility():
             logger.error(f"Error while trying to create an embed message in case.py: {e}")
             return None
         
+    def create_open_case_embed_message(self, case):
+        # find the case image
+        case_image = case["image"]
+        
+        # Create an embed message with the case image
+        embed = discord.Embed(title="🎉 Case Opening 🎉", color=discord.Color.gold())
+        
+        # Add the case image to the embed message
+        embed.set_image(url=case_image)
+        # Add the case name to the embed message
+        embed.add_field(name="Case", value=case["name"], inline=False)
+        # Add a field for the price of the case to the embed message
+        embed.add_field(name="Price", value=f"$5", inline=True)
+        
+        return embed
+        
+        
         
     def bot_check_session(self, session):
         # Check if the song session is None
