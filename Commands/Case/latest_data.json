@@ -1,0 +1,802 @@
+{
+    "Desert Eagle | Urban DDPAT (Field-Tested)": {
+        "steam": {
+            "last_24h": 3.626571428571428,
+            "last_7d": 3.437201117318436,
+            "last_30d": 3.041260960334029,
+            "last_90d": 2.7473163471241175
+        }
+    },
+    "Desert Eagle | Urban DDPAT (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 20.195749999999997,
+            "last_30d": 20.766692307692306,
+            "last_90d": 18.543736111111116
+        }
+    },
+    "Desert Eagle | Urban DDPAT (Minimal Wear)": {
+        "steam": {
+            "last_24h": 3.9314545454545455,
+            "last_7d": 3.843835294117648,
+            "last_30d": 3.8542191780821926,
+            "last_90d": 3.4533782798833803
+        }
+    },
+    "Souvenir Desert Eagle | Urban DDPAT (Field-Tested)": {
+        "steam": {
+            "last_24h": 0.7918000000000001,
+            "last_7d": 0.6670159999999996,
+            "last_30d": 0.6913170591614015,
+            "last_90d": 0.7591389589905378
+        }
+    },
+    "Souvenir Desert Eagle | Urban DDPAT (Minimal Wear)": {
+        "steam": {
+            "last_24h": 4.259099999999999,
+            "last_7d": 2.5911372549019602,
+            "last_30d": 2.5792811244979945,
+            "last_90d": 2.6253589324618773
+        }
+    },
+    "Desert Eagle | Urban DDPAT (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 2.751727272727273,
+            "last_7d": 2.7942127659574467,
+            "last_30d": 2.759228915662651,
+            "last_90d": 2.542038139534883
+        }
+    },
+    "Desert Eagle | Urban DDPAT (Well-Worn)": {
+        "steam": {
+            "last_24h": 2.9410000000000003,
+            "last_7d": 2.776666666666666,
+            "last_30d": 2.79493396226415,
+            "last_90d": 2.6404288577154307
+        }
+    },
+    "Souvenir Desert Eagle | Urban DDPAT (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 20.643,
+            "last_30d": 19.476636363636363,
+            "last_90d": 16.864599999999996
+        }
+    },
+    "Souvenir Desert Eagle | Urban DDPAT (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 0.7305294117647059,
+            "last_7d": 0.9918018867924524,
+            "last_30d": 0.8204282608695656,
+            "last_90d": 0.8555928439235057
+        }
+    },
+    "Souvenir Desert Eagle | Urban DDPAT (Well-Worn)": {
+        "steam": {
+            "last_24h": 1.0627499999999999,
+            "last_7d": 1.0740256410256415,
+            "last_30d": 1.071729622266402,
+            "last_90d": 1.0812949685534585
+        }
+    },
+    "Desert Eagle | Night (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 81.7635,
+            "last_30d": 79.41366666666667,
+            "last_90d": 76.99735555555557
+        }
+    },
+    "Desert Eagle | Night (Field-Tested)": {
+        "steam": {
+            "last_24h": 13.488571428571428,
+            "last_7d": 13.547121212121214,
+            "last_30d": 13.617470588235294,
+            "last_90d": 12.098808356039962
+        }
+    },
+    "Desert Eagle | Night (Well-Worn)": {
+        "steam": {
+            "last_24h": 13.185,
+            "last_7d": 12.655375,
+            "last_30d": 12.1626043956044,
+            "last_90d": 11.061443425076453
+        }
+    },
+    "Desert Eagle | Blaze (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 379.815,
+            "last_90d": 605.5575714285715
+        }
+    },
+    "Desert Eagle | Hypnotic (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": 113.16355555555556
+        }
+    },
+    "StatTrak™ Desert Eagle | Hypnotic (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 177.63049999999998,
+            "last_30d": 179.5764166666667,
+            "last_90d": 174.4743896103896
+        }
+    },
+    "Desert Eagle | Blaze (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 899.9631999999999,
+            "last_30d": 824.3290000000001,
+            "last_90d": 770.186525862069
+        }
+    },
+    "Desert Eagle | Night (Minimal Wear)": {
+        "steam": {
+            "last_24h": 19.468875,
+            "last_7d": 18.751898305084747,
+            "last_30d": 18.62751805054153,
+            "last_90d": 16.705545361875647
+        }
+    },
+    "Desert Eagle | Hypnotic (Factory New)": {
+        "steam": {
+            "last_24h": 114.41499999999999,
+            "last_7d": 115.01173529411763,
+            "last_30d": 115.05077037037039,
+            "last_90d": 113.44419602977672
+        }
+    },
+    "Desert Eagle | Night (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 12.712,
+            "last_7d": 12.67390322580645,
+            "last_30d": 12.109256944444445,
+            "last_90d": 11.028582644628097
+        }
+    },
+    "Souvenir Desert Eagle | Mudder (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "Souvenir Desert Eagle | Mudder (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": 140.826
+        }
+    },
+    "Souvenir Desert Eagle | Mudder (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "Desert Eagle | Mudder (Minimal Wear)": {
+        "steam": {
+            "last_24h": 0.05816872427983539,
+            "last_7d": 0.05655153583617751,
+            "last_30d": 0.0584536082474228,
+            "last_90d": 0.06239310898112549
+        }
+    },
+    "Desert Eagle | Mudder (Factory New)": {
+        "steam": {
+            "last_24h": 0.48644444444444435,
+            "last_7d": 0.556447004608295,
+            "last_30d": 0.5763064351378949,
+            "last_90d": 0.6074620253164559
+        }
+    },
+    "Desert Eagle | Mudder (Well-Worn)": {
+        "steam": {
+            "last_24h": 0.03632666666666667,
+            "last_7d": 0.03787878787878788,
+            "last_30d": 0.036607224161481274,
+            "last_90d": 0.03823710679420166
+        }
+    },
+    "Souvenir Desert Eagle | Mudder (Field-Tested)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 69.06450000000001,
+            "last_90d": 83.74118181818181
+        }
+    },
+    "StatTrak™ Desert Eagle | Hypnotic (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 170.005,
+            "last_30d": 194.8915,
+            "last_90d": 189.94533333333334
+        }
+    },
+    "Desert Eagle | Mudder (Field-Tested)": {
+        "steam": {
+            "last_24h": 0.03463037249283669,
+            "last_7d": 0.035020369364475834,
+            "last_30d": 0.03413033017660609,
+            "last_90d": 0.03601295056174449
+        }
+    },
+    "Desert Eagle | Mudder (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 0.036741176470588235,
+            "last_7d": 0.03654706142288999,
+            "last_30d": 0.03706134564643796,
+            "last_90d": 0.038331089777968466
+        }
+    },
+    "StatTrak™ Desert Eagle | Golden Koi (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 181.78666666666663,
+            "last_90d": 177.38625
+        }
+    },
+    "Desert Eagle | Cobalt Disruption (Field-Tested)": {
+        "steam": {
+            "last_24h": 80.5445,
+            "last_7d": 79.23537499999999,
+            "last_30d": 78.73404081632654,
+            "last_90d": 74.01865359477127
+        }
+    },
+    "StatTrak™ Desert Eagle | Cobalt Disruption (Factory New)": {
+        "steam": {
+            "last_24h": 184.70999999999998,
+            "last_7d": 186.4209166666667,
+            "last_30d": 186.22973076923077,
+            "last_90d": 182.37330864197529
+        }
+    },
+    "Desert Eagle | Golden Koi (Minimal Wear)": {
+        "steam": {
+            "last_24h": 116.005,
+            "last_7d": 115.93700000000003,
+            "last_30d": 117.06883870967742,
+            "last_90d": 105.18169523809523
+        }
+    },
+    "Desert Eagle | Golden Koi (Factory New)": {
+        "steam": {
+            "last_24h": 131.8,
+            "last_7d": 134.44500000000002,
+            "last_30d": 134.78934999999998,
+            "last_90d": 123.63272981366454
+        }
+    },
+    "Souvenir Desert Eagle | Mudder (Battle-Scarred)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": 36.684
+        }
+    },
+    "StatTrak™ Desert Eagle | Golden Koi (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 323.2892,
+            "last_90d": 296.9200857142857
+        }
+    },
+    "Desert Eagle | Cobalt Disruption (Factory New)": {
+        "steam": {
+            "last_24h": 106.408,
+            "last_7d": 112.32853333333333,
+            "last_30d": 110.26504597701157,
+            "last_90d": 104.85433996937213
+        }
+    },
+    "StatTrak™ Desert Eagle | Cobalt Disruption (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 125.279,
+            "last_30d": 122.74795833333332,
+            "last_90d": 123.67987671232878
+        }
+    },
+    "Desert Eagle | Cobalt Disruption (Minimal Wear)": {
+        "steam": {
+            "last_24h": 83.894,
+            "last_7d": 86.3548620689655,
+            "last_30d": 86.39320869565219,
+            "last_90d": 80.55175930521091
+        }
+    },
+    "StatTrak™ Desert Eagle | Crimson Web (Well-Worn)": {
+        "steam": {
+            "last_24h": 19.5475,
+            "last_7d": 18.4635625,
+            "last_30d": 20.3147,
+            "last_90d": 20.425678260869567
+        }
+    },
+    "StatTrak™ Desert Eagle | Crimson Web (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 440.708,
+            "last_30d": 440.708,
+            "last_90d": 446.77880000000005
+        }
+    },
+    "StatTrak™ Desert Eagle | Cobalt Disruption (Field-Tested)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 112.02,
+            "last_30d": 113.43700000000001,
+            "last_90d": 105.89925925925925
+        }
+    },
+    "Desert Eagle | Crimson Web (Well-Worn)": {
+        "steam": {
+            "last_24h": 9.792375,
+            "last_7d": 9.880791044776117,
+            "last_30d": 9.87904204204204,
+            "last_90d": 9.41726416666667
+        }
+    },
+    "Desert Eagle | Crimson Web (Minimal Wear)": {
+        "steam": {
+            "last_24h": 34.727,
+            "last_7d": 35.720089887640455,
+            "last_30d": 35.539309895833306,
+            "last_90d": 32.30869799139172
+        }
+    },
+    "Desert Eagle | Crimson Web (Field-Tested)": {
+        "steam": {
+            "last_24h": 9.433878787878788,
+            "last_7d": 9.384031390134531,
+            "last_30d": 9.410299527062532,
+            "last_90d": 8.84183928823612
+        }
+    },
+    "StatTrak™ Desert Eagle | Crimson Web (Minimal Wear)": {
+        "steam": {
+            "last_24h": 80.009,
+            "last_7d": 75.5021111111111,
+            "last_30d": 77.34868656716422,
+            "last_90d": 66.59352282157674
+        }
+    },
+    "Desert Eagle | Crimson Web (Factory New)": {
+        "steam": {
+            "last_24h": 161.379,
+            "last_7d": 131.32585714285713,
+            "last_30d": 131.08320689655167,
+            "last_90d": 126.06538888888899
+        }
+    },
+    "StatTrak™ Desert Eagle | Crimson Web (Field-Tested)": {
+        "steam": {
+            "last_24h": 19.01422222222222,
+            "last_7d": 18.3848,
+            "last_30d": 18.066796610169483,
+            "last_90d": 18.490726635513987
+        }
+    },
+    "Desert Eagle | Crimson Web (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 8.889399999999998,
+            "last_7d": 8.719788461538458,
+            "last_30d": 8.33558276643991,
+            "last_90d": 7.890262017603255
+        }
+    },
+    "Souvenir Desert Eagle | Urban Rubble (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 9.975,
+            "last_30d": 10.75646666666667,
+            "last_90d": 11.488184210526317
+        }
+    },
+    "Desert Eagle | Urban Rubble (Well-Worn)": {
+        "steam": {
+            "last_24h": 0.19660526315789476,
+            "last_7d": 0.19906196581196567,
+            "last_30d": 0.1933288990825689,
+            "last_90d": 0.19464337899543396
+        }
+    },
+    "Souvenir Desert Eagle | Urban Rubble (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 11.696125,
+            "last_90d": 11.218214285714287
+        }
+    },
+    "Souvenir Desert Eagle | Urban Rubble (Field-Tested)": {
+        "steam": {
+            "last_24h": 8.5125,
+            "last_7d": 8.13488888888889,
+            "last_30d": 7.754441860465114,
+            "last_90d": 7.777912162162158
+        }
+    },
+    "Desert Eagle | Urban Rubble (Factory New)": {
+        "steam": {
+            "last_24h": 0.6258673835125448,
+            "last_7d": 0.6134027100271003,
+            "last_30d": 0.5729643398205343,
+            "last_90d": 0.549641014142807
+        }
+    },
+    "StatTrak™ Desert Eagle | Crimson Web (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 15.663333333333332,
+            "last_7d": 15.443892857142853,
+            "last_30d": 15.776000000000007,
+            "last_90d": 16.82708917197451
+        }
+    },
+    "Desert Eagle | Urban Rubble (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 0.19678,
+            "last_7d": 0.20255056179775274,
+            "last_30d": 0.19617097625329807,
+            "last_90d": 0.2052465986394562
+        }
+    },
+    "Desert Eagle | Urban Rubble (Minimal Wear)": {
+        "steam": {
+            "last_24h": 0.37559670781892995,
+            "last_7d": 0.36233059788980077,
+            "last_30d": 0.3528638013818944,
+            "last_90d": 0.33937109992810954
+        }
+    },
+    "Souvenir Desert Eagle | Urban Rubble (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 25.763800000000003,
+            "last_30d": 22.43759090909091,
+            "last_90d": 20.419095238095238
+        }
+    },
+    "Desert Eagle | Urban Rubble (Field-Tested)": {
+        "steam": {
+            "last_24h": 0.2442052505966587,
+            "last_7d": 0.23818893861892582,
+            "last_30d": 0.22578065857885615,
+            "last_90d": 0.21439964329506167
+        }
+    },
+    "StatTrak™ Desert Eagle | Heirloom (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 16.2045,
+            "last_30d": 15.756333333333336,
+            "last_90d": 15.658228571428571
+        }
+    },
+    "StatTrak™ Desert Eagle | Heirloom (Minimal Wear)": {
+        "steam": {
+            "last_24h": 23.813333333333333,
+            "last_7d": 25.0245,
+            "last_30d": 25.162026315789472,
+            "last_90d": 24.68053378378379
+        }
+    },
+    "Desert Eagle | Heirloom (Field-Tested)": {
+        "steam": {
+            "last_24h": 5.9078,
+            "last_7d": 5.822992063492065,
+            "last_30d": 5.955814671814669,
+            "last_90d": 5.789339898705688
+        }
+    },
+    "Desert Eagle | Heirloom (Minimal Wear)": {
+        "steam": {
+            "last_24h": 8.196333333333335,
+            "last_7d": 8.686163265306124,
+            "last_30d": 9.210941176470588,
+            "last_90d": 9.182875512995897
+        }
+    },
+    "Souvenir Desert Eagle | Urban Rubble (Battle-Scarred)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 20.16,
+            "last_30d": 21.87,
+            "last_90d": 14.788833333333335
+        }
+    },
+    "Desert Eagle | Heirloom (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 6.940999999999999,
+            "last_30d": 6.899843750000002,
+            "last_90d": 6.883655963302751
+        }
+    },
+    "Desert Eagle | Heirloom (Factory New)": {
+        "steam": {
+            "last_24h": 27.0905,
+            "last_7d": 19.672235294117645,
+            "last_30d": 19.346739130434777,
+            "last_90d": 18.392533333333336
+        }
+    },
+    "Desert Eagle | Heirloom (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 5.8508571428571425,
+            "last_7d": 5.610550000000001,
+            "last_30d": 5.8300405904059085,
+            "last_90d": 5.63876011846003
+        }
+    },
+    "StatTrak™ Desert Eagle | Heirloom (Field-Tested)": {
+        "steam": {
+            "last_24h": 12.222249999999999,
+            "last_7d": 12.85852631578947,
+            "last_30d": 12.79561486486486,
+            "last_90d": 12.470444668008057
+        }
+    },
+    "StatTrak™ Desert Eagle | Heirloom (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 68.19,
+            "last_30d": 69.36854545454547,
+            "last_90d": 66.59308108108108
+        }
+    },
+    "Souvenir Desert Eagle | Hand Cannon (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "StatTrak™ Desert Eagle | Heirloom (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 13.86,
+            "last_7d": 12.522,
+            "last_30d": 13.238574468085108,
+            "last_90d": 12.385076433121018
+        }
+    },
+    "Desert Eagle | Meteorite (Factory New)": {
+        "steam": {
+            "last_24h": 1.3737115384615386,
+            "last_7d": 1.3477911791179114,
+            "last_30d": 1.2567723042362002,
+            "last_90d": 1.1896821386511762
+        }
+    },
+    "Desert Eagle | Hand Cannon (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "Desert Eagle | Hand Cannon (Battle-Scarred)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "Desert Eagle | Hand Cannon (Field-Tested)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 423.01,
+            "last_30d": 499.41833333333335,
+            "last_90d": 469.33599999999996
+        }
+    },
+    "Desert Eagle | Hand Cannon (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": 435.148
+        }
+    },
+    "Desert Eagle | Hand Cannon (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 624,
+            "last_30d": 624,
+            "last_90d": 552.6998571428571
+        }
+    },
+    "Desert Eagle | Meteorite (Field-Tested)": {
+        "steam": {
+            "last_24h": 0.7955611510791367,
+            "last_7d": 0.783486263736264,
+            "last_30d": 0.7147936556821679,
+            "last_90d": 0.6330152663718676
+        }
+    },
+    "Desert Eagle | Meteorite (Minimal Wear)": {
+        "steam": {
+            "last_24h": 0.9649926470588236,
+            "last_7d": 0.9390293824701188,
+            "last_30d": 0.876920915712798,
+            "last_90d": 0.8400527367920043
+        }
+    },
+    "Souvenir Desert Eagle | Hand Cannon (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 357.11,
+            "last_90d": 357.11
+        }
+    },
+    "Souvenir Desert Eagle | Hand Cannon (Well-Worn)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": null,
+            "last_90d": null
+        }
+    },
+    "Desert Eagle | Pilot (Factory New)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 216.0525714285714,
+            "last_90d": 184.8322
+        }
+    },
+    "Souvenir Desert Eagle | Hand Cannon (Battle-Scarred)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": null,
+            "last_30d": 143.03,
+            "last_90d": 150.505
+        }
+    },
+    "Desert Eagle | Pilot (Minimal Wear)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 115,
+            "last_30d": 123.374625,
+            "last_90d": 115.01077419354839
+        }
+    },
+    "Desert Eagle | Pilot (Field-Tested)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 94.03999999999999,
+            "last_30d": 97.67709090909092,
+            "last_90d": 84.88309615384615
+        }
+    },
+    "Souvenir Desert Eagle | Hand Cannon (Field-Tested)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 308.3825,
+            "last_30d": 272.9764285714286,
+            "last_90d": 314.4561333333333
+        }
+    },
+    "Desert Eagle | Pilot (Well-Worn)": {
+        "steam": {
+            "last_24h": 80.17,
+            "last_7d": 83.837,
+            "last_30d": 77.43366666666667,
+            "last_90d": 72.4274193548387
+        }
+    },
+    "Desert Eagle | Conspiracy (Factory New)": {
+        "steam": {
+            "last_24h": 10.126949152542375,
+            "last_7d": 10.248222826086954,
+            "last_30d": 10.731532247964935,
+            "last_90d": 10.726289548258036
+        }
+    },
+    "Desert Eagle | Pilot (Battle-Scarred)": {
+        "steam": {
+            "last_24h": null,
+            "last_7d": 77.38733333333333,
+            "last_30d": 74.277,
+            "last_90d": 65.92885714285713
+        }
+    },
+    "Desert Eagle | Naga (Field-Tested)": {
+        "steam": {
+            "last_24h": 1.5086419753086417,
+            "last_7d": 1.4913088235294123,
+            "last_30d": 1.4821571316614421,
+            "last_90d": 1.4424945767866169
+        }
+    },
+    "Desert Eagle | Naga (Well-Worn)": {
+        "steam": {
+            "last_24h": 1.4775116279069769,
+            "last_7d": 1.4163012987012995,
+            "last_30d": 1.329493436754176,
+            "last_90d": 1.2509910507637736
+        }
+    },
+    "StatTrak™ Desert Eagle | Conspiracy (Factory New)": {
+        "steam": {
+            "last_24h": 38.1256,
+            "last_7d": 31.9934776119403,
+            "last_30d": 31.800670833333317,
+            "last_90d": 30.369527876631096
+        }
+    },
+    "StatTrak™ Desert Eagle | Conspiracy (Field-Tested)": {
+        "steam": {
+            "last_24h": 15.279375,
+            "last_7d": 15.407753846153849,
+            "last_30d": 16.963866013071897,
+            "last_90d": 15.984003151260517
+        }
+    },
+    "Desert Eagle | Conspiracy (Field-Tested)": {
+        "steam": {
+            "last_24h": 6.465238095238096,
+            "last_7d": 6.603542134831456,
+            "last_30d": 6.650772666666668,
+            "last_90d": 6.413074713722551
+        }
+    },
+    "StatTrak™ Desert Eagle | Conspiracy (Minimal Wear)": {
+        "steam": {
+            "last_24h": 22.0062,
+            "last_7d": 18.89195294117647,
+            "last_30d": 19.056541884816763,
+            "last_90d": 18.75867621998452
+        }
+    },
+    "Desert Eagle | Conspiracy (Minimal Wear)": {
+        "steam": {
+            "last_24h": 7.256055555555554,
+            "last_7d": 7.420758095238096,
+            "last_30d": 7.482875506893758,
+            "last_90d": 7.55544788966089
+        }
+    },
+    "Desert Eagle | Naga (Factory New)": {
+        "steam": {
+            "last_24h": 7.892399999999999,
+            "last_7d": 7.151153846153846,
+            "last_30d": 7.215775735294112,
+            "last_90d": 7.051400906002263
+        }
+    },
+    "Desert Eagle | Naga (Minimal Wear)": {
+        "steam": {
+            "last_24h": 2.891742857142857,
+            "last_7d": 2.7622724014336923,
+            "last_30d": 2.7666372629843394,
+            "last_90d": 2.6365449139944803
+        }
+    },
+    "Desert Eagle | Naga (Battle-Scarred)": {
+        "steam": {
+            "last_24h": 1.4384782608695652,
+            "last_7d": 1.3947751004016065,
+            "last_30d": 1.4027421383647802,
+            "last_90d": 1.278374969504759
+        }
+    }
+}
