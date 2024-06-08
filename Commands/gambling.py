@@ -104,7 +104,7 @@ class Gambling():
             
             
             self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
-            await interactions.response.send_message(f"Congratulations! You now have {user['balance']} dollars.")
+            await interactions.response.send_message(f"Congratulations! You now have {user['balance']:.2f} dollars.")
         except Exception as e:
             logger.error(f"Error in the work function in gambling.py: {e}")
             return

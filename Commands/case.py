@@ -23,6 +23,14 @@ class Case():
             "Covert": 0.0064,
             "Rare Special Item": 0.0026,
         }
+        self.rarity_colors = {
+            "Mil-Spec Grade": 0x4B69FF,
+            "Restricted": 0x8847FF,
+            "Classified": 0xD32CE6,
+            "Covert": 0xEB4B4B,
+            "Rare Special Item": 0xADE55C 
+        }
+        self.color = None
         self.wear_levels = {
             "Factory New": (0.00,0.07),
             "Minimal Wear": (0.07,0.15),
@@ -53,7 +61,11 @@ class Case():
             - rarity: The rarity of the item.
             """
             rarity = random.choices(list(self.rarity.keys()), weights=list(self.rarity.values()))[0]
+            self.get_color_from_rarity(rarity)
             return rarity
+            
+    def get_color_from_rarity(self, rarity):
+        self.color = self.rarity_colors[rarity]
             
     def get_weapon_from_case(self):
         """
@@ -64,6 +76,7 @@ class Case():
         """
         # Use the rarity to get a weapon
         rarity = self.gamble_rarity()
+        
         possible_guns_list = []
         is_rare = False
 
@@ -136,26 +149,10 @@ class Case():
     def get_weapon_image(self, weapon):
         return weapon["image"]
     
-    def get_url(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
-        # Replace the spaces in the weapon name and pattern with dashes
-        weapon_name = weapon_name.replace(" ", "-")
-        weapon_pattern = weapon_pattern.replace(" ", "-")
-        wear_level = wear_level.replace(" ", "-")
-        
-        # Construct the base URL
-        base_url = "https://skin.land/market/csgo/"
-        
-        if is_stattrak:
-            weapon_name = f"stattrak-{weapon_name}"
-        
-        # Add special URL if the weapon is rare, else return the normal URL
-        if is_rare:
-            return f"{base_url}★-{weapon_name}-{weapon_pattern}-{wear_level}/"
-        return f"{base_url}{weapon_name}-{weapon_pattern}-{wear_level}/"
+
     
     
-    
-    def get_weapon_price_test(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
+    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         if is_stattrak:
             weapon_name = f"StatTrak™ {weapon_name}"
             
@@ -165,7 +162,6 @@ class Case():
         
         
         weapon_title = f"{weapon_name} | {weapon_pattern} ({wear_level})"
-        print(f"Weapon title: {weapon_title}")
         # Find the weapon in latest_data.json
         with open("./Commands/Case/latest_data.json", "r") as f:
             latest_date = json.load(f)
@@ -176,42 +172,7 @@ class Case():
         
         return 0
     
-    def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
-        try:
-                
-            # Get the URL of the weapon
-            url = self.get_url(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
-            # Open the URL
-            self.driver.get(url)
-            
-            # Get the page source
-            page_source = self.driver.page_source
-            # Create a BeautifulSoup object
-            soup = BeautifulSoup(page_source, "html.parser")
-            
-            # Get the weapon price from the page (class = skin-page__best-offer best-offer)
-            price_element = soup.find("div", class_=re.compile(r"skin-page__best-offer\s+best-offer"))
-            if price_element:
-                # Extract the site price
-                site_price_element = price_element.find("div", class_="best-offer__site-price-value")
-                if site_price_element:
-                    site_price = site_price_element.get_text(strip=True).replace("$", "")
-                else:
-                    site_price = "Site price not found"
 
-                # Extract the steam price
-                steam_price_element = price_element.find("div", class_="best-offer__steam-price-value")
-                if steam_price_element:
-                    steam_price = steam_price_element.get_text(strip=True).replace("$", "")
-                else:
-                    steam_price = "Steam price not found"
-
-                return steam_price if steam_price != "Steam price not found" else site_price if site_price != "Site price not found" else 0
-            else:
-                return 0
-        except Exception as e:
-            print(f"Error getting weapon price: {e}")
-            return 0
         
     def add_experience(self, user_id, payout):
         if payout < 0:
@@ -240,8 +201,9 @@ class Case():
 
             # Check if the current period price is null
             if weapon_price["steam"][current_period] is None:
-                # If it's null, update it with the next period price if available
-                weapon_price["steam"][current_period] = weapon_price["steam"][next_period]
+                # If it's null and the next period price is not null, update it with the next period price
+                if weapon_price["steam"][next_period] is not None:
+                    weapon_price["steam"][current_period] = weapon_price["steam"][next_period]
 
         # Check if the last period price is null
         if weapon_price["steam"]["last_90d"] is None:
@@ -249,6 +211,7 @@ class Case():
             weapon_price["steam"]["last_90d"] = 0  # Or another default value
 
         return weapon_price
+
 
  
     async def open_case(self, interactions):
@@ -286,12 +249,13 @@ class Case():
             is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
             
             # Get the weapon price
-            prices = self.is_weapon_price_null(self.get_weapon_price_test(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
+            prices = self.is_weapon_price_null(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
             weapon_price = prices["steam"]["last_24h"]
             
- 
+            # Create a Matplotlib graph with the prices from the last 24 hours, 7 days, 30 days, and 90 days
             self.utility.create_open_case_graph_skin_prices(prices)
-            # Adjust the profit
+            
+            # Adjust the profit based on the case price
             profit = float(weapon_price) - self.case_price
             
             # Update the user's balance
@@ -307,7 +271,7 @@ class Case():
             weapon_image = self.get_weapon_image(weapon_info)
 
             # Create the embed message
-            embed, file  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak)
+            embed, file  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color)
             
             if embed is None or file is None:
                 await interactions.followup.send("An error occurred while opening the case.")
