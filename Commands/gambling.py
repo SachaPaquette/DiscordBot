@@ -100,7 +100,7 @@ class Gambling():
                     await interactions.response.send_message("You can only work every 10 minutes.")
                     return
             
-            user["balance"] += random.randint(1, 100)
+            user["balance"] += random.randint(1, 1000)
             
             
             self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
@@ -135,7 +135,7 @@ class Gambling():
             return
 
         
-class Slot9x9Machine():
+class Slot3x3Machine():
     def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
         self.grid = []

@@ -269,9 +269,12 @@ class Utility():
         # Check if the message is a command
         return message.startswith("/")
     
-    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level:str, gun_float:float, weapon_name:str, weapon_pattern:float, weapon_image:str, is_stattrak:bool, color:str):
+    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level:str, gun_float:float, weapon_name:str, weapon_pattern:float, weapon_image:str, is_stattrak:bool, color:str, user_nickname:str):
         try:
-            embed = discord.Embed(title="🎉 Case Opening Results 🎉", color=discord.Colour(color))
+            embed = discord.Embed(title=f"🎉 Case Opening Results 🎉", color=discord.Colour(color))
+            
+            # Add username to the embed message
+            embed.add_field(name="👤 User", value=f"**{user_nickname}**", inline=False)
             
             if is_stattrak:
                 weapon_name = "StatTrak™ " + weapon_name
@@ -311,13 +314,13 @@ class Utility():
             logger.error(f"Error while trying to create an embed message in case.py: {e}")
             return None
         
-    def create_open_case_embed_message(self, case):
+    def create_open_case_embed_message(self, case, title:str):
         # find the case image
         case_image = case["image"]
         
         # Create an embed message with the case image
-        embed = discord.Embed(title="🎉 Case Opening 🎉", color=discord.Color.gold())
-        
+        embed = discord.Embed(title=f"🎉 {title} Opening 🎉", color=discord.Color.gold())
+
         # Add the case image to the embed message
         embed.set_image(url=case_image)
         # Add the case name to the embed message
@@ -326,6 +329,7 @@ class Utility():
         embed.add_field(name="Price", value=f"$5", inline=True)
         
         return embed
+    
     
     def create_open_case_graph_skin_prices(self, prices):
         # Extract time frames and price values
@@ -359,6 +363,34 @@ class Utility():
         plt.savefig('./Commands/Case/graph.png')
         plt.close()
             
+    def create_sticker_embed(self, sticker, balance, sticker_price, profit, color):
+        try:
+            embed = discord.Embed(title="🎉 Sticker Opening Results 🎉", color=discord.Colour(color))
+            sticker_name = sticker["name"]
+            sticker_image = sticker["image"]
+            # Add sticker name
+            embed.add_field(name="🎨 Sticker", value=f"**{sticker_name}**", inline=False)   
+            
+            # Add sticker image     
+            embed.set_thumbnail(url=sticker_image)
+            
+            # Add user balance
+            embed.add_field(name="💰 Current Balance", value=f"**${balance:.2f}**", inline=True)
+            
+            # Add profit or loss
+            if profit > 0:
+                embed.add_field(name="📈 Profit", value=f"+$**{profit:.2f}**", inline=True)
+            else:
+                embed.add_field(name="📉 Loss", value=f"-$**{-profit:.2f}**", inline=True)
+            
+            # Add sticker price
+            embed.add_field(name="💵 Sticker Price", value=f"$**{float(sticker_price):.2f}**", inline=True)
+            
+            return embed
+
+        except Exception as e:
+            logger.error(f"Error while trying to create an embed message in sticker.py: {e}")
+            return None
         
     def bot_check_session(self, session):
         # Check if the song session is None

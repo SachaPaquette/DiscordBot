@@ -11,11 +11,12 @@ class Profanity():
         self.bot = bot
         self.profanity_filter = profane()
         self.utility = Utility()
-    async def on_message_command(self, message, commands):
+        
+    async def on_message_command(self, message):
         try:
             
             # Ignore messages sent by the bot
-            if message.author == self.bot.user:
+            if message.author.bot:
                 return
             
             #TODO Make sure the message is a command otherwise people can abuse this

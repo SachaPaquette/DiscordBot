@@ -16,7 +16,7 @@ class Case():
         self.case = self.get_random_case()
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-        self.rarity = {
+        self.weapon_rarity = {
             "Mil-Spec Grade": 0.7997,
             "Restricted": 0.1598,
             "Classified": 0.032,
@@ -46,6 +46,20 @@ class Case():
         self.server_id = server_id
         # Set the Selenium driver
         self.driver = driver_setup()
+        
+        self.sticker_rarity = {
+            "High Grade": 0.7997,
+            "Remarkable": 0.1598,
+            "Exotic": 0.032,
+            "Extraordinary": 0.0064,
+        }
+        self.sticker_rarity_colors = {
+            "High Grade": 0x4B69FF,
+            "Remarkable": 0x8847FF,
+            "Exotic": 0xD32CE6,
+            "Extraordinary": 0xEB4B4B
+        }
+        self.sticker_capsule_price = 1
             
                  
     def get_random_case(self):
@@ -60,7 +74,7 @@ class Case():
             Returns:
             - rarity: The rarity of the item.
             """
-            rarity = random.choices(list(self.rarity.keys()), weights=list(self.rarity.values()))[0]
+            rarity = random.choices(list(self.weapon_rarity.keys()), weights=list(self.weapon_rarity.values()))[0]
             self.get_color_from_rarity(rarity)
             return rarity
             
@@ -216,7 +230,7 @@ class Case():
  
     async def open_case(self, interactions):
         try:
-            embed_first_message = self.utility.create_open_case_embed_message(self.case)
+            embed_first_message = self.utility.create_open_case_embed_message(self.case, "Case")
             # Send a message that the case is being bought
             await interactions.response.send_message(embed=embed_first_message, ephemeral=True)
             
@@ -269,9 +283,12 @@ class Case():
             
             # Get the weapon image
             weapon_image = self.get_weapon_image(weapon_info)
+            
+            # Get the nickname of the user
+            user_nickname = interactions.user.display_name
 
             # Create the embed message
-            embed, file  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color)
+            embed, file  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, user_nickname)
             
             if embed is None or file is None:
                 await interactions.followup.send("An error occurred while opening the case.")
@@ -285,7 +302,114 @@ class Case():
             await interactions.followup.send("An error occurred while opening the case.")
             return
         
+    def get_random_sticker_case(self):
+        with open("./Commands/Case/sticker_cases.json", "r") as f:
+            sticker_cases = json.load(f)
+        return random.choice(sticker_cases)
         
+    def get_sticker_rarity(self, sticker_case):
+        # If the sticker is a foil, it is always exotic
+        if "(Foil)" in sticker_case["name"]:
+            rarity = "Exotic"
+        elif "(Holo/Foil)" in sticker_case["name"]:
+            # Can only have Exotic or Remarkable rarity
+            rarity = random.choices(["Exotic", "Remarkable"], weights=[0.1, 0.9])[0]
+            print(rarity)
+        else:
+            rarity = random.choices(list(self.sticker_rarity.keys()), weights=list(self.sticker_rarity.values()))[0]
+        self.color = self.sticker_rarity_colors[rarity]
+        return rarity
+    
+    def get_sticker_from_case(self, sticker_case):
+        rarity = self.get_sticker_rarity(sticker_case) 
+        possible_stickers_list = []
+        # Using the rarity obtained, get a weapon from this rarity in the case
+     
 
+        contains = sticker_case["contains"]
+        for contain in contains:
+            if contain["rarity"]["name"] == rarity:
+                possible_stickers_list.append(contain)
+                
+        # Get a random weapon from the possible guns list
+        return random.choice(possible_stickers_list) if possible_stickers_list else None
+            
+    
+    def get_sticker_price(self, sticker):
+        sticker_name = sticker["name"]
+        print(sticker_name)
+        with open("./Commands/Case/latest_data.json", "r") as f:
+            latest_date = json.load(f)
         
+        sticker_name = f"Sticker | {sticker_name}"
+        
+        if sticker_name in latest_date:
+            return latest_date[sticker_name]["steam"]
+        return 0
+    
+    def format_sticker_prices(self, sticker_price):
+        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
+            # Iterate over the time periods
+        for i in range(len(time_periods)):
+            current_period = time_periods[i]
+            
+            # If the current period price is None, find the next available non-None price
+            if sticker_price[current_period] is None:
+                for j in range(i + 1, len(time_periods)):
+                    next_period = time_periods[j]
+                    if sticker_price[next_period] is not None:
+                        sticker_price[current_period] = sticker_price[next_period]
+                        break
+                else:
+                    # If no non-None value is found, set it to 0
+                    sticker_price[current_period] = 0
+        print(sticker_price)
+        return sticker_price
+        
+        
+    async def open_capsule(self, interactions):
+        try:
+            # Get the user's balance
+            user_id = interactions.user.id
+            user = self.database.get_user(self.server_id, user_id)
+            
+            # Check if the user has enough balance to buy the stickers
+            if user["balance"] < 1:
+                await interactions.followup.send("Not enough balance")
+                return
+            
+            sticker_case = self.get_random_sticker_case()
+            
+            embed_first_message = self.utility.create_open_case_embed_message(sticker_case, "Capsule")
+
+            # Send a message that the stickers are being bought
+            await interactions.response.send_message(embed=embed_first_message, ephemeral=True)
+            
+            
+            
+            sticker = self.get_sticker_from_case(sticker_case)
+            if sticker is None:
+                await interactions.followup.send("An error occurred while buying the stickers.")
+                return
+            print(sticker)
+            
+            sticker_price = self.format_sticker_prices(self.get_sticker_price(sticker))
+            profit = sticker_price["last_24h"] - self.sticker_capsule_price
+            
+            # Update the user's balance
+            user["balance"] += profit
+            self.database.update_user_balance(self.server_id, user_id, user["balance"])
+            
+            if profit > 0:
+                # Add experience to the user
+                self.add_experience(user_id, profit)
+            
+            embed = self.utility.create_sticker_embed(sticker, user["balance"], sticker_price["last_24h"], profit, self.color)
+            
+            # Send a message that the stickers have been bought
+            await interactions.followup.send(embed=embed)
+        except Exception as e:
+            print(f"Error buying stickers: {e}")
+            await interactions.followup.send("An error occurred while buying the stickers.")
+            return
         

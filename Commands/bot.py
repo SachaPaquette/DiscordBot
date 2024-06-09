@@ -11,7 +11,7 @@ from Commands.profanity import Profanity
 from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
-from Commands.gambling import Gambling, Slot9x9Machine
+from Commands.gambling import Gambling, Slot3x3Machine
 from Commands.leaderboard import Leaderboard
 from Commands.case import Case
 from Config.config import conf
@@ -67,7 +67,8 @@ async def on_ready():
     """
     try:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="depression"))
-       
+        guild = discord.Object(id=os.environ.get("TESTING_GUILD_ID"))
+        await bot.tree.sync(guild=guild)
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")
         raise e
@@ -105,19 +106,20 @@ async def on_message(message):
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
         # Check for profanity in the message
-        await profanity.on_message_command(message, commands_list)
+        await profanity.on_message_command(message)
     except Exception as e:
         logger.error(f"Error in the on message event: {e}")
         raise e
 
 @bot.tree.command(name='health', description='Display information about the bot.')
+@commands.has_permissions(administrator=True)
 async def health(interactions):
     """
     Check if the bot is alive and provide detailed health information.
     """
     try:
         await health_check.health_command(interactions, bot)
-        await bot.tree.sync()
+        await bot.tree.sync(guild=interactions.guild)
         
     except Exception as e:
         print(f"Error in the health command: {e}")
@@ -521,7 +523,7 @@ async def slots(interactions, bet: int):
     - None
     """
     try:
-        slots = Slot9x9Machine(interactions.guild.id)
+        slots = Slot3x3Machine(interactions.guild.id)
         # Call the slots function in Gambling
         await slots.play(interactions, bet)
     except Exception as e:
@@ -547,6 +549,24 @@ async def case(interactions):
         logger.error(f"Error in the case command: {e}")
         raise e
     
+@bot.tree.command(name="sticker", description="Open a Counter-Strike sticker capsule.")
+async def capsule(interactions):
+    """
+    Open a Counter-Strike sticker capsule.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        case = Case(interactions.guild.id)
+        # Call the capsule function in Gambling
+        await case.open_capsule(interactions)
+    except Exception as e:
+        logger.error(f"Error in the capsule command: {e}")
+        raise e
 
 def main():
     """
@@ -554,7 +574,6 @@ def main():
     """
     try:
         token = os.environ.get("DISCORD_TOKEN")
-        print(token)
         if token is None:
             raise Exception("No token found in the environment variables.")
         # Run the bot
