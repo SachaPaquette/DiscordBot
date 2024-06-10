@@ -567,6 +567,25 @@ async def capsule(interactions):
     except Exception as e:
         logger.error(f"Error in the capsule command: {e}")
         raise e
+    
+@bot.tree.command(name="inventory", description="Display your inventory.")
+async def inventory(interactions):
+    """
+    Display the user's inventory.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        case = Case(interactions.guild.id)
+        # Call the inventory function in Gambling
+        await case.display_inventory(interactions)
+    except Exception as e:
+        logger.error(f"Error in the inventory command: {e}")
+        raise e
 
 def main():
     """

@@ -1,4 +1,5 @@
 import discord
+from discord.ui import Button, View
 from discord.ext import commands
 from Config.logging import setup_logging
 from Config.config import conf
@@ -222,7 +223,7 @@ class Utility():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']}",
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f}",
                     inline=False
                 )
 
@@ -305,16 +306,16 @@ class Utility():
 
             
             # Add the graph to the embed message that is stored in ./Case/graph.png
-            file = discord.File("./Commands/Case/graph.png", filename="graph.png")
-            embed.set_image(url="attachment://graph.png")
+            #file = discord.File("./Commands/Case/graph.png", filename="graph.png")
+            #embed.set_image(url="attachment://graph.png")
             
-            return embed, file
+            return embed
 
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in case.py: {e}")
             return None
         
-    def create_open_case_embed_message(self, case, title:str):
+    def create_open_case_embed_message(self, case, title:str, price:float):
         # find the case image
         case_image = case["image"]
         
@@ -326,7 +327,7 @@ class Utility():
         # Add the case name to the embed message
         embed.add_field(name="Case", value=case["name"], inline=False)
         # Add a field for the price of the case to the embed message
-        embed.add_field(name="Price", value=f"$5", inline=True)
+        embed.add_field(name="Price", value=f"${price}", inline=True)
         
         return embed
     
@@ -391,6 +392,103 @@ class Utility():
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in sticker.py: {e}")
             return None
+        
+    async def add_buttons(self,interactions, message, function_keep, function_sell, weapon):
+        keep_button = Button(style=discord.ButtonStyle.green, label="Keep", custom_id="keep")
+        sell_button = Button(style=discord.ButtonStyle.red, label="Sell", custom_id="sell")
+        
+        # Add functions to the buttons
+        async def keep_callback(interactions):
+            await function_keep(interactions, weapon, message)
+            
+        async def sell_callback(interactions):
+            await function_sell(interactions, weapon, message)
+            
+        keep_button.callback = keep_callback
+        sell_button.callback = sell_callback
+        
+        # Add buttons to the message
+        view = View(timeout=5)
+        view.add_item(keep_button)
+        view.add_item(sell_button)
+        await message.edit(view=view)
+        
+        
+        
+
+
+        
+    async def disable_buttons(self,interactions, message):
+        # Remove the buttons, the embed and the picture
+        
+        
+        
+        view = View()
+        await message.edit(view=view, embed=None)
+        
+        
+    def create_weapon_from_info(self, weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, weapon_image, is_stattrak, color, weapon_price):
+        weapon_image = weapon_info["image"]
+        # Keep the price value to 2 decimal places
+        weapon_price = round(weapon_price, 2)
+        # Keep the float value to 5 decimal places
+        gun_float = round(gun_float, 5)
+        return {
+            "name": weapon_name,
+            "pattern": weapon_pattern,
+            "image": weapon_image,
+            "float": gun_float,
+            "wear": wear_level,
+            "stattrak": is_stattrak,
+            "color": color,
+            "price": weapon_price
+        }
+        
+    def create_inventory_embed_message(self,interactions, user_inventory, page):
+        embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
+        # Add the user's name to the embed message
+        embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+        # Add the user's inventory to the embed message 
+        # Loop through the user's inventory and add each item
+        total_value = 0
+        
+        # Get the 10 items of the current page
+        items = user_inventory[page * 10: (page + 1) * 10]
+        for item in items:
+            item_name = item["name"]
+            item_price = item["price"]
+            item_image = item["image"]
+            embed.add_field(name=f"🔫 {item_name}", value=f"**Price:** ${item_price:.2f}", inline=False)
+            embed.set_thumbnail(url=item_image)
+        
+
+        for item in user_inventory:
+            item_price = item["price"]
+            total_value += item_price
+            
+            
+        
+        # Add the total value of the user's inventory
+        embed.add_field(name="💰 Total Value", value=f"**${total_value:.2f}**", inline=False)
+        
+        return embed
+    
+    async def add_page_buttons(self, interactions, message, function_previous, function_next, page):
+        previous_button = Button(style=discord.ButtonStyle.green, label="Previous", custom_id="previous")
+        next_button = Button(style=discord.ButtonStyle.green, label="Next", custom_id="next")
+        # Add functions to the buttons
+        async def previous_callback(interactions):
+            await function_previous(interactions, message, page)
+        async def next_callback(interactions):
+            await function_next(interactions, message, page)
+        previous_button.callback = previous_callback
+        next_button.callback = next_callback
+        
+        # Add buttons to the message
+        view = View()
+        view.add_item(previous_button)
+        view.add_item(next_button)
+        await message.edit(view=view)
         
     def bot_check_session(self, session):
         # Check if the song session is None
