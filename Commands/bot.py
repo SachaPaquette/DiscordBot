@@ -68,6 +68,8 @@ async def on_ready():
     try:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="depression"))
         guild = discord.Object(id=os.environ.get("TESTING_GUILD_ID"))
+        # Instant sync to the testing guild
+        bot.tree.copy_global_to(guild=guild)
         await bot.tree.sync(guild=guild)
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")

@@ -64,7 +64,7 @@ class Case():
             "Exotic": 0xD32CE6,
             "Extraordinary": 0xEB4B4B
         }
-        self.sticker_capsule_price = 1
+        self.sticker_capsule_price = 15
         self.inventory = Inventory(server_id)
         self.page = 0
         self.user_nickname = None
@@ -191,7 +191,7 @@ class Case():
         
         # Get the weapon price
         if weapon_title in latest_date:
-            return latest_date[weapon_title]
+            return latest_date[weapon_title]["steam"]
         
         return 0
     
@@ -212,31 +212,6 @@ class Case():
         # There is a 10% chance that the weapon will be stattrak
         return random.random() < 0.1
         
-
-    def is_weapon_price_null(self, weapon_price):
-        # Define the order of time periods
-        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
-
-        # Iterate over time periods
-        for i in range(len(time_periods) - 1):
-            current_period = time_periods[i]
-            next_period = time_periods[i + 1]
-
-            # Check if the current period price is null
-            if weapon_price["steam"][current_period] is None:
-                # If it's null and the next period price is not null, update it with the next period price
-                if weapon_price["steam"][next_period] is not None:
-                    weapon_price["steam"][current_period] = weapon_price["steam"][next_period]
-
-        # Check if the last period price is null
-        if weapon_price["steam"]["last_90d"] is None:
-            # If it's null, update it with a default value (e.g., 0)
-            weapon_price["steam"]["last_90d"] = 0  # Or another default value
-
-        return weapon_price
-
-
- 
     async def open_case(self, interactions):
         try:
             embed_first_message = self.utility.create_open_case_embed_message(self.case, "Case", self.case_price)
@@ -275,11 +250,9 @@ class Case():
             is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
             
             # Get the weapon price
-            prices = self.is_weapon_price_null(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
-            weapon_price = prices["steam"]["last_24h"]
+            prices = self.format_inexistant_prices(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
             
-            # Create a Matplotlib graph with the prices from the last 24 hours, 7 days, 30 days, and 90 days
-            self.utility.create_open_case_graph_skin_prices(prices)
+            weapon_price = prices["last_24h"]
             
             # Adjust the profit based on the case price
             profit = float(weapon_price) - self.case_price
@@ -320,9 +293,7 @@ class Case():
                 await self.sell_function(interactions, weapon, embed_message)
                 
                 #await self.sell_function(interactions, weapon, first_message)
-                return
-            
-            
+            return
             
         except Exception as e:
             print(f"Error opening case: {e}")
@@ -378,7 +349,7 @@ class Case():
         elif "(Holo/Foil)" in sticker_case["name"]:
             # Can only have Exotic or Remarkable rarity
             rarity = random.choices(["Exotic", "Remarkable"], weights=[0.1, 0.9])[0]
-            print(rarity)
+            
         else:
             rarity = random.choices(list(self.sticker_rarity.keys()), weights=list(self.sticker_rarity.values()))[0]
         self.color = self.sticker_rarity_colors[rarity]
@@ -401,7 +372,7 @@ class Case():
     
     def get_sticker_price(self, sticker):
         sticker_name = sticker["name"]
-        print(sticker_name)
+        
         with open("./Commands/Case/latest_data.json", "r") as f:
             latest_date = json.load(f)
         
@@ -411,8 +382,11 @@ class Case():
             return latest_date[sticker_name]["steam"]
         return 0
     
-    def format_sticker_prices(self, sticker_price):
+    def format_inexistant_prices(self, sticker_price):
+        
         time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
+        
+
             # Iterate over the time periods
         for i in range(len(time_periods)):
             current_period = time_periods[i]
@@ -426,8 +400,8 @@ class Case():
                         break
                 else:
                     # If no non-None value is found, set it to 0
-                    sticker_price[current_period] = 0
-        print(sticker_price)
+                    sticker_price[current_period] = 1200
+        
         return sticker_price
         
         
@@ -454,7 +428,8 @@ class Case():
                 await interactions.followup.send("An error occurred while buying the stickers.")
                 return
 
-            sticker_price = self.format_sticker_prices(self.get_sticker_price(sticker))
+            sticker_price = self.format_inexistant_prices(self.get_sticker_price(sticker))
+            
             profit = sticker_price["last_24h"] - self.sticker_capsule_price
             
             # Update the user's balance
@@ -479,12 +454,13 @@ class Case():
             user_id = interactions.user.id
             inventory = self.inventory.get_inventory(user_id)
             if inventory is None or len(inventory) == 0:
-                await interactions.followup.send("You don't have any items in your inventory.")
+                await interactions.response.send_message("You don't have any items in your inventory.")
                 return
-            embed = self.utility.create_inventory_embed_message(interactions, inventory)
-            embed_message = await interactions.followup.send(embed=embed)
+            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page)
+            await interactions.response.send_message(embed=embed)
+            embed_message = await interactions.original_response()
             
-            self.utility.add_page_buttons(interactions, embed_message, inventory, self.next_page, self.previous_page)
+            await self.utility.add_page_buttons(embed_message, inventory, self.previous_page, self.next_page)
             
         except Exception as e:
             print(f"Error displaying inventory: {e}")
@@ -492,18 +468,20 @@ class Case():
             return
         
     async def next_page(self, interactions, inventory, message):
-        await interactions.response.defer()
+        
         self.page += 1
         # Get the next 10 items from the inventory
        
         
-        embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page)
+        embed = self.utility.create_inventory_embed_message(interactions=interactions, user_inventory=inventory, page=self.page)
         
         await message.edit(embed=embed)
         return
         
     
     async def previous_page(self, interactions, inventory, message):
+        if self.page < 1:
+            return
         self.page -= 1
         page_items = inventory[(self.page -1) * 10: (self.page) * 10]
         

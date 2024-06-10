@@ -445,42 +445,59 @@ class Utility():
         }
         
     def create_inventory_embed_message(self,interactions, user_inventory, page):
-        embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
-        # Add the user's name to the embed message
-        embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
-        # Add the user's inventory to the embed message 
-        # Loop through the user's inventory and add each item
-        total_value = 0
-        
-        # Get the 10 items of the current page
-        items = user_inventory[page * 10: (page + 1) * 10]
-        for item in items:
-            item_name = item["name"]
-            item_price = item["price"]
-            item_image = item["image"]
-            embed.add_field(name=f"🔫 {item_name}", value=f"**Price:** ${item_price:.2f}", inline=False)
-            embed.set_thumbnail(url=item_image)
-        
+        try:
+            embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
+            # Add the user's name to the embed message
+            embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+            # Add the user's inventory to the embed message 
+            # Loop through the user's inventory and add each item
+            total_value = 0
+            print('user_inventory:', user_inventory)
+            print('page:', page)
+            
+            # Sort the user's inventory by price
+            user_inventory = sorted(user_inventory, key=lambda x: x["price"], reverse=True)
+            
+            print('user_inventory:', user_inventory)
+            print('page:', page)
+            
+            # Get the 10 items of the current page
+            items = user_inventory[page * 10: (page + 1) * 10]
+            for item in items:
+                
+                
+                item_name = item["name"]
+                item_pattern = item["pattern"]
+                item_price = item["price"]
+                item_image = item["image"]
+                
+                embed.add_field(name=f"🔫 {item_name} | {item_pattern}", value=f"**Price:** ${item_price:.2f}", inline=False)
+                # add an image of the weapon
+                
+            
 
-        for item in user_inventory:
-            item_price = item["price"]
-            total_value += item_price
+            for item in user_inventory:
+                item_price = item["price"]
+                total_value += item_price
+                
+                
             
+            # Add the total value of the user's inventory
+            embed.add_field(name="💰 Total Value", value=f"**${total_value:.2f}**", inline=False)
             
-        
-        # Add the total value of the user's inventory
-        embed.add_field(name="💰 Total Value", value=f"**${total_value:.2f}**", inline=False)
-        
-        return embed
+            return embed
+        except Exception as e:
+            logger.error(f"Error while trying to create an embed message in inventory.py: {e}")
+            return None
     
-    async def add_page_buttons(self, interactions, message, function_previous, function_next, page):
+    async def add_page_buttons(self, message,inventory,  function_previous, function_next):
         previous_button = Button(style=discord.ButtonStyle.green, label="Previous", custom_id="previous")
         next_button = Button(style=discord.ButtonStyle.green, label="Next", custom_id="next")
         # Add functions to the buttons
         async def previous_callback(interactions):
-            await function_previous(interactions, message, page)
+            await function_previous(interactions,inventory, message)
         async def next_callback(interactions):
-            await function_next(interactions, message, page)
+            await function_next(interactions,inventory, message)
         previous_button.callback = previous_callback
         next_button.callback = next_callback
         
