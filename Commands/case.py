@@ -64,7 +64,7 @@ class Case():
             "Exotic": 0xD32CE6,
             "Extraordinary": 0xEB4B4B
         }
-        self.sticker_capsule_price = 15
+        self.sticker_capsule_price = 100
         self.inventory = Inventory(server_id)
         self.page = 0
         self.user_nickname = None
@@ -105,17 +105,18 @@ class Case():
 
         # Check if the rarity is for a rare special item
         if rarity == "Rare Special Item":
-            for case in self.cases:
+            for case in self.case["contains_rare"]:
                 if "contains_rare" in case:
-                    possible_guns_list.extend(case["contains_rare"])
+                    possible_guns_list.extend(case)
                     is_rare = True
         else:
+            
             # Using the rarity obtained, get a weapon from this rarity in the case
-            for case in self.cases:
-                contains = case["contains"]
-                for contain in contains:
-                    if contain["rarity"]["name"] == rarity:
-                        possible_guns_list.append(contain)
+            for case in self.case["contains"]:
+                
+                
+                if case["rarity"]["name"] == rarity:
+                        possible_guns_list.append(case)
                         break
 
         # Get a random weapon from the possible guns list
@@ -218,7 +219,7 @@ class Case():
             # Send a message that the case is being bought
             await interactions.response.send_message(embed=embed_first_message)
             first_message = await interactions.original_response()
-            time.sleep(1)
+            #time.sleep(1)
             self.user_id = interactions.user.id
             # Get the nickname of the user
             self.user_nickname = interactions.user.display_name
@@ -291,13 +292,11 @@ class Case():
             # If the user hasn't sold or kept the skin, sell it
             if not self.is_sold_or_bought:
                 await self.sell_function(interactions, weapon, embed_message)
-                
-                #await self.sell_function(interactions, weapon, first_message)
             return
             
         except Exception as e:
             print(f"Error opening case: {e}")
-            await interactions.followup.send("An error occurred while opening the case.")
+            await interactions.response.send_message("An error occurred while opening the case.")
             return
         
     async def keep_function(self, interactions, weapon, message):
@@ -402,35 +401,47 @@ class Case():
                     # If no non-None value is found, set it to 0
                     sticker_price[current_period] = 1200
         
-        return sticker_price
+        return sticker_price["last_24h"]
         
         
     async def open_capsule(self, interactions):
         try:
-            # Get the user's balance
+            # Get the user from the database
             user_id = interactions.user.id
             user = self.database.get_user(self.server_id, user_id)
             
-            # Check if the user has enough balance to buy the stickers
-            if user["balance"] < 1:
+            # Check if the user has enough balance to buy the sticker capsule
+            if user["balance"] < self.sticker_capsule_price:
                 await interactions.followup.send("Not enough balance")
                 return
             
+            # Get a random sticker case
             sticker_case = self.get_random_sticker_case()
             
+            # Create an embed message for the sticker case
             embed_first_message = self.utility.create_open_case_embed_message(sticker_case, "Capsule", self.sticker_capsule_price)
 
             # Send a message that the stickers are being bought
-            await interactions.response.send_message(embed=embed_first_message, ephemeral=True)
+            await interactions.response.send_message(embed=embed_first_message)
+            # Get the message
+            first_message = await interactions.original_response()
             
+            # Wait 1 second before opening the capsule (so the user can see the capsule being opened)
+            time.sleep(2)
+            
+            # Get a random sticker from the case
             sticker = self.get_sticker_from_case(sticker_case)
+            
+            # Check if the sticker is None
             if sticker is None:
-                await interactions.followup.send("An error occurred while buying the stickers.")
+                await first_message.edit(content="An error occurred while opening the capsule.")
                 return
 
+            # Get the sticker price
             sticker_price = self.format_inexistant_prices(self.get_sticker_price(sticker))
             
-            profit = sticker_price["last_24h"] - self.sticker_capsule_price
+            # Calculate the profit
+            profit = sticker_price - self.sticker_capsule_price
             
             # Update the user's balance
             user["balance"] += profit
@@ -440,10 +451,11 @@ class Case():
                 # Add experience to the user
                 self.add_experience(user_id, profit)
             
-            embed = self.utility.create_sticker_embed(sticker, user["balance"], sticker_price["last_24h"], profit, self.color)
+            # Create an embed message for the sticker
+            embed = self.utility.create_sticker_embed(sticker, user["balance"], sticker_price, profit, self.color)
             
-            # Send a message that the stickers have been bought
-            await interactions.followup.send(embed=embed)
+            # Edit the message that the sticker has been bought
+            await first_message.edit(embed=embed)
         except Exception as e:
             print(f"Error buying stickers: {e}")
             await interactions.followup.send("An error occurred while buying the stickers.")
@@ -468,25 +480,39 @@ class Case():
             return
         
     async def next_page(self, interactions, inventory, message):
+        #Acknowledge the interaction
+        await interactions.response.defer()
         
-        self.page += 1
         # Get the next 10 items from the inventory
-       
+        if len(inventory[(self.page+1) * 10: (self.page+2) * 10]) == 0:
+            return
+
+        # Increment the page
+        self.page += 1
         
+        # Get the next 10 items from the inventory
         embed = self.utility.create_inventory_embed_message(interactions=interactions, user_inventory=inventory, page=self.page)
         
+        # Edit the message
         await message.edit(embed=embed)
+    
         return
         
     
     async def previous_page(self, interactions, inventory, message):
+        #Acknowledge the interaction
+        await interactions.response.defer()
+        # Make sure the page is not less than 1
         if self.page < 1:
             return
-        self.page -= 1
-        page_items = inventory[(self.page -1) * 10: (self.page) * 10]
         
+        # Decrement the page
+        self.page -= 1
+
+        # Get the previous 10 items from the inventory
         embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page)
         
+        # Edit the message
         await message.edit(embed=embed)
         
         return

@@ -444,6 +444,28 @@ class Utility():
             "price": weapon_price
         }
         
+    def create_color_text(self, color):
+        color_text = ""
+        # Blue text
+        if hex(color) == "0x4b69ff":
+            color_text = "🟦"  # Blue square emoji
+        # Purple text
+        elif hex(color) == "0x8847ff":
+            color_text = "🟪"  # Purple square emoji
+        # Pink text
+        elif hex(color) == "0xd32ce6":
+            color_text = "🟩"  # Pink square emoji (no exact pink emoji available)
+        # Red text
+        elif hex(color) == "0xeb4b4b":
+            color_text = "🟥"  # Red square emoji
+        # Yellow text
+        elif hex(color) == "0xade55c":
+            color_text = "🟨"  # Yellow square emoji
+        
+        return color_text
+            
+            
+        
     def create_inventory_embed_message(self,interactions, user_inventory, page):
         try:
             embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
@@ -452,26 +474,26 @@ class Utility():
             # Add the user's inventory to the embed message 
             # Loop through the user's inventory and add each item
             total_value = 0
-            print('user_inventory:', user_inventory)
-            print('page:', page)
-            
+
             # Sort the user's inventory by price
             user_inventory = sorted(user_inventory, key=lambda x: x["price"], reverse=True)
-            
-            print('user_inventory:', user_inventory)
-            print('page:', page)
+     
             
             # Get the 10 items of the current page
-            items = user_inventory[page * 10: (page + 1) * 10]
+            items = user_inventory[page * 10: (page + 1) * 10] 
+            
+            
             for item in items:
-                
+
                 
                 item_name = item["name"]
                 item_pattern = item["pattern"]
                 item_price = item["price"]
                 item_image = item["image"]
+                item_color = item["color"]
+                color = self.create_color_text(item_color)
                 
-                embed.add_field(name=f"🔫 {item_name} | {item_pattern}", value=f"**Price:** ${item_price:.2f}", inline=False)
+                embed.add_field(name=f"{color} {item_name} | {item_pattern}", value=f"**Price:** ${item_price:.2f}", inline=False)
                 # add an image of the weapon
                 
             
@@ -491,8 +513,8 @@ class Utility():
             return None
     
     async def add_page_buttons(self, message,inventory,  function_previous, function_next):
-        previous_button = Button(style=discord.ButtonStyle.green, label="Previous", custom_id="previous")
-        next_button = Button(style=discord.ButtonStyle.green, label="Next", custom_id="next")
+        previous_button = Button(style=discord.ButtonStyle.green, label="⬅️", custom_id="previous")
+        next_button = Button(style=discord.ButtonStyle.green, label="➡️", custom_id="next")
         # Add functions to the buttons
         async def previous_callback(interactions):
             await function_previous(interactions,inventory, message)
