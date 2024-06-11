@@ -253,10 +253,9 @@ class Case():
             # Get the weapon price
             prices = self.format_inexistant_prices(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
             
-            weapon_price = prices["last_24h"]
             
             # Adjust the profit based on the case price
-            profit = float(weapon_price) - self.case_price
+            profit = float(prices) - self.case_price
             
             # Update the user's balance (subtract the case price from the user's balance)
             user["balance"] -= self.case_price
@@ -270,11 +269,11 @@ class Case():
             # Get the weapon image
             weapon_image = self.get_weapon_image(weapon_info)
             
-            weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, weapon_price)
+            weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, prices)
             
 
             # Create the embed message
-            embed  = self.utility.create_case_embed(user["balance"], profit, weapon_price, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, self.user_nickname)
+            embed  = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, self.user_nickname)
             
             if embed is None:
                 await interactions.followup.send("An error occurred while opening the case.")
@@ -296,7 +295,7 @@ class Case():
             
         except Exception as e:
             print(f"Error opening case: {e}")
-            await interactions.response.send_message("An error occurred while opening the case.")
+            await interactions.followup.send("An error occurred while opening the case.")
             return
         
     async def keep_function(self, interactions, weapon, message):

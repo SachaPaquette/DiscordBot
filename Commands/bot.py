@@ -120,7 +120,7 @@ async def health(interactions):
     """
     try:
         await health_check.health_command(interactions, bot)
-        await bot.tree.sync(guild=interactions.guild)
+        await bot.tree.sync()
         
     except Exception as e:
         print(f"Error in the health command: {e}")
