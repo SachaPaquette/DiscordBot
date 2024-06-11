@@ -253,7 +253,6 @@ class Case():
             # Get the weapon price
             prices = self.format_inexistant_prices(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
             
-            
             # Adjust the profit based on the case price
             profit = float(prices) - self.case_price
             
@@ -271,7 +270,6 @@ class Case():
             
             weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, prices)
             
-
             # Create the embed message
             embed  = self.utility.create_case_embed(user["balance"], profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, self.color, self.user_nickname)
             

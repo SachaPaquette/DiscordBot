@@ -14,19 +14,7 @@ class Gambling():
     def __init__(self, server_id):
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-        self.users = {}
-        
-    def get_user_id(self, interaction):
-        """
-        Retrieves the user id from the interaction object.
-        
-        Parameters:
-        - interaction: The interaction object.
-        
-        Returns:
-        - user_id: The user id.
-        """
-        return interaction.user.id
+
 
     def get_slot_symbols(self):
         symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣']
@@ -48,7 +36,7 @@ class Gambling():
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
             
-            user_id = self.get_user_id(interactions)
+            user_id = interactions.user.id
             user = self.database.get_user(interactions.guild.id,user_id)
             
             if user["balance"] < bet:
@@ -77,71 +65,12 @@ class Gambling():
             logger.error(f"Error in the gamble function in gambling.py: {e}")
             return
         
-    async def balance(self, interactions):
-        try:
-            
-            user_id = self.get_user_id(interactions)
-            user = self.database.get_user(interactions.guild.id,user_id)
-            
-            
-            await interactions.response.send_message(f'Your balance is {user["balance"]:.2f} dollars.')
-        except Exception as e:
-            logger.error(f"Error in the balance function in gambling.py: {e}")
-            return
-            
-    async def work(self, interactions):
-        try:
-            # Simulate working and gives a random amount of money
-            user_id = self.get_user_id(interactions)
-            user = self.database.get_user(interactions.guild.id,user_id)
-            # Check if the user has worked in the last 10 minutes
-            if "last_work" in user:
-                if user["last_work"] + 600 > time.time():
-                    await interactions.response.send_message("You can only work every 10 minutes.")
-                    return
-            
-            user["balance"] += random.randint(1, 1000)
-            
-            
-            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
-            await interactions.response.send_message(f"Congratulations! You now have {user['balance']:.2f} dollars.")
-        except Exception as e:
-            logger.error(f"Error in the work function in gambling.py: {e}")
-            return
-        
-    async def give(self, interactions, destination_user: discord.Member, amount: int):
-        try:
-            if amount <= 0:
-                await interactions.response.send_message(f'{interactions.user.mention}, you must give a positive amount.')
-                return
-                
-            giving_user_id = self.get_user_id(interactions)
-            user = self.database.get_user(interactions.guild.id, giving_user_id)
-            
-            if user["balance"] < amount:
-                await interactions.response.send_message("You don't have enough money to give that amount.")
-                return
-                
-            user["balance"] -= amount
-            self.database.update_user_balance(interactions.guild.id, giving_user_id, user["balance"])
-            
-            receiving_user = self.database.get_user(interactions.guild.id, destination_user.id)
-            receiving_user["balance"] += amount
-            self.database.update_user_balance(interactions.guild.id, destination_user.id, receiving_user["balance"])
-            
-            await interactions.response.send_message(f'{interactions.user.mention} gave {destination_user.mention} {amount} dollars.')
-        except Exception as e:
-            logger.error(f"Error in the give function in gambling.py: {e}")
-            return
-
-        
 class Slot3x3Machine():
     def __init__(self, server_id):
         self.reels = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '🔔', '💎', '7️⃣']
         self.grid = []
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-        self.users = {}
         self.server_id = server_id
 
     def spin(self):

@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from discord import app_commands
+from Commands.balance import Balance
 from Commands.music import SongSession
 from Commands.lyrics import LyricsOperations
 from Commands.queue import QueueOperations
@@ -12,7 +13,9 @@ from Commands.utility import Utility
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
 from Commands.gambling import Gambling, Slot3x3Machine
+from Commands.give import Give
 from Commands.leaderboard import Leaderboard
+from Commands.work import Work
 from Commands.case import Case
 from Config.config import conf
 
@@ -464,9 +467,10 @@ async def work(interactions):
     - None
     """
     try:
+        work = Work()
         gambling = Gambling(interactions.guild.id)
         # Call the work function in Gambling
-        await gambling.work(interactions)
+        await work.work_command(interactions)
     except Exception as e:
         logger.error(f"Error in the work command: {e}")
         raise e
@@ -483,9 +487,10 @@ async def balance(interactions):
     - None
     """
     try:
+        balance = Balance()
         gambling = Gambling(interactions.guild.id)
         # Call the balance function in Gambling
-        await gambling.balance(interactions)
+        await balance.balance_command(interactions)
     except Exception as e:
         logger.error(f"Error in the balance command: {e}")
         raise e
@@ -504,9 +509,10 @@ async def give(interactions, member: discord.Member, amount: int):
     - None
     """
     try:
+        give = Give()
         gambling = Gambling(interactions.guild.id)
         # Call the give function in Gambling
-        await gambling.give(interactions, member, amount)
+        await give.give_command(interactions, member, amount)
     except Exception as e:
         logger.error(f"Error in the give command: {e}")
         raise e
