@@ -11,6 +11,12 @@ class Give():
         
     async def give_command(self, interactions, destination_user: discord.Member, amount: int):
         try:
+            # Check if the destination user is the same as the user
+            if destination_user.id == interactions.user.id:
+                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to yourself.')
+                return
+            
+            # Check if the amount is positive
             if amount <= 0:
                 await interactions.response.send_message(f'{interactions.user.mention}, you must give a positive amount.')
                 return

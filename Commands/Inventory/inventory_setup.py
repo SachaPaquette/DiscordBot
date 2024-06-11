@@ -1,5 +1,5 @@
 from Commands.database import Database
-class Inventory():
+class Inventory_class():
     def __init__(self, server_id):
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)

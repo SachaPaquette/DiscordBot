@@ -413,16 +413,8 @@ class Utility():
         view.add_item(sell_button)
         await message.edit(view=view)
         
-        
-        
-
-
-        
     async def disable_buttons(self,interactions, message):
-        # Remove the buttons, the embed and the picture
-        
-        
-        
+        # Disable the buttons
         view = View()
         await message.edit(view=view, embed=None)
         
@@ -534,3 +526,14 @@ class Utility():
         if session is None:
             return False
         return True
+    
+    
+    def has_sufficient_balance(self, user, amount):
+        # Check if the user has sufficient balance
+        return user["balance"] >= amount
+    
+    def calculate_profit(self, total, item_price):
+        # Calculate the profit
+        return total - item_price
+    
+    

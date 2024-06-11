@@ -15,6 +15,7 @@ from Commands.health import HealthCheck
 from Commands.gambling import Gambling, Slot3x3Machine
 from Commands.give import Give
 from Commands.leaderboard import Leaderboard
+from Commands.inventory_command import Inventory
 from Commands.work import Work
 from Commands.case import Case
 from Config.config import conf
@@ -468,8 +469,6 @@ async def work(interactions):
     """
     try:
         work = Work()
-        gambling = Gambling(interactions.guild.id)
-        # Call the work function in Gambling
         await work.work_command(interactions)
     except Exception as e:
         logger.error(f"Error in the work command: {e}")
@@ -488,8 +487,6 @@ async def balance(interactions):
     """
     try:
         balance = Balance()
-        gambling = Gambling(interactions.guild.id)
-        # Call the balance function in Gambling
         await balance.balance_command(interactions)
     except Exception as e:
         logger.error(f"Error in the balance command: {e}")
@@ -510,8 +507,6 @@ async def give(interactions, member: discord.Member, amount: int):
     """
     try:
         give = Give()
-        gambling = Gambling(interactions.guild.id)
-        # Call the give function in Gambling
         await give.give_command(interactions, member, amount)
     except Exception as e:
         logger.error(f"Error in the give command: {e}")
@@ -587,9 +582,10 @@ async def inventory(interactions):
     - None
     """
     try:
+        inventory = Inventory(interactions.guild.id)
         case = Case(interactions.guild.id)
         # Call the inventory function in Gambling
-        await case.display_inventory(interactions)
+        await inventory.display_inventory(interactions)
     except Exception as e:
         logger.error(f"Error in the inventory command: {e}")
         raise e
