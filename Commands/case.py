@@ -498,7 +498,6 @@ class Case():
     
         return
         
-    
     async def previous_page(self, interactions, inventory, message):
         #Acknowledge the interaction
         await interactions.response.defer()

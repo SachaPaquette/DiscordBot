@@ -55,7 +55,6 @@ lyrics_operations = LyricsOperations(bot)
 
 profanity = Profanity(bot)
 
-
 commands_list = []
 
 @bot.event
