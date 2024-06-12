@@ -19,6 +19,7 @@ from Commands.inventory_command import Inventory
 from Commands.rockpaperscissors import RockPaperScissors, Choices
 from Commands.work import Work
 from Commands.case import Case
+from Commands.roll import Roll
 from Commands.capsule import Capsule
 from Config.config import conf
 
@@ -611,6 +612,25 @@ async def rps(interactions,bet:float,  choice: Choices):
     except Exception as e:
         logger.error(f"Error in the rps command: {e}")
         raise e
+
+@bot.tree.command(name='roll', description='Roll a dice between 1-100.')
+async def roll(interactions, bet: int, number: int):
+    """
+    Roll a dice between 1-100.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        roll = Roll()
+        await roll.roll_command(interactions, bet, number)
+    except Exception as e:
+        logger.error(f"Error in the roll command: {e}")
+        raise e
+
 
 def main():
     """

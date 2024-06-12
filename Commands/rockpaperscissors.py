@@ -49,25 +49,32 @@ class RockPaperScissors():
             return
         user = self.database.get_user(interactions.guild.id, interactions.user.id)
         if self.utility.has_sufficient_balance(user, bet) == False:    
-            await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
+            await interactions.response.send_message(f'{interactions.user.mention}, you are too broke.')
             return
 
         bot_choice = random.choice(self.choices)
         
         user["balance"] -= bet
         
+        amount_betted = bet
+        
+        
         if self.game_logic(choice, bot_choice) == GameStates.WIN:
-            bet *= 2
+            profit = bet
+            bet = bet*2
             
         elif self.game_logic(choice, bot_choice) == GameStates.LOSE:
+            profit = -bet
             bet = 0
             
         else:
+            profit = 0
             bet = bet    
             
         
+        
         self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"] + bet)
-        embed = self.utility.create_rockpaperscissors_embed(choice.value, bot_choice.value, self.game_logic(choice, bot_choice).value, bet, user["balance"] + bet, interactions.user.display_name)
+        embed = self.utility.create_rockpaperscissors_embed(choice.value, bot_choice.value, self.game_logic(choice, bot_choice).value, bet, user["balance"] + bet, interactions.user.display_name, profit, amount_betted)
         
         
         await interactions.response.send_message(embed=embed)

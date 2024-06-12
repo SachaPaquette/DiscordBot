@@ -583,35 +583,37 @@ class Utility():
         return total - item_price
     
     
-    def create_rockpaperscissors_embed(self, user_choice, bot_choice, result, bet, balance, user_name):
-        # Create an embed message for the rock-paper-scissors game
-        # If the game is won, the color is green
-        
-        # Put the result in undercase
+    def create_rockpaperscissors_embed(self, user_choice, bot_choice, result, bet, balance, user_name, profit, amount_betted):
+        # Normalize the result string to lower case
         result = result.lower().strip()
- 
+    
+        # Determine the color based on the result
         if result == "you win!":
             color = discord.Color.green()
-        # If the game is lost, the color is red
         elif result == "you lose!":
             color = discord.Color.red()
-        # If the game is a tie, the color is gold
         else:
             color = discord.Color.gold()
-            
-        print(color)
-        embed = discord.Embed(title="Rock-Paper-Scissors", color=color)
-        embed.add_field(name=f"{user_name}'s Choice", value=user_choice, inline=True)
-        embed.add_field(name=f"My Choice", value=bot_choice, inline=True)
-        embed.add_field(name="Result", value=result, inline=False)
 
-        # Add the bet amount, profit/loss, and balance
-        embed.add_field(name="Bet Amount", value=f"${bet}", inline=True)
-        embed.add_field(name="Profit/Loss", value=f"${balance:.2f}", inline=True)
-        embed.add_field(name="Balance", value=f"${balance:.2f}", inline=True)
-            
+        # Create the embed message
+        embed = discord.Embed(
+            title="Rock-Paper-Scissors",
+            color=color
+        )
+
+        # Add fields with enhanced formatting
+        embed.add_field(name=f"👤 {user_name}'s Choice", value=f"**{user_choice.capitalize()}**", inline=True)
+        embed.add_field(name="🤖 My Choice", value=f"**{bot_choice.capitalize()}**", inline=True)
+        embed.add_field(name="🎲 Result", value=f"**{result.capitalize()}**", inline=False)
+
+        # Add the bet amount, profit/loss, and balance with emojis
+        embed.add_field(name="💰 Bet Amount", value=f"**${amount_betted:.2f}**", inline=True)
+        embed.add_field(name="📈 Profit/Loss", value=f"**${profit:.2f}**", inline=True)
+        embed.add_field(name="🏦 Total", value=f"**${bet:.2f}**", inline=True)
+        embed.add_field(name="💼 Balance", value=f"**${balance:.2f}**", inline=True)
+
         return embed
-    
+
     def add_experience(self,server_id, user_id, payout):
         if payout < 0:
             return
@@ -619,3 +621,37 @@ class Utility():
         user = self.database.get_user(server_id, user_id)
         # Update the user's experience  
         self.database.update_user_experience(server_id, user_id, payout)
+        
+        
+    def create_roll_embed_message(self, interactions, bet, number, rolled_number, winnings, balance):
+        
+        # Determine the color based on the winnings
+        if winnings > 0:
+            color = discord.Color.green()
+            value = f"🎉 You win! 🎉"
+        else:
+            color = discord.Color.red()
+            value = f"😢 You lose! Better luck next time noob. 😢"
+            
+        
+
+        # Create the embed message
+        embed = discord.Embed(
+            title="🎲 Roll Result 🎲",
+            color=color
+        )
+        
+        
+        # Add the user's name to the embed message
+        embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+        embed.add_field(name="Result", value=f"{value}", inline=False)
+
+        # Add fields with enhanced formatting
+        embed.add_field(name="🎲 Your Number", value=f"**{number}**", inline=True)
+        embed.add_field(name="🎲 Rolled Number", value=f"**{rolled_number}**", inline=True)
+        embed.add_field(name="💰 Bet Amount", value=f"**${bet:.2f}**", inline=True)
+        embed.add_field(name="🏦 Winnings", value=f"**${winnings:.2f}**", inline=True)
+        embed.add_field(name="💼 Balance", value=f"**${balance:.2f}**", inline=True)
+
+        return embed    
+    

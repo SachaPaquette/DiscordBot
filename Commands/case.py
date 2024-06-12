@@ -49,10 +49,6 @@ class Case():
         self.utility = Utility()
         # Set the server id
         self.server_id = server_id
-        # Set the Selenium driver
-        self.driver = driver_setup()
-        
-
         self.is_sold_or_bought = False
         self.inventory = Inventory_class(server_id) 
         
