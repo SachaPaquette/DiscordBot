@@ -51,6 +51,7 @@ class Case():
         self.server_id = server_id
         self.is_sold_or_bought = False
         self.inventory = Inventory_class(server_id) 
+        self.user_id = None
         
     def get_random_case(self):
         # Get a random case from the json file ./Cases/cases.json
@@ -196,6 +197,7 @@ class Case():
 
             # Check if the user has enough balance to buy the case
             user = self.database.get_user(self.server_id , interactions.user.id)
+            self.user_id = interactions.user.id
             
             if self.utility.has_sufficient_balance(user, self.case_price) is False:
                 await interactions.followup.send(f"{interactions.user.display_name} has insufficient balance to buy the case.")
@@ -282,7 +284,7 @@ class Case():
     
     async def sell_function(self, interactions, weapon, message):
          # Make sure the person that is clicking on the button is the same person that opened the case
-        if interactions.user.id != interactions.user.id:
+        if self.user_id != interactions.user.id:
             return
         
         self.is_sold_or_bought = True

@@ -504,11 +504,11 @@ class Utility():
             
             
         
-    def create_inventory_embed_message(self,interactions, user_inventory, page):
+    def create_inventory_embed_message(self,interactions, user_inventory, page, username):
         try:
             embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
             # Add the user's name to the embed message
-            embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+            embed.add_field(name="👤 User", value=f"**{username}**", inline=False)
             # Add the user's inventory to the embed message 
             # Loop through the user's inventory and add each item
             total_value = 0

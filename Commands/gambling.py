@@ -120,6 +120,7 @@ class Slot3x3Machine():
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
                 return
             
+            user["balance"] -= bet
             
             self.spin()
             payout = self.check_winnings(bet)

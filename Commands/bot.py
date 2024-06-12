@@ -21,6 +21,7 @@ from Commands.work import Work
 from Commands.case import Case
 from Commands.roll import Roll
 from Commands.capsule import Capsule
+from Commands.blackjack import BlackJack
 from Config.config import conf
 
 
@@ -631,6 +632,23 @@ async def roll(interactions, bet: int, number: int):
         logger.error(f"Error in the roll command: {e}")
         raise e
 
+@bot.tree.command(name='blackjack', description='Play blackjack.')
+async def blackjack(interactions, bet: int):
+    """
+    Play blackjack.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        blackjack = BlackJack()
+        await blackjack.blackjack_command(interactions, bet)
+    except Exception as e:
+        logger.error(f"Error in the blackjack command: {e}")
+        raise e
 
 def main():
     """

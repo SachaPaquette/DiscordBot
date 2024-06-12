@@ -4,11 +4,13 @@ class Inventory_class():
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.users = {}
+        self.server_id = server_id
         
     def get_inventory(self, user_id):
         user = self.collection.find_one({"user_id": user_id})
         if user is None:
-            return None
+            # Create a new user
+            user = self.database.get_user(self.server_id, user_id)
         return user.get("inventory", [])
     
     def add_or_remove_item_to_inventory(self, user_id, item, condition:str):

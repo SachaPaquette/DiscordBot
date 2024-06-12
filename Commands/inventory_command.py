@@ -10,14 +10,18 @@ class Inventory():
         self.utility = Utility()
         self.page = 0
         self.inventory = Inventory_class(server_id)
+        self.user_id = None
+        self.username = None
+        
     async def display_inventory(self, interactions):
         try:
-            user_id = interactions.user.id
-            inventory = self.inventory.get_inventory(user_id)
+            self.user_id = interactions.user.id
+            self.username = interactions.user.name
+            inventory = self.inventory.get_inventory(self.user_id)
             if inventory is None or len(inventory) == 0:
                 await interactions.response.send_message("You don't have any items in your inventory.")
                 return
-            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page)
+            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page, self.username)
             await interactions.response.send_message(embed=embed)
             embed_message = await interactions.original_response()
             
@@ -41,7 +45,7 @@ class Inventory():
             self.page += 1
             
             # Get the next 10 items from the inventory
-            embed = self.utility.create_inventory_embed_message(interactions=interactions, user_inventory=inventory, page=self.page)
+            embed = self.utility.create_inventory_embed_message(interactions=interactions, user_inventory=inventory, page=self.page, username=self.username)
             
             # Edit the message
             await message.edit(embed=embed)
@@ -63,7 +67,7 @@ class Inventory():
             self.page -= 1
 
             # Get the previous 10 items from the inventory
-            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page)
+            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page, self.username)
             
             # Edit the message
             await message.edit(embed=embed)
