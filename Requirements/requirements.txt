@@ -30,7 +30,7 @@ packaging==24.0
 pillow==10.3.0
 pip==24.0
 pycparser==2.21
-pycryptodomex==3.19.0
+pycryptodomex==3.19.1
 pymongo==4.7.2
 PyNaCl==1.5.0
 PySocks==1.7.1
