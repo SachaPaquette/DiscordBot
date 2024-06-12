@@ -3,7 +3,7 @@ from Commands.utility import Utility
 from Config.logging import setup_logging
 from Config.config import conf
 # Create a logger for this file
-logger = setup_logging("profanity.py", conf.LOGS_PATH)
+logger = setup_logging("nowplaying.py", conf.LOGS_PATH)
 class NowPlaying():    
     async def nowplaying_command(self, interactions, session):
             """

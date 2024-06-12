@@ -87,16 +87,12 @@ class Case():
 
         # Check if the rarity is for a rare special item
         if rarity == "Rare Special Item":
-            
             for case in self.case["contains_rare"]:
                 possible_guns_list.append(case)
                 is_rare = True
         else:
-            
             # Using the rarity obtained, get a weapon from this rarity in the case
             for case in self.case["contains"]:
-                
-                
                 if case["rarity"]["name"] == rarity:
                         possible_guns_list.append(case)
                         break
