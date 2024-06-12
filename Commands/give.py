@@ -9,8 +9,13 @@ class Give():
     def __init__(self):
         self.database = Database.getInstance()
         
-    async def give_command(self, interactions, destination_user: discord.Member, amount: int):
+    async def give_command(self, interactions, destination_user: discord.Member, amount: float):
         try:
+            # Check if the destination user is a bot
+            if destination_user.bot:
+                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to a bot.')
+                return
+            
             # Check if the destination user is the same as the user
             if destination_user.id == interactions.user.id:
                 await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to yourself.')

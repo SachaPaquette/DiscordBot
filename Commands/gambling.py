@@ -77,18 +77,18 @@ class Slot3x3Machine():
         self.grid = [[random.choice(self.reels) for _ in range(3)] for _ in range(3)]
         return self.grid
 
-    def check_winnings(self):
+    def check_winnings(self, bet):
         # Define payouts for specific patterns
         payouts = {
-            '🍒': 10,
-            '🍋': 5,
-            '🍊': 5,
-            '🍉': 20,
-            '🍇': 15,
-            '⭐': 25,
-            '🔔': 30,
-            '💎': 50,
-            '7️⃣': 100
+            '🍒': bet*2,
+            '🍋': bet,
+            '🍊': bet,
+            '🍉': bet*2,
+            '🍇': bet*2,
+            '⭐': bet*3,
+            '🔔': bet*2,
+            '💎': bet*5,
+            '7️⃣': bet*10
         }
         
         total_payout = 0
@@ -122,9 +122,9 @@ class Slot3x3Machine():
             
             
             self.spin()
-            payout = self.check_winnings()
+            payout = self.check_winnings(bet)
             
-            user["balance"] += (payout - bet)
+            user["balance"] += payout
             
             # Update the user's balance
             self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"])
@@ -134,7 +134,7 @@ class Slot3x3Machine():
                 self.database.update_user_experience(interactions.guild.id, interactions.user.id, payout)
             
             # Send initial message
-            result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
+            await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
             
             # React to the message with slot symbols
             result_message = await interactions.original_response()

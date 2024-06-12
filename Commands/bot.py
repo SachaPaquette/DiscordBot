@@ -16,8 +16,10 @@ from Commands.gambling import Gambling, Slot3x3Machine
 from Commands.give import Give
 from Commands.leaderboard import Leaderboard
 from Commands.inventory_command import Inventory
+from Commands.rockpaperscissors import RockPaperScissors, Choices
 from Commands.work import Work
 from Commands.case import Case
+from Commands.capsule import Capsule
 from Config.config import conf
 
 
@@ -563,9 +565,9 @@ async def capsule(interactions):
     - None
     """
     try:
-        case = Case(interactions.guild.id)
+        sticker = Capsule(interactions.guild.id)
         # Call the capsule function in Gambling
-        await case.open_capsule(interactions)
+        await sticker.open_capsule(interactions)
     except Exception as e:
         logger.error(f"Error in the capsule command: {e}")
         raise e
@@ -583,11 +585,31 @@ async def inventory(interactions):
     """
     try:
         inventory = Inventory(interactions.guild.id)
-        case = Case(interactions.guild.id)
         # Call the inventory function in Gambling
         await inventory.display_inventory(interactions)
     except Exception as e:
         logger.error(f"Error in the inventory command: {e}")
+        raise e
+    
+
+@bot.tree.command(name="rps", description="Play rock, paper, scissors.")
+async def rps(interactions,bet:float,  choice: Choices):
+    """
+    Play rock, paper, scissors.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+    - choice (Choices): The choice of rock, paper, or scissors.
+
+    Returns:
+    - None
+    """
+    try:
+        rps = RockPaperScissors()
+        # Call the rps function in RockPaperScissors
+        await rps.rockpaperscissors_command(interactions, bet, choice)
+    except Exception as e:
+        logger.error(f"Error in the rps command: {e}")
         raise e
 
 def main():

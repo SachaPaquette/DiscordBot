@@ -4,9 +4,14 @@ from discord.ext import commands
 from Config.logging import setup_logging
 from Config.config import conf
 import matplotlib.pyplot as plt
+from Commands.database import Database
 # Create a logger for this file
 logger = setup_logging("utility.py", conf.LOGS_PATH)
 class Utility():
+    def __init__(self):
+        self.database = Database.getInstance()
+    
+    
     async def join(self, interactions: discord.Interaction):
         """
         Join the voice channel.
@@ -165,29 +170,45 @@ class Utility():
     @staticmethod
     def create_slots_9x9_embed_message(grid, bet, payout, balance):
         try:
-            padding_title = "⠀" * 4
+            
             # Create the embed message with a vibrant color and a dynamic title
             embed = discord.Embed(
-                title=f"{padding_title}🎰 3x3 Slots 🎰",
-                description=f"{padding_title}🔥 Try your luck! 🔥",
+                title=f"🎰 3x3 Slots 🎰",
+                description=f"🔥 Try your luck! 🔥",
                 color=discord.Color.gold()
             )
+            
+            # Add some padding for better spacing
             padding = "⠀" * 8
+            
             # Add each row with emojis to represent the slot items
-            for i, row in enumerate(grid):
-                row_with_emojis = f"{padding}║ " + " ║ ".join(row) + " ║"
-                embed.add_field(name="\u200b", value=row_with_emojis, inline=False)
+            slot_rows = ""
+            for row in grid:
+                row_with_emojis = "║ " + " ║ ".join(row) + " ║"
+                slot_rows += f"{padding}{row_with_emojis}\n"
+            embed.add_field(name="\u200b", value=slot_rows, inline=False)
 
             # Format the bet, payout, and balance details with bold text and emojis
             embed.add_field(name="💸 Bet Amount", value=f"**{bet}** coins", inline=True)
-            embed.add_field(name="💰 Payout", value=f"**{payout}** coins", inline=True)
-            embed.add_field(name="💼 New Balance", value=f"**{balance}** coins", inline=True)
+            embed.add_field(name="💰 Payout", value=f"**{payout:.2f}** coins", inline=True)
+            embed.add_field(name="💼 New Balance", value=f"**{balance:.2f}** coins", inline=True)
 
             # Add a celebratory or consoling message based on the payout
             if payout > 0:
-                embed.add_field(name=f"{padding_title}🎉 Congratulations! 🎉", value=f"{padding_title}You've won **{payout}** dollars! 🥳", inline=False)
+                embed.add_field(
+                    name=f"🎉 Congratulations! 🎉", 
+                    value=f"You've won **{payout:.2f}** coins! 🥳", 
+                    inline=False
+                )
             else:
-                embed.add_field(name=f"{padding_title}💔 Better luck next time! 💔", value=f"{padding_title}A gambler never gives up! 🍀", inline=False)
+                embed.add_field(
+                    name=f"💔 Better luck next time! 💔", 
+                    value=f"A gambler never gives up! 🍀", 
+                    inline=False
+                )
+
+            # Optionally, you can add a footer or a thumbnail for better aesthetics
+            embed.set_footer(text="Good luck in your next spin!")
 
             return embed
         except Exception as e:
@@ -393,6 +414,31 @@ class Utility():
             logger.error(f"Error while trying to create an embed message in sticker.py: {e}")
             return None
         
+        
+    def format_inexistant_prices(self, sticker_price):
+        
+        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
+        
+
+            # Iterate over the time periods
+        for i in range(len(time_periods)):
+            current_period = time_periods[i]
+            
+            # If the current period price is None, find the next available non-None price
+            if sticker_price[current_period] is None:
+                for j in range(i + 1, len(time_periods)):
+                    next_period = time_periods[j]
+                    if sticker_price[next_period] is not None:
+                        sticker_price[current_period] = sticker_price[next_period]
+                        break
+                else:
+                    # If no non-None value is found, set it to 0
+                    sticker_price[current_period] = 1200
+        
+        return sticker_price["last_24h"]
+        
+        
+        
     async def add_buttons(self,interactions, message, function_keep, function_sell, weapon):
         keep_button = Button(style=discord.ButtonStyle.green, label="Keep", custom_id="keep")
         sell_button = Button(style=discord.ButtonStyle.red, label="Sell", custom_id="sell")
@@ -537,3 +583,39 @@ class Utility():
         return total - item_price
     
     
+    def create_rockpaperscissors_embed(self, user_choice, bot_choice, result, bet, balance, user_name):
+        # Create an embed message for the rock-paper-scissors game
+        # If the game is won, the color is green
+        
+        # Put the result in undercase
+        result = result.lower().strip()
+ 
+        if result == "you win!":
+            color = discord.Color.green()
+        # If the game is lost, the color is red
+        elif result == "you lose!":
+            color = discord.Color.red()
+        # If the game is a tie, the color is gold
+        else:
+            color = discord.Color.gold()
+            
+        print(color)
+        embed = discord.Embed(title="Rock-Paper-Scissors", color=color)
+        embed.add_field(name=f"{user_name}'s Choice", value=user_choice, inline=True)
+        embed.add_field(name=f"My Choice", value=bot_choice, inline=True)
+        embed.add_field(name="Result", value=result, inline=False)
+
+        # Add the bet amount, profit/loss, and balance
+        embed.add_field(name="Bet Amount", value=f"${bet}", inline=True)
+        embed.add_field(name="Profit/Loss", value=f"${balance:.2f}", inline=True)
+        embed.add_field(name="Balance", value=f"${balance:.2f}", inline=True)
+            
+        return embed
+    
+    def add_experience(self,server_id, user_id, payout):
+        if payout < 0:
+            return
+        # Get the user
+        user = self.database.get_user(server_id, user_id)
+        # Update the user's experience  
+        self.database.update_user_experience(server_id, user_id, payout)
