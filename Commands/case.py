@@ -81,16 +81,16 @@ class Case():
         """
         # Use the rarity to get a weapon
         rarity = self.gamble_rarity()
-        
+
         possible_guns_list = []
         is_rare = False
 
         # Check if the rarity is for a rare special item
         if rarity == "Rare Special Item":
+            
             for case in self.case["contains_rare"]:
-                if "contains_rare" in case:
-                    possible_guns_list.extend(case)
-                    is_rare = True
+                possible_guns_list.append(case)
+                is_rare = True
         else:
             
             # Using the rarity obtained, get a weapon from this rarity in the case
@@ -191,6 +191,7 @@ class Case():
         
     async def open_case(self, interactions):
         try:
+            
             # Send a message that the case is being bought
             await interactions.response.send_message(embed=self.utility.create_open_case_embed_message(self.case, "Case", self.case_price))
             first_message = await interactions.original_response()
@@ -229,7 +230,7 @@ class Case():
             user["balance"] -= self.case_price
             
             # Update the user's balance
-            self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"])
+            self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"], self.case_price)
             
             # Add experience to the user
             self.utility.add_experience(self.server_id, interactions.user.id, self.utility.calculate_profit(float(prices), self.case_price))

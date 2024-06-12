@@ -120,7 +120,7 @@ class Capsule():
             
             # Update the user's balance
             user["balance"] += self.utility.calculate_profit(sticker_price, self.sticker_capsule_price)
-            self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"])
+            self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"], self.sticker_capsule_price)
             
             if self.utility.calculate_profit(sticker_price, self.sticker_capsule_price) > 0:
                 # Add experience to the user

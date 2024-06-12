@@ -43,12 +43,14 @@ class Gambling():
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
                 return
 
+        
+
             symbols = self.get_slot_symbols()
             
             payout = self.calculate_payout(symbols, bet)
             user["balance"] += payout
             # Update the user's balance
-            self.database.update_user_balance(interactions.guild.id,user_id, user["balance"])
+            self.database.update_user_balance(interactions.guild.id,user_id, user["balance"], bet)
             
             if payout > 0: 
                 # Update the user's experience
@@ -128,7 +130,7 @@ class Slot3x3Machine():
             user["balance"] += payout
             
             # Update the user's balance
-            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"])
+            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
             
             if payout > 0:
                 # Update the user's experience

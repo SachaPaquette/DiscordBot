@@ -86,7 +86,7 @@ class Database():
         return user
     
 
-    def update_user_balance(self, server_id, user_id, balance, update_last_work_time=False):
+    def update_user_balance(self, server_id, user_id, balance,bet, update_last_work_time=False):
         """
         Updates the balance of a user.
         
@@ -97,9 +97,17 @@ class Database():
         """
         collection = self.get_collection(server_id)
         update_fields = {"balance": balance}
+        
         if update_last_work_time:
             update_fields["last_work"] = time.time()
-        collection.update_one({"user_id": user_id}, {"$set": update_fields})
+            # Combine the $set and $inc operations in a single update_one call
+        collection.update_one(
+            {"user_id": user_id},
+            {
+                "$set": update_fields,
+                "$inc": {"total_bet": bet}
+            }
+        )
         
     def update_user_experience(self,server_id, user_id, payout):
         """

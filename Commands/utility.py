@@ -244,7 +244,7 @@ class Utility():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f}",
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']:.2f}",
                     inline=False
                 )
 
@@ -253,7 +253,7 @@ class Utility():
             logger.error(f"Error while trying to create an embed message in leaderboard.py: {e}")
             return None
         
-    def create_rank_embed(self, interactions,  rank):
+    def create_rank_embed(self, interactions,  rank, total_bet):
         try:
                 
             # Create an embed message that contains the user's rank
@@ -261,13 +261,15 @@ class Utility():
             
             # Get the user profile picture
             embed.set_thumbnail(url=interactions.user.avatar)
-            # Put a border around the user's profile picture
-            
+
             # Add the user's name to the embed message
             embed.add_field(name="Your Name", value=f"{interactions.user.name}", inline=False)
             
             # Add the user's rank to the embed message
             embed.add_field(name="Your level", value=f"**{rank}**", inline=False)
+            
+            # Add the total bet amount to the embed message
+            embed.add_field(name="Total Bet", value=f"$**{total_bet}**", inline=False)
             
             return embed
         

@@ -58,7 +58,7 @@ class Roll():
         
         user["balance"] += winnings
         
-        self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"])
+        self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
         
         embed = self.utility.create_roll_embed_message(interactions, bet, number, rolled_number, winnings, user["balance"])
         
