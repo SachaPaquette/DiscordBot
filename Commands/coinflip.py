@@ -21,9 +21,9 @@ class CoinFlip():
     async def coinflip_command(self, interactions, bet: float, opponent: discord.Member):
         try:
             # Check if the opponent is a bot
-            """if opponent.bot:
+            if opponent.bot:
                 await interactions.response.send_message(f'{interactions.user.mention}, you can\'t bet against a bot.')
-                return"""
+                return
             
             # Check if the bet is positive
             if bet <= 0:
