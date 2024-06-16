@@ -86,7 +86,7 @@ class Database():
         return user
     
 
-    def update_user_balance(self, server_id, user_id, balance,bet, update_last_work_time=False):
+    def update_user_balance(self, server_id, user_id, balance,bet=0, update_last_work_time=False):
         """
         Updates the balance of a user.
         

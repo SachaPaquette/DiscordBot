@@ -43,8 +43,6 @@ class Gambling():
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
                 return
 
-        
-
             symbols = self.get_slot_symbols()
             
             payout = self.calculate_payout(symbols, bet)

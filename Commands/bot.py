@@ -22,6 +22,7 @@ from Commands.case import Case
 from Commands.roll import Roll
 from Commands.capsule import Capsule
 from Commands.blackjack import BlackJack
+from Commands.coinflip import CoinFlip, CoinChoices
 from Config.config import conf
 
 
@@ -648,6 +649,24 @@ async def blackjack(interactions, bet: int):
         await blackjack.blackjack_command(interactions, bet)
     except Exception as e:
         logger.error(f"Error in the blackjack command: {e}")
+        raise e
+
+@bot.tree.command(name='coinflip', description='Flip a coin.')
+async def coinflip(interactions, bet: float, user: discord.Member):
+    """
+    Flip a coin.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        coinflip = CoinFlip()
+        await coinflip.coinflip_command(interactions, bet, user)
+    except Exception as e:
+        logger.error(f"Error in the coinflip command: {e}")
         raise e
 
 def main():

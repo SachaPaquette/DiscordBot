@@ -24,7 +24,7 @@ class Work():
             
             # Update the user's balance
             user["balance"] += money_earned
-            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"], True)
+            self.database.update_user_balance(interactions.guild.id, user_id, user["balance"],0, True)
             
             # Send a message to the user
             await interactions.response.send_message(f"Congratulations! You earned ${money_earned}, you now have {user['balance']:.2f} dollars.")

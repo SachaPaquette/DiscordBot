@@ -78,11 +78,6 @@ class BlackJack():
                 await self.send_or_edit_message(interactions,f'{interactions.user.mention}, you don\'t have enough money to bet that amount.')
                 return
             
-            # Make sure its not tito
-            if interactions.user.id == 255514666116055061:
-                await self.send_or_edit_message(interactions,"NO TITO!")
-                return
-            
             # Create the deck
             self.create_deck()
             
@@ -165,7 +160,7 @@ class BlackJack():
                 for card in self.player_hand:
                     players_hand += card + " "
                     
-                await self.send_or_edit_message(self.interactions, f'Your hand is {players_hand} and is worth {self.calculate_score(self.player_hand)}. The dealer\'s hand is {self.dealer_hand} and a hidden card.')
+                await self.send_or_edit_message(self.interactions, f'Your hand is {players_hand} and is worth {self.calculate_score(self.player_hand)}. The dealer\'s hand is {self.dealer_hand[0]} and a hidden card.')
             
             return
         
@@ -175,11 +170,11 @@ class BlackJack():
     async def blackjack_win(self):
         self.user["balance"] += self.bet * 2
         self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"], self.bet)
-        await self.send_or_edit_message(self.interactions, f'{self.interactions.user.mention} won {self.bet * 2} dollars!')
+        await self.send_or_edit_message(self.interactions, f'The dealer had: {self.dealer_score}, {self.interactions.user.mention} won {self.bet * 2} dollars!')
         await self.remove_buttons()
     async def blackjack_lose(self):
         self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"], self.bet)
-        await self.send_or_edit_message(self.interactions, f'{self.interactions.user.mention} lost {self.bet} dollars!')
+        await self.send_or_edit_message(self.interactions, f'The dealer had: {self.dealer_score}, {self.interactions.user.mention} lost {self.bet} dollars!')
         await self.remove_buttons()
         
     async def blackjack_tie(self):

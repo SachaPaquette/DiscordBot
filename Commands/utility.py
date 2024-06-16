@@ -146,8 +146,8 @@ class Utility():
             embed = discord.Embed(title="Slot Machine", color=color)
 
             # Add slot symbols
-            symbols_str = " | ".join(symbols)
-            embed.add_field(name="Slot Symbols", value=f"```{symbols_str}```", inline=False)
+            symbols_str = " |".join(symbols)
+            embed.add_field(name="Slot Symbols", value=f"```{symbols_str}```", inline=True)
 
             # Add result without a title
             embed.add_field(name=" ", value=f"**{result}**", inline=False)
@@ -156,7 +156,6 @@ class Utility():
             embed.add_field(name="Result", value=field_value, inline=False)
             # Add balance with 2 decimal places
             embed.add_field(name="Balance", value=f'{"{:.2f}".format(balance)} :coin:', inline=False)
-
 
             # Add footer with additional information
             embed.set_footer(text="Feeling lucky? Spin again!")
@@ -657,3 +656,55 @@ class Utility():
 
         return embed    
     
+    def create_coinflip_embed_message(self, interactions, bet, choice, result, winnings, balance):
+        if winnings > 0:
+            color = discord.Color.green()
+            value = f"🎉 You win! 🎉"
+        
+        else:
+            color = discord.Color.red()
+            value = f"😢 You lose! Better luck next time noob. 😢"
+            
+        # Chose the image based on the result
+        if result == "heads":
+            image = "https://raw.githubusercontent.com/SachaPaquette/Counter-Strike-Images/master/coin/heads_coin.png"
+        else:
+            image = "https://raw.githubusercontent.com/SachaPaquette/Counter-Strike-Images/master/coin/tails_coin.png"
+            
+        
+            
+        embed = discord.Embed(
+            title="Coinflip Result",
+            color=color
+        )
+        
+        embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+        
+        # Add the image of the coin
+        embed.set_thumbnail(url=image)
+        
+        embed.add_field(name="Result", value=f"{value}", inline=False)
+        
+        embed.add_field(name="💰 Bet Amount", value=f"**${bet:.2f}**", inline=True)
+        
+        # Add the user's choice
+        
+        embed.add_field(name="🪙 Your Choice", value=f"**{choice}**", inline=True)
+        
+        # Add the result
+        embed.add_field(name="🪙 Result", value=f"**{result}**", inline=True)
+        
+        # Add the winnings
+        
+        embed.add_field(name="💰 Winnings", value=f"**${winnings:.2f}**", inline=True)
+        
+        # Add the balance
+        
+        embed.add_field(name="💼 Balance", value=f"**${balance:.2f}**", inline=True)
+        
+        return embed
+        
+        
+        
+        
+        
