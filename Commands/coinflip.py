@@ -20,6 +20,12 @@ class CoinFlip():
         
     async def coinflip_command(self, interactions, bet: float, opponent: discord.Member):
         try:
+            # Check if the user is betting against themselves
+            if opponent.id == interactions.user.id:
+                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t bet against yourself.')
+                return
+            
+            
             # Check if the opponent is a bot
             if opponent.bot:
                 await interactions.response.send_message(f'{interactions.user.mention}, you can\'t bet against a bot.')
@@ -71,6 +77,8 @@ class CoinFlip():
 
             # Flip a coin
             coin = random.choice([CoinChoices.HEADS, CoinChoices.TAILS])
+            
+            # Determine the result emoji
             result_emoji = "🪙" if coin == CoinChoices.HEADS else "🃏"
 
             # Determine the winner based on reactions
@@ -90,8 +98,12 @@ class CoinFlip():
             self.database.update_user_balance(interactions.guild.id, opponent.id, opposing_user["balance"])
 
             # Send a message with the result
-            await interactions.followup.send(f'{interactions.user.mention} bet {bet} dollars. The coin landed on {coin.value}. {winner.display_name} won {winnings} dollars.')
+            #await interactions.followup.send(f'{interactions.user.mention} bet {bet} dollars. The coin landed on {coin.value}. {winner.display_name} won {winnings} dollars.')
 
+            embed = self.utility.create_coinflip_embed_message(interactions, bet, coin.value, result_emoji, winner.display_name, winnings, command_user["balance"], opposing_user["balance"])
+
+            await message.edit(embed=embed)
+            
         except asyncio.TimeoutError:
             await message.edit(content='The game timed out. Both users need to react within 60 seconds.')
 

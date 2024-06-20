@@ -17,7 +17,7 @@ class Leaderboard():
     async def leaderboard_command(self, interactions):
         try:
             # Get the top 10 users
-            users = self.database .get_top_users(interactions.guild.id, 10)
+            users = self.database.get_top_users(interactions.guild.id, 10)
             
             # Create an embed message that contains the top 10 users
             embed = await self.utility.create_leaderboard_embed(interactions, users)
@@ -32,11 +32,9 @@ class Leaderboard():
         try:
             # Get the user's rank
             user = self.database.get_user(interactions.guild.id, interactions.user.id)
-            rank = user["level"]
-            total_bet = user["total_bet"]
 
             # Create an embed message that contains the user's rank
-            embed = self.utility.create_rank_embed(interactions, rank, total_bet)
+            embed = self.utility.create_rank_embed(interactions, user["level"], user["total_bet"])
                 
             # Send the embed
             await interactions.response.send_message(embed=embed)

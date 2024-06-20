@@ -23,6 +23,7 @@ from Commands.roll import Roll
 from Commands.capsule import Capsule
 from Commands.blackjack import BlackJack
 from Commands.coinflip import CoinFlip, CoinChoices
+from Commands.finances import Finance, Stock
 from Config.config import conf
 
 
@@ -667,6 +668,24 @@ async def coinflip(interactions, bet: float, user: discord.Member):
         await coinflip.coinflip_command(interactions, bet, user)
     except Exception as e:
         logger.error(f"Error in the coinflip command: {e}")
+        raise e
+
+@bot.tree.command(name='finance', description='Get the live price of a stock.')
+async def finance(interactions, stock: Stock):
+    """
+    Get the live price of a stock.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        finance = Finance()
+        await finance.finance_command(interactions, stock)
+    except Exception as e:
+        logger.error(f"Error in the finance command: {e}")
         raise e
 
 def main():

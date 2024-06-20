@@ -11,6 +11,7 @@ class User():
         self.experience = experience 
         self.level = self.calculate_level()
         
+        
     def levels(self):
         """
         Returns a list of experience points required for each level from the JSON file.
@@ -41,7 +42,7 @@ class User():
         """
         Create a user object.
         """
-        return {"user_id": self.user_id, "balance": self.balance, "experience": self.experience, "level": self.calculate_level()}
+        return {"user_id": self.user_id, "balance": self.balance, "experience": self.experience, "level": self.calculate_level(), "total_bet": 0}
     
     def fetch_user(self, user_id):
         """

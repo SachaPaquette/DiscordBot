@@ -243,7 +243,7 @@ class Utility():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']:.2f}",
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet** {user["total_bet"]}",
                     inline=False
                 )
 
@@ -326,11 +326,6 @@ class Utility():
             # Add gun float value
             embed.add_field(name="📊 Float Value", value=f"**{gun_float:.5f}**", inline=True)
 
-            
-            # Add the graph to the embed message that is stored in ./Case/graph.png
-            #file = discord.File("./Commands/Case/graph.png", filename="graph.png")
-            #embed.set_image(url="attachment://graph.png")
-            
             return embed
 
         except Exception as e:
@@ -340,17 +335,14 @@ class Utility():
     def create_open_case_embed_message(self, case, title:str, price:float):
         # find the case image
         case_image = case["image"]
-        
         # Create an embed message with the case image
         embed = discord.Embed(title=f"🎉 {title} Opening 🎉", color=discord.Color.gold())
-
         # Add the case image to the embed message
         embed.set_image(url=case_image)
         # Add the case name to the embed message
         embed.add_field(name="Case", value=case["name"], inline=False)
         # Add a field for the price of the case to the embed message
-        embed.add_field(name="Price", value=f"${price}", inline=True)
-        
+        embed.add_field(name="Price", value=f"${price}", inline=True) 
         return embed
     
     
@@ -389,13 +381,11 @@ class Utility():
     def create_sticker_embed(self, sticker, balance, sticker_price, profit, color):
         try:
             embed = discord.Embed(title="🎉 Sticker Opening Results 🎉", color=discord.Colour(color))
-            sticker_name = sticker["name"]
-            sticker_image = sticker["image"]
             # Add sticker name
-            embed.add_field(name="🎨 Sticker", value=f"**{sticker_name}**", inline=False)   
+            embed.add_field(name="🎨 Sticker", value=f"**{sticker["name"]}**", inline=False)   
             
             # Add sticker image     
-            embed.set_thumbnail(url=sticker_image)
+            embed.set_thumbnail(url=sticker["image"])
             
             # Add user balance
             embed.add_field(name="💰 Current Balance", value=f"**${balance:.2f}**", inline=True)
@@ -522,24 +512,10 @@ class Utility():
             items = user_inventory[page * 10: (page + 1) * 10] 
             
             
-            for item in items:
-
-                
-                item_name = item["name"]
-                item_pattern = item["pattern"]
-                item_price = item["price"]
-                item_image = item["image"]
-                item_color = item["color"]
-                color = self.create_color_text(item_color)
-                
-                embed.add_field(name=f"{color} {item_name} | {item_pattern}", value=f"**Price:** ${item_price:.2f}", inline=False)
-                # add an image of the weapon
-                
-            
-
+            for item in items:               
+                embed.add_field(name=f"{self.create_color_text(item["color"])} {item["name"]} | {item["pattern"]}", value=f"**Price:** ${item["price"]:.2f}", inline=False)
             for item in user_inventory:
-                item_price = item["price"]
-                total_value += item_price
+                total_value += item["price"]
                 
                 
             
@@ -656,54 +632,26 @@ class Utility():
 
         return embed    
     
-    def create_coinflip_embed_message(self, interactions, bet, choice, result, winnings, balance):
-        if winnings > 0:
-            color = discord.Color.green()
-            value = f"🎉 You win! 🎉"
+    def create_coinflip_embed_message(self, interactions, bet, result, result_emoji, winner, winnings, balance, opponent_balance):
         
-        else:
-            color = discord.Color.red()
-            value = f"😢 You lose! Better luck next time noob. 😢"
-            
-        # Chose the image based on the result
-        if result == "heads":
-            image = "https://raw.githubusercontent.com/SachaPaquette/Counter-Strike-Images/master/coin/heads_coin.png"
-        else:
-            image = "https://raw.githubusercontent.com/SachaPaquette/Counter-Strike-Images/master/coin/tails_coin.png"
-            
-        
-            
         embed = discord.Embed(
-            title="Coinflip Result",
-            color=color
+            title="Coinflip Results",
+            color=discord.Color.gold()
         )
         
         embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+        embed.add_field(name="👤 Opponent", value=f"**{winner}**", inline=False)
         
-        # Add the image of the coin
-        embed.set_thumbnail(url=image)
+        embed.add_field(name="💰 Bet Amount", value=f"**${bet}**", inline=True)
+        embed.add_field(name="🪙 Coin Result", value=f"**{result}**", inline=True)
         
-        embed.add_field(name="Result", value=f"{value}", inline=False)
+        embed.add_field(name="🏦 Your Balance", value=f"**${balance:.2f}**", inline=False)
+        embed.add_field(name="🏦 Opponent Balance", value=f"**${opponent_balance:.2f}**", inline=True)
         
-        embed.add_field(name="💰 Bet Amount", value=f"**${bet:.2f}**", inline=True)
+        embed.add_field(name="🎉 Winner", value=f"**{winner}**", inline=False)
+        embed.add_field(name="💰 Winnings", value=f"**${winnings}**", inline=False)
         
-        # Add the user's choice
-        
-        embed.add_field(name="🪙 Your Choice", value=f"**{choice}**", inline=True)
-        
-        # Add the result
-        embed.add_field(name="🪙 Result", value=f"**{result}**", inline=True)
-        
-        # Add the winnings
-        
-        embed.add_field(name="💰 Winnings", value=f"**${winnings:.2f}**", inline=True)
-        
-        # Add the balance
-        
-        embed.add_field(name="💼 Balance", value=f"**${balance:.2f}**", inline=True)
-        
-        return embed
-        
+        return embed        
         
         
         

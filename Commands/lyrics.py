@@ -49,14 +49,15 @@ class LyricsOperations:
             
             # Send a message that the bot is searching for lyrics (since this command takes a while to execute and the bot will timeout if it doesn't send a message within a couple of seconds)
             await interactions.response.send_message("Searching for lyrics...")
-            
+            original_message = await interactions.original_response()
             # get the lyrics of the song
             lyrics = await self.get_lyrics(song_session.get_song_title())
             
             # Check if the lyrics is None
             if lyrics is None:
-                await interactions.response.send_message('No lyrics found.')
+                await original_message.edit(content='No lyrics found.')
                 return
+            
             # Format the lyrics since itc can be too long (max 2000 characters) and discord will not allow it
             # Send the first 2000 characters of the lyrics
             # And then send the rest of the lyrics in other messages
@@ -67,5 +68,5 @@ class LyricsOperations:
                 await interactions.followup.send(lyrics)
 
         except Exception as e:
-            await interactions.followup.send('No lyrics found.')
+            await original_message.edit(content='No lyrics found.')
             logger.error(f"Error while searching for lyrics: {e}")
