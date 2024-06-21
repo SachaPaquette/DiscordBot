@@ -6,7 +6,7 @@ from Commands.queue import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.ytdl import YTDLSource
 from Commands.utility import Utility
-
+import asyncio
 # Load the .env file
 load_dotenv()
 
@@ -192,7 +192,7 @@ class SongSession:
             print(f"Error at define_song_info function in music.py: {e}")
             return
 
-    async def play(self, source, vc, after=None, song_title=None, song_duration=None, thumbnail=None):
+    async def play(self, source, song_title=None, song_duration=None, thumbnail=None):
         """
         Play a song in the voice channel.
 
@@ -208,12 +208,15 @@ class SongSession:
             # Define the song information such as the title and duration
             self.define_song_info(song_title, song_duration, thumbnail)
             # Play the source
-            vc.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(
-                source, **conf.FFMPEG_OPTIONS)), after=after)
-            self.source = discord.PCMVolumeTransformer(vc.source)
+            await self.voice_client.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(
+                source, **conf.FFMPEG_OPTIONS)), after=self.after_playing_callback)
+            self.source = discord.PCMVolumeTransformer(self.voice_client.source)
         except Exception as e:
             print(f"Error at play function in music.py: {e}")
             return
+
+    def after_playing_callback(self, error):
+        asyncio.run(self.after_playing(self.voice_client))
 
     async def play_command(self, interactions, url, loop):
         """
@@ -227,7 +230,9 @@ class SongSession:
         None
         """
         try:
-            result_message = await interactions.response.send_message("Trying to play the song...")
+            # Send a message that the bot is trying to play the song
+            await interactions.response.send_message("Trying to play the song...")
+            # Get the original response message
             result_message = await interactions.original_response()
             # Check if the URL is valid (i.e. it is a YouTube URL)
             if not CommandErrorHandler.check_url_correct(url):
@@ -245,7 +250,6 @@ class SongSession:
                 URL, song_title, song_duration, thumbnail = await YTDLSource.extract_info_from_url(url, loop=loop, stream=True)
             except Exception as e:
                 print(f"Error extracting info from URL: {e}")
-                await result_message.edit(content="Error extracting information from the provided URL.")
                 return
 
             # Check if the URL and song title are valid
@@ -255,11 +259,13 @@ class SongSession:
 
             # Get the voice client
             vc = interactions.guild.voice_client
-
+            self.voice_client = interactions.guild.voice_client
             if vc is None:
-                print("Voice client is None")
+                await result_message.edit(content="The bot is not in a voice channel.")
                 return
-
+            
+            
+            
             # Check if the bot is already playing something
             if vc.is_playing():
                 # Add the song to the queue
@@ -268,14 +274,13 @@ class SongSession:
             else:
                 # Send the now playing message
                 embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
-                await result_message.edit(embed=embed)
+                await result_message.edit(embed=embed, content=None)
                 # Play the song
-                await self.play(URL, vc, None, song_title, song_duration, thumbnail)
-
+                await self.play(source=URL, song_title=song_title, song_duration=song_duration, thumbnail=thumbnail)
+                # Asynchronously play the next song
         except Exception as e:
             # Handle any errors gracefully
             print(f"An error occurred when trying to play the song: {e}")
-            await result_message.edit(content="An error occurred while processing your request.")
             # Leave the channel if an error occurs
             await self.utility.leave(interactions)
             raise e
@@ -306,7 +311,7 @@ class SongSession:
                 raise Exception("Voice client is None.")
             
             # Play the next song
-            await self.play(next_source, vc, after=self.after_playing)
+            await self.play(next_source, next_title, next_song_duration, next_song_thumbnail)
 
             # Reset the skipped flag to False
             self.skipped = False
@@ -318,7 +323,7 @@ class SongSession:
             print(f"Error while trying to play next song in music.py: {e}")
             return
 
-    async def after_playing(self, error, vc):
+    async def after_playing(self, vc):
         """
         Callback function called after a song finishes playing.
 
@@ -329,15 +334,14 @@ class SongSession:
         Returns:
             None
         """
-        # Check if there was an error playing the song
-        if error:
-            print(f"Error at after_playing function in music.py: {error}")
-        else:
+        try:
             # Check if the skipped flag is False (if it is, the song ended naturally and was not skipped)
             if not self.skipped:
                 # Play the next song in the queue
                 await self.play_next(vc)
-
+        except Exception as e:
+            print(f"Error at after_playing function in music.py: {e}")
+            return
     def get_song_title(self):
         """
         Returns the title of the current song.
