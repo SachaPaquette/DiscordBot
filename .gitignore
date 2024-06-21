@@ -2,3 +2,4 @@
 .env
 Config/Logs/*
 Dockerfile
+docker-compose.yml
