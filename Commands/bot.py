@@ -122,6 +122,34 @@ async def on_message(message):
         logger.error(f"Error in the on message event: {e}")
         raise e
 
+@bot.event
+async def on_member_join(member):
+    """
+    Event handler that is triggered when a member joins the server.
+
+    This function sends a welcome message to the member.
+
+    Parameters:
+    - member (discord.Member): The member that joined the server.
+
+    Returns:
+    None
+
+    Raises:
+    Exception: If an error occurs while sending the welcome message.
+    """
+    try:
+        utility = Utility()
+        # Send a welcome message to the member
+        embed = await utility.on_member_join_message(member)
+        # Send the message in the general channel
+        channel = discord.utils.get(member.guild.text_channels, name="general")
+        await channel.send(embed=embed)
+    except Exception as e:
+        logger.error(f"Error in the on member join event: {e}")
+        raise e
+
+
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
 async def health(interactions):

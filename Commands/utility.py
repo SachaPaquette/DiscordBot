@@ -91,6 +91,33 @@ class Utility():
             logger.error(f"Error in the leave command: {e}")
             raise e
         
+        
+    async def on_member_join_message(self, member):
+        # Function to create an embed message when a member joins the server
+        try:
+            # Get the member's nickname
+            member_name = member.display_name            
+            # Get the member's avatar
+            avatar = member.avatar
+            
+            
+            # Create an embed message
+            embed = discord.Embed(
+                title="Welcome to the server!",
+                description=f"Welcome to the server, {member_name}! We're glad to have you here.",
+                color=discord.Color.green()
+            )
+            
+            # Set the member's avatar as the thumbnail
+            embed.set_thumbnail(url=avatar)
+            
+            return embed
+            
+        except Exception as e:
+            logger.error(f"Error while trying to create an embed message in on_member_join_message: {e}")
+            return None    
+    
+        
     def now_playing_song_embed(song_title, thumbnail, song_duration):
         """
         Create an embed message that contains the title of the song, the thumbnail, and the duration.

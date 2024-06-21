@@ -13,9 +13,6 @@ class LinkMessage:
 
     async def on_message_command(self, message):
         try:
-            
-            
-            
             # Ignore message that is a command
             if message.content.startswith("/"):
                 return
