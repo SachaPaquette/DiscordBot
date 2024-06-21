@@ -12,7 +12,7 @@ class Utility():
         self.database = Database.getInstance()
     
     
-    async def join(self, interactions: discord.Interaction):
+    async def join(self, interactions: discord.Interaction, message=None):
         """
         Join the voice channel.
 
@@ -25,11 +25,17 @@ class Utility():
 
             # Get the voice channel of the user who sent the command
             channel = interactions.channel
-            print(channel)
+            
             if not channel:
-                await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+                if message is None:
+                    await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+                else:
+                    await message.edit(content=interactions.user.mention + " is not in a voice channel.")
         except AttributeError:
-            await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+            if message is None:
+                await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+            else:
+                await message.edit(content=interactions.user.mention + " is not in a voice channel.")
             logger.error("User is not in a voice channel.")
             return
         try:
@@ -38,7 +44,7 @@ class Utility():
             
             # Check if the user is in a voice channel
             if not user_voice:
-                await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
+                await message.edit(content=interactions.user.mention + " is not in a voice channel.")
                 return
             
             # Create a voice client variable

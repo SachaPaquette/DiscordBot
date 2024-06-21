@@ -237,12 +237,12 @@ class SongSession:
             # Check if the URL is valid (i.e. it is a YouTube URL)
             if not CommandErrorHandler.check_url_correct(url):
                 # Send a follow-up message to the user
-                await interactions.foll
+                
                 await result_message.edit(content="Please enter a valid YouTube URL, such as https://www.youtube.com/watch?v=dQw4w9WgXcQ")
                 return
 
             # Check if the bot is already in the correct channel
-            if await self.utility.join(interactions) is False:
+            if await self.utility.join(interactions, result_message) is False:
                 return
 
             # Extract information from the URL
@@ -302,7 +302,6 @@ class SongSession:
 
             # Get the next song from the queue
             next_source, next_title, next_song_duration, next_song_thumbnail = self.queue_operations.get_next_song()
-
             # Check if the source and title are valid
             if next_source is None or next_title is None or next_song_duration is None or next_song_thumbnail is None:
                 raise Exception("Song information is None.")
