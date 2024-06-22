@@ -131,7 +131,7 @@ class Database():
             user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
         return lists
         
-    def add_stocks(self,server_id, user_id, stock, amount):
+    def add_stocks(self,server_id, user_id, stock, amount, stock_price):
         """
         Adds stocks to a user.
         
@@ -150,7 +150,7 @@ class Database():
             
             total_amount = data.get("amount", 0) + amount
             # Get the total price amount of the stock the user has
-            price = total_amount * stock["currentPrice"]
+            price = total_amount * stock_price
             total_price = data.get("total_price", 0) + price
             stock_data = {
                 "symbol": stock["symbol"],
@@ -183,7 +183,7 @@ class Database():
             total_amount = data.get("amount", 0) - amount
             # Get the total price amount of the stock the user has
             price = amount * stock["currentPrice"]
-            total_price = data.get("total_price", 0) + price
+            total_price = data.get("total_price", 0) - price
             stock_data = {
                 "symbol": stock["symbol"],
                 "amount": total_amount,

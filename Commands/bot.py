@@ -25,6 +25,7 @@ from Commands.blackjack import BlackJack
 from Commands.coinflip import CoinFlip, CoinChoices
 from Commands.finances import Finance
 from Commands.stocks import Stocks, Options
+from Commands.portfolio import Portfolio
 from Config.config import conf
 
 
@@ -767,6 +768,24 @@ async def stocks(interactions, option: Options, stock: str, quantity: float):
         await stocks.stocks_command(interactions, option, stock, quantity)
     except Exception as e:
         logger.error(f"Error in the stocks command: {e}")
+        raise e
+    
+@bot.tree.command(name='portfolio', description='Display your stock portfolio.')
+async def portfolio(interactions):
+    """
+    Display the user's stock portfolio.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+
+    Returns:
+    - None
+    """
+    try:
+        portfolio = Portfolio()
+        await portfolio.portfolio_command(interactions)
+    except Exception as e:
+        logger.error(f"Error in the portfolio command: {e}")
         raise e
 
 def main():
