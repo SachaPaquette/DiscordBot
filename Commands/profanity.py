@@ -14,18 +14,10 @@ class Profanity():
         
     async def on_message_command(self, message):
         try:
-            
-            # Ignore messages sent by the bot
-            if message.author.bot:
-                return
-            
-            #TODO Make sure the message is a command otherwise people can abuse this
-            # Ignore message that is a command
-            
+
             # Check that it is not an emoji reaction (:emoji:)
-            if self.utility.is_emoji(message.content):
-                return
-            
+            if message.author.bot or self.utility.is_emoji(message.content):
+                return     
             # Check if the message contains profanity
             if self.profanity_filter.contains_profanity(message.content):
                 # Put a reaction on the user's message to warn them

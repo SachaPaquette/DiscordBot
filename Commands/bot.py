@@ -23,7 +23,8 @@ from Commands.roll import Roll
 from Commands.capsule import Capsule
 from Commands.blackjack import BlackJack
 from Commands.coinflip import CoinFlip, CoinChoices
-from Commands.finances import Finance, Stock
+from Commands.finances import Finance
+from Commands.stocks import Stocks, Options
 from Config.config import conf
 
 
@@ -149,6 +150,32 @@ async def on_member_join(member):
         logger.error(f"Error in the on member join event: {e}")
         raise e
 
+@bot.event 
+async def on_member_remove(member):
+    """
+    Event handler that is triggered when a member leaves the server.
+
+    This function sends a goodbye message to the member.
+
+    Parameters:
+    - member (discord.Member): The member that left the server.
+
+    Returns:
+    None
+
+    Raises:
+    Exception: If an error occurs while sending the goodbye message.
+    """
+    try:
+        utility = Utility()
+        # Send a goodbye message to the member
+        embed = await utility.on_member_leave_message(member)
+        # Send the message in the general channel
+        channel = discord.utils.get(member.guild.text_channels, name="general")
+        await channel.send(embed=embed)
+    except Exception as e:
+        logger.error(f"Error in the on member remove event: {e}")
+        raise e
 
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
@@ -156,6 +183,11 @@ async def health(interactions):
     """
     Check if the bot is alive and provide detailed health information.
     """
+    # Make sure the user has the correct permissions (by having the userid of the bot owner)
+    if interactions.user.id != int(os.environ.get("BOT_OWNER_ID")):
+        await interactions.response.send_message("You do not have permission to run this command.")
+        return
+    
     try:
         await health_check.health_command(interactions, bot)
         await bot.tree.sync()
@@ -699,7 +731,7 @@ async def coinflip(interactions, bet: float, user: discord.Member):
         raise e
 
 @bot.tree.command(name='finance', description='Get the live price of a stock.')
-async def finance(interactions, stock: Stock):
+async def finance(interactions, stock: str):
     """
     Get the live price of a stock.
 
@@ -714,6 +746,27 @@ async def finance(interactions, stock: Stock):
         await finance.finance_command(interactions, stock)
     except Exception as e:
         logger.error(f"Error in the finance command: {e}")
+        raise e
+
+@bot.tree.command(name="stocks", description="Buy or sell stocks.")
+async def stocks(interactions, option: Options, stock: str, quantity: float):
+    """
+    Buy or sell stocks.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+    - option (Options): The option to buy or sell stocks.
+    - stock (str): The stock to buy or sell.
+    - quantity (int): The quantity of stocks to buy or sell.
+
+    Returns:
+    - None
+    """
+    try:
+        stocks = Stocks()
+        await stocks.stocks_command(interactions, option, stock, quantity)
+    except Exception as e:
+        logger.error(f"Error in the stocks command: {e}")
         raise e
 
 def main():

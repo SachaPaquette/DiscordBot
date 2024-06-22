@@ -131,4 +131,67 @@ class Database():
             user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
         return lists
         
-    
+    def add_stocks(self,server_id, user_id, stock, amount):
+        """
+        Adds stocks to a user.
+        
+        Parameters:
+        - user_id: The id of the user to add stocks to.
+        - stock: The stock to add.
+        - amount: The amount of the stock to add.
+        """
+        try:
+            collection = self.get_collection(server_id)
+            # Get the total amount of the stock the user has
+            user = collection.find_one({"user_id": user_id})
+            user.setdefault("stocks", {})
+            data = user["stocks"].get(stock["symbol"], {})
+            
+            
+            total_amount = data.get("amount", 0) + amount
+            # Get the total price amount of the stock the user has
+            price = total_amount * stock["currentPrice"]
+            total_price = data.get("total_price", 0) + price
+            stock_data = {
+                "symbol": stock["symbol"],
+                "amount": total_amount,
+                "total_price": total_price
+            }
+            
+            # Update the user's balance
+            collection.update_one({"user_id": user_id}, {"$set": {f"stocks.{stock['symbol']}": stock_data}, "$inc": {"balance": -price}})   
+        except Exception as e:
+            logger.error(f"Error adding stocks: {e}")
+            return
+        
+    def sell_stocks(self,server_id, user_id, stock, amount):
+        """
+        Sells stocks from a user.
+        
+        Parameters:
+        - user_id: The id of the user to sell stocks from.
+        - stock: The stock to sell.
+        - amount: The amount of the stock to sell.
+        """
+        try:
+            collection = self.get_collection(server_id)
+            # Get the total amount of the stock the user has
+            user = collection.find_one({"user_id": user_id})
+            user.setdefault("stocks", {})
+            data = user["stocks"].get(stock["symbol"], {})
+
+            total_amount = data.get("amount", 0) - amount
+            # Get the total price amount of the stock the user has
+            price = amount * stock["currentPrice"]
+            total_price = data.get("total_price", 0) + price
+            stock_data = {
+                "symbol": stock["symbol"],
+                "amount": total_amount,
+                "total_price": total_price
+            }
+            
+            # Update the user's balance
+            collection.update_one({"user_id": user_id}, {"$set": {f"stocks.{stock['symbol']}": stock_data}, "$inc": {"balance": price}})
+        except Exception as e:
+            logger.error(f"Error selling stocks: {e}")
+            return

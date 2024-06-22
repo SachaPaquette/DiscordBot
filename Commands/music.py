@@ -263,9 +263,7 @@ class SongSession:
             if vc is None:
                 await result_message.edit(content="The bot is not in a voice channel.")
                 return
-            
-            
-            
+        
             # Check if the bot is already playing something
             if vc.is_playing():
                 # Add the song to the queue

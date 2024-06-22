@@ -118,6 +118,29 @@ class Utility():
             return None    
     
         
+    async def on_member_leave_message(self, member):
+        # Function to create an embed message when a member leaves the server
+        try:
+            # Get the member's nickname
+            member_name = member.display_name
+            # Get the member's avatar
+            avatar = member.avatar
+            
+            # Create an embed message
+            embed = discord.Embed(
+                title="Goodbye!",
+                description=f"Goodbye, {member_name}! We'll miss you.",
+                color=discord.Color.red()
+            )
+            
+            # Set the member's avatar as the thumbnail
+            embed.set_thumbnail(url=avatar)
+            
+            return embed
+        except Exception as e:
+            logger.error(f"Error while trying to create an embed message in on_member_remove_message: {e}")
+            return None
+        
     def now_playing_song_embed(song_title, thumbnail, song_duration):
         """
         Create an embed message that contains the title of the song, the thumbnail, and the duration.
