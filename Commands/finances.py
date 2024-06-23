@@ -27,7 +27,7 @@ class Finance():
             
             stock_data = yf.Ticker(stock)
             stock_info = stock_data.info
-            print(stock_info)
+            
             
         except Exception as e:
             logger.error(f"Error in the finance function in finance.py: {e}")

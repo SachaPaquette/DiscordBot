@@ -4,7 +4,7 @@ import discord
 from Config.logging import setup_logging
 from Commands.database import Database
 from Config.config import conf
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from enum import Enum
 # Create a logger for this file
 logger = setup_logging("roll.py", conf.LOGS_PATH)
@@ -17,7 +17,7 @@ class CoinFlip():
     def __init__(self):
         self.database = Database.getInstance()
         self.utility = Utility()
-        
+        self.embedMessage = EmbedMessage()
     async def coinflip_command(self, interactions, bet: float, opponent: discord.Member):
         try:
             # Check if the user is betting against themselves
@@ -100,7 +100,7 @@ class CoinFlip():
             # Send a message with the result
             #await interactions.followup.send(f'{interactions.user.mention} bet {bet} dollars. The coin landed on {coin.value}. {winner.display_name} won {winnings} dollars.')
 
-            embed = self.utility.create_coinflip_embed_message(interactions, bet, coin.value, result_emoji, winner.display_name, winnings, command_user["balance"], opposing_user["balance"])
+            embed = self.embedMessage.create_coinflip_embed_message(interactions, bet, coin.value, result_emoji, winner.display_name, winnings, command_user["balance"], opposing_user["balance"])
 
             await message.edit(embed=embed)
             

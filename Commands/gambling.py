@@ -5,6 +5,7 @@ import random
 import time
 from Config.logging import setup_logging
 from Config.config import conf
+from Commands.utility import EmbedMessage
 import discord
 # Create a logger for this file
 logger = setup_logging("gambling.py", conf.LOGS_PATH)
@@ -14,7 +15,7 @@ class Gambling():
     def __init__(self, server_id):
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-
+        self.embedMessage = EmbedMessage()
 
     def get_slot_symbols(self):
         symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣']
@@ -60,7 +61,7 @@ class Gambling():
             result_message = await interactions.original_response()
 
             # Edit the original message to include the result
-            await result_message.edit(content=None, embed=Utility.create_gambling_embed_message(symbols, payout, user["balance"]))
+            await result_message.edit(content=None, embed=self.embedMessage.create_gambling_embed_message(symbols, payout, user["balance"]))
         except Exception as e:
             logger.error(f"Error in the gamble function in gambling.py: {e}")
             return
@@ -72,7 +73,7 @@ class Slot3x3Machine():
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.server_id = server_id
-
+        self.embedMessage = EmbedMessage()
     def spin(self):
         self.grid = [[random.choice(self.reels) for _ in range(3)] for _ in range(3)]
         return self.grid
@@ -141,5 +142,5 @@ class Slot3x3Machine():
             result_message = await interactions.original_response()
 
             # Edit the original message to include the result
-            embed = Utility.create_slots_9x9_embed_message(self.grid, bet, payout, user["balance"])
+            embed = self.embedMessage.create_slots_9x9_embed_message(self.grid, bet, payout, user["balance"])
             await result_message.edit(content=None, embed=embed)

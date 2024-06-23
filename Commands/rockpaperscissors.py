@@ -1,5 +1,5 @@
 # Rock paper scissors command
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Config.logging import setup_logging
 from Config.config import conf
 import discord
@@ -25,7 +25,7 @@ class RockPaperScissors():
         self.utility = Utility()
         self.choices = [Choices.ROCK, Choices.PAPER, Choices.SCISSORS]
         self.database = Database.getInstance()
-        self.utility = Utility()
+        self.embedMessage = EmbedMessage()
         
     def game_logic(self, user_choice, bot_choice):
         winning_conditions = {
@@ -74,7 +74,7 @@ class RockPaperScissors():
         
         
         self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"] + bet, bet)
-        embed = self.utility.create_rockpaperscissors_embed(choice.value, bot_choice.value, self.game_logic(choice, bot_choice).value, bet, user["balance"] + bet, interactions.user.display_name, profit, amount_betted)
+        embed = self.embedMessage.create_rockpaperscissors_embed(choice.value, bot_choice.value, self.game_logic(choice, bot_choice).value, bet, user["balance"] + bet, interactions.user.display_name, profit, amount_betted)
         
         
         await interactions.response.send_message(embed=embed)

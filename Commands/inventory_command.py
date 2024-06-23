@@ -1,7 +1,7 @@
 from Config.logging import setup_logging
 from Commands.database import Database
 from Config.config import conf
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Commands.Inventory.inventory_setup import Inventory_class
 # Create a logger for this file
 logger = setup_logging("inventory.py", conf.LOGS_PATH)
@@ -12,6 +12,7 @@ class Inventory():
         self.inventory = Inventory_class(server_id)
         self.user_id = None
         self.username = None
+        self.embedMessage = EmbedMessage()
         
     async def display_inventory(self, interactions):
         try:
@@ -21,7 +22,7 @@ class Inventory():
             if inventory is None or len(inventory) == 0:
                 await interactions.response.send_message("You don't have any items in your inventory.")
                 return
-            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page, self.username)
+            embed = self.embedMessage.create_inventory_embed_message(interactions, inventory, self.page, self.username)
             await interactions.response.send_message(embed=embed)
             embed_message = await interactions.original_response()
             
@@ -67,7 +68,7 @@ class Inventory():
             self.page -= 1
 
             # Get the previous 10 items from the inventory
-            embed = self.utility.create_inventory_embed_message(interactions, inventory, self.page, self.username)
+            embed = self.embedMessage.create_inventory_embed_message(interactions, inventory, self.page, self.username)
             
             # Edit the message
             await message.edit(embed=embed)

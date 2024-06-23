@@ -4,7 +4,7 @@ import discord
 from Config.logging import setup_logging
 from Commands.database import Database
 from Config.config import conf
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 # Create a logger for this file
 logger = setup_logging("roll.py", conf.LOGS_PATH)
 
@@ -12,6 +12,7 @@ class Roll():
     def __init__(self):
         self.database = Database.getInstance()
         self.utility = Utility()
+        self.embedMessage = EmbedMessage()
         
     def calculate_winnings(self, bet, number, rolled_number):
         # Calculate the difference between the number and the rolled number
@@ -71,7 +72,7 @@ class Roll():
             self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
             
             # Create an embed message
-            embed = self.utility.create_roll_embed_message(interactions, bet, number, rolled_number, winnings, user["balance"])
+            embed = self.embedMessage.create_roll_embed_message(interactions, bet, number, rolled_number, winnings, user["balance"])
             
             # Send the embed message to the user
             await interactions.response.send_message(embed=embed)

@@ -5,7 +5,7 @@ from Commands.database import Database
 import random
 from bs4 import BeautifulSoup
 import re
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Config.Driver.driver_config import driver_setup
 from Config.logging import setup_logging
 from Config.config import conf
@@ -52,6 +52,7 @@ class Case():
         self.is_sold_or_bought = False
         self.inventory = Inventory_class(server_id) 
         self.user_id = None
+        self.embedMessage = EmbedMessage()
         
     def get_random_case(self):
         # Get a random case from the json file ./Cases/cases.json
@@ -189,7 +190,7 @@ class Case():
         try:
             
             # Send a message that the case is being bought
-            await interactions.response.send_message(embed=self.utility.create_open_case_embed_message(self.case, "Case", self.case_price))
+            await interactions.response.send_message(embed=self.embedMessage.create_open_case_embed_message(self.case, "Case", self.case_price))
             first_message = await interactions.original_response()
 
             # Check if the user has enough balance to buy the case
@@ -234,7 +235,7 @@ class Case():
             weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, prices)
             
             # Create the embed message
-            embed  = self.utility.create_case_embed(user["balance"], self.utility.calculate_profit(float(prices), self.case_price), prices, wear_level, gun_float, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, interactions.user.display_name)
+            embed  = self.embedMessage.create_case_embed(user["balance"], self.utility.calculate_profit(float(prices), self.case_price), prices, wear_level, gun_float, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, interactions.user.display_name)
             
             if embed is None:
                 await interactions.followup.send("An error occurred while opening the case.")

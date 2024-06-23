@@ -1,5 +1,5 @@
 # Command to display the leaderboard of the server.
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Commands.database import Database
 from .UserProfile.user import UserCard
 from Config.logging import setup_logging
@@ -11,7 +11,7 @@ class Leaderboard():
         self.utility = Utility()
         self.user_card = UserCard()
         self.database = Database.getInstance()
-        
+        self.embedMessage = EmbedMessage()
     
     # Display a leaderboard of all the users experience
     async def leaderboard_command(self, interactions):
@@ -20,7 +20,7 @@ class Leaderboard():
             users = self.database.get_top_users(interactions.guild.id, 10)
             
             # Create an embed message that contains the top 10 users
-            embed = await self.utility.create_leaderboard_embed(interactions, users)
+            embed = await self.embedMessage.create_leaderboard_embed(interactions, users)
                 
             # Send the embed
             await interactions.response.send_message(embed=embed)
@@ -34,7 +34,7 @@ class Leaderboard():
             user = self.database.get_user(interactions.guild.id, interactions.user.id)
 
             # Create an embed message that contains the user's rank
-            embed = self.utility.create_rank_embed(interactions, user["level"], user["total_bet"])
+            embed = self.embedMessage.create_rank_embed(interactions, user["level"], user["total_bet"])
                 
             # Send the embed
             await interactions.response.send_message(embed=embed)

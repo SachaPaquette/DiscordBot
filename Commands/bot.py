@@ -9,7 +9,7 @@ from Commands.queue import QueueOperations
 from Commands.userinfo import UserInfo
 from Commands.linkmessage import LinkMessage
 from Commands.profanity import Profanity
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Commands.nowplaying import NowPlaying
 from Commands.health import HealthCheck
 from Commands.gambling import Gambling, Slot3x3Machine
@@ -58,6 +58,7 @@ queue_operations = QueueOperations(session)
 linkmessage = LinkMessage(bot)
 # Create an instance of Utility to handle utility commands
 utility = Utility()
+embedMessage = EmbedMessage()
 # Create an instance of NowPlaying to handle the nowplaying command
 playing_operations = NowPlaying()
 # Create an instance of HealthCheck to handle the health command
@@ -141,9 +142,9 @@ async def on_member_join(member):
     Exception: If an error occurs while sending the welcome message.
     """
     try:
-        utility = Utility()
+        
         # Send a welcome message to the member
-        embed = await utility.on_member_join_message(member)
+        embed = await embedMessage.on_member_join_message(member)
         # Send the message in the general channel
         channel = discord.utils.get(member.guild.text_channels, name="general")
         await channel.send(embed=embed)
@@ -168,9 +169,8 @@ async def on_member_remove(member):
     Exception: If an error occurs while sending the goodbye message.
     """
     try:
-        utility = Utility()
         # Send a goodbye message to the member
-        embed = await utility.on_member_leave_message(member)
+        embed = await embedMessage.on_member_leave_message(member)
         # Send the message in the general channel
         channel = discord.utils.get(member.guild.text_channels, name="general")
         await channel.send(embed=embed)

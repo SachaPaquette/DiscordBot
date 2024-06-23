@@ -5,7 +5,7 @@ from Commands.database import Database
 import random
 from bs4 import BeautifulSoup
 import re
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Config.Driver.driver_config import driver_setup
 from Config.logging import setup_logging
 from Config.config import conf
@@ -34,6 +34,7 @@ class Capsule():
         self.database = Database.getInstance()
         self.server_id = server_id
         self.color = None
+        self.embedMessage = EmbedMessage()
             
     def get_random_sticker_case(self):
         with open("./Commands/Case/sticker_cases.json", "r") as f:
@@ -96,7 +97,7 @@ class Capsule():
             sticker_case = self.get_random_sticker_case()
             
             # Create an embed message for the sticker case
-            embed_first_message = self.utility.create_open_case_embed_message(sticker_case, "Capsule", self.sticker_capsule_price)
+            embed_first_message = self.embedMessage.create_open_case_embed_message(sticker_case, "Capsule", self.sticker_capsule_price)
 
             # Send a message that the stickers are being bought
             await interactions.response.send_message(embed=embed_first_message)
@@ -127,7 +128,7 @@ class Capsule():
                 self.utility.add_experience(self.server_id, interactions.user.id, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price))
             
             # Create an embed message for the sticker
-            embed = self.utility.create_sticker_embed(sticker, user["balance"], sticker_price, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price), self.color)
+            embed = self.embedMessage.create_sticker_embed(sticker, user["balance"], sticker_price, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price), self.color)
             
             # Edit the message that the sticker has been bought
             await first_message.edit(embed=embed)

@@ -16,6 +16,7 @@ class QueueOperations:
         self.song_session = song_session
         # Initialize the queue attribute
         self.queue = self.shared_queue
+        
 
     def display_queue(self):
         """
