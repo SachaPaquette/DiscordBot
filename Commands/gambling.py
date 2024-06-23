@@ -110,6 +110,7 @@ class Slot3x3Machine():
         return total_payout
     
     async def play(self, interactions, bet: int):
+        try:
             if bet <= 0:
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
@@ -120,13 +121,11 @@ class Slot3x3Machine():
             if user["balance"] < bet:
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
                 return
-            
-            user["balance"] -= bet
-            
+  
             self.spin()
             payout = self.check_winnings(bet)
             
-            user["balance"] += payout
+            user["balance"] += (payout - bet)
             
             # Update the user's balance
             self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
@@ -141,6 +140,7 @@ class Slot3x3Machine():
             # React to the message with slot symbols
             result_message = await interactions.original_response()
 
-            # Edit the original message to include the result
-            embed = self.embedMessage.create_slots_9x9_embed_message(self.grid, bet, payout, user["balance"])
-            await result_message.edit(content=None, embed=embed)
+            await result_message.edit(content=None, embed=self.embedMessage.create_slots_3x3_embed_message(self.grid, bet, payout, user["balance"]))
+        except Exception as e:
+            logger.error(f"Error in the play function in gambling.py: {e}")
+            return

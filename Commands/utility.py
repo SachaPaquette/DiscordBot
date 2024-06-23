@@ -555,7 +555,7 @@ class EmbedMessage():
             return None
         
     
-    def create_slots_9x9_embed_message(self, grid, bet, payout, balance):
+    def create_slots_3x3_embed_message(self, grid, bet, payout, balance):
         try:
             
             # Create the embed message with a vibrant color and a dynamic title
@@ -564,15 +564,12 @@ class EmbedMessage():
                 description=f"🔥 Try your luck! 🔥",
                 color=discord.Color.gold()
             )
-            
-            # Add some padding for better spacing
-            padding = "⠀" * 8
-            
+
             # Add each row with emojis to represent the slot items
             slot_rows = ""
             for row in grid:
                 row_with_emojis = "║ " + " ║ ".join(row) + " ║"
-                slot_rows += f"{padding}{row_with_emojis}\n"
+                slot_rows += f"{"⠀" * 8}{row_with_emojis}\n"
             embed.add_field(name="\u200b", value=slot_rows, inline=False)
 
             # Format the bet, payout, and balance details with bold text and emojis

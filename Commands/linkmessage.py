@@ -28,8 +28,9 @@ class LinkMessage:
             if formatted_domain_info is None:
                 return
             
-            # Send the domain information
-            await message.channel.send(formatted_domain_info)
+            # Reply to the message with the domain information
+            await message.reply(formatted_domain_info)
+            
         except Exception as e:
             logger.error(f"Error while handling message: {e}")
             return
