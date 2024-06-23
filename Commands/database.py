@@ -151,11 +151,11 @@ class Database():
             total_amount = data.get("amount", 0) + amount
             # Get the total price amount of the stock the user has
             price = total_amount * stock_price
-            total_price = data.get("total_price", 0) + price
+            
             stock_data = {
                 "symbol": stock["symbol"],
                 "amount": total_amount,
-                "total_price": total_price
+                "total_price": price
             }
             
             # Update the user's balance

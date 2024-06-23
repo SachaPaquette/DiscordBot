@@ -30,6 +30,7 @@ class Portfolio():
 
                 # Determine the current price, default to regularMarketPrice if currentPrice is not available
                 current_price = stock_info.get("currentPrice") or stock_info.get("regularMarketPreviousClose")
+                
                 if current_price is None:
                     await interactions.response.send_message(f"{interactions.user.mention}, price information for {stock['symbol']} is unavailable.")
                     return
@@ -40,8 +41,7 @@ class Portfolio():
                 current_total_price = current_price * stock["amount"]
                 
                 # Calculate the change in price (in percentage)
-                change = ((current_total_price - old_total_price) / old_total_price) * 100 if old_total_price != 0 else 0
-                
+                change = ((current_total_price  - old_total_price) / old_total_price) * 100
                 # Add field for each stock in the embed
                 embed.add_field(
                     name=f"{stock_info['symbol']}",
