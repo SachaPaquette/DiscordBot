@@ -61,12 +61,13 @@ class Stocks():
             # Add the stock to the user's portfolio
             self.database.add_stocks(interactions.guild.id, interactions.user.id, stock_info, quantity, stock_price)
             
-            await message.edit(content=f"{interactions.user.mention}, you have bought {quantity} shares of {stock_info['symbol']} for ${stock_price * quantity}.")
+            await message.edit(content=f"{interactions.user.mention}, you have bought {quantity} shares of {stock_info['symbol']} for ${(stock_price * quantity):.2f}.")
             return
         except Exception as e:
             await message.edit(content=f"{interactions.user.mention}, there was an error processing your request.")
             logger.error(f"Error in the buy_stock function in stocks.py: {e}")
             return
+        
     async def sell_stock(self, interactions, stock_info, quantity, user, message):
         try:
             # Check if the user has enough stocks to sell
@@ -76,7 +77,7 @@ class Stocks():
             
             # Sell the stock from the user's portfolio
             self.database.sell_stocks(interactions.guild.id, interactions.user.id, stock_info, quantity)
-            await message.edit(content=f"{interactions.user.mention}, you have sold {quantity} shares of {stock_info['symbol']} for ${stock_info['currentPrice'] * quantity}.")
+            await message.edit(content=f"{interactions.user.mention}, you have sold {quantity} shares of {stock_info['symbol']} for ${(stock_info['currentPrice'] * quantity):.2f}.")
             
             return
         except Exception as e:

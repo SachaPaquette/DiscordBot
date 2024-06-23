@@ -25,35 +25,32 @@ class Portfolio():
             embed = discord.Embed(title=f"{interactions.user.display_name}'s Portfolio", color=discord.Color.blue())
             
             for stock_symbol, stock in stocks.items():
+                # Get the stock data
                 stock_data = yf.Ticker(stock["symbol"])
                 stock_info = stock_data.info
 
-                # Determine the current price, default to regularMarketPrice if currentPrice is not available
+                # Determine the current price of the stock
                 current_price = stock_info.get("currentPrice") or stock_info.get("regularMarketPreviousClose")
                 
+                # If the current price is not available, send a message to the user
                 if current_price is None:
                     await interactions.response.send_message(f"{interactions.user.mention}, price information for {stock['symbol']} is unavailable.")
                     return
-                
-                # Get the old total value of the stock
-                old_total_price = stock["total_price"]
-                # Get the current price of the stock
-                current_total_price = current_price * stock["amount"]
-                
-                # Calculate the change in price (in percentage)
-                change = ((current_total_price  - old_total_price) / old_total_price) * 100
+
+                # Calculate the change in price (in percentage) since the stock was bought
+                change = (((current_price * stock["amount"])  - stock["total_price"]) / stock["total_price"]) * 100
                 # Add field for each stock in the embed
                 embed.add_field(
                     name=f"{stock_info['symbol']}",
                     value=(
                         f"Shares: {stock['amount']}\n"
                         f"Current Price: ${current_price:.2f}\n"
-                        f"Total Value: ${current_total_price:.2f}\n"
+                        f"Total Value: ${(current_price * stock["amount"]):.2f}\n"
                         f"Change: {change:.2f}%"
                     ),
                     inline=False
                 )
-            
+            # Send the embed to the user
             await interactions.response.send_message(embed=embed)
         except Exception as e:
             await interactions.response.send_message(f"{interactions.user.mention}, there was an error processing your request.")
