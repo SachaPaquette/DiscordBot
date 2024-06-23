@@ -3,14 +3,13 @@ from discord.ui import Button, View
 from discord.ext import commands
 from Config.logging import setup_logging
 from Config.config import conf
-import matplotlib.pyplot as plt
+
 from Commands.database import Database
 # Create a logger for this file
 logger = setup_logging("utility.py", conf.LOGS_PATH)
 class Utility():
     def __init__(self):
         self.database = Database.getInstance()
-    
     
     async def join(self, interactions: discord.Interaction, message=None):
         """
@@ -64,9 +63,7 @@ class Utility():
         except Exception as e:
             logger.error(f"An error occurred when trying to join the channel. {e}")
             raise e
-        
-
-        
+             
     async def leave(self, interactions):
         """
         Disconnects the bot from the voice channel it is currently in.
@@ -90,9 +87,7 @@ class Utility():
         except Exception as e:
             logger.error(f"Error in the leave command: {e}")
             raise e
-        
-  
-        
+            
     def get_userid_from_sender(sender):
         """
         Get the user ID from the sender object.
@@ -108,9 +103,7 @@ class Utility():
         except Exception as e:
             logger.error(f"Error while trying to get the user ID from the sender object: {e}")
             return None
-
    
-        
     def is_message_command(self, message, commands):
         # Check if the the string after the / is a command
         return message.content.split()[0][1:] in commands
@@ -122,54 +115,13 @@ class Utility():
             return len(parts) == 2 and parts[1].isdigit()
         return False
 
-    
     def is_command(self, message):
         # Check if the message is a command
         return message.startswith("/")
-    
-
-
-    
-    def create_open_case_graph_skin_prices(self, prices):
-        # Extract time frames and price values
-        time_frames = list(prices['steam'].keys())
-        price_values = list(prices['steam'].values())
-
-        # Reorder time frames and price values
-        time_frames = time_frames[::-1]
-        price_values = price_values[::-1]
-
-        # Set a custom style
-        plt.style.use('dark_background')
-
-        # Create the line graph
-        plt.figure(figsize=(10, 6))
-        plt.plot(time_frames, price_values, marker='o', color='red', linestyle='-', linewidth=1, markersize=8)
-
-        # Add titles and labels
-        plt.title('Steam Average Prices Over Different Time Periods', fontsize=16)
-        plt.xlabel('Time Period', fontsize=12)
-        plt.ylabel('Average Price', fontsize=12)
-
-        # Display values on top of the points
-        for i, price in enumerate(price_values):
-            plt.text(i, price + 0.02, f'{price:.4f}', ha='center', va='bottom', fontsize=10)
-
-        # Show the plot
-        plt.grid(True)  # Adding grid for better readability
-
-        # Save the plot as an image file
-        plt.savefig('./Commands/Case/graph.png')
-        plt.close()
-            
- 
-        
-        
+                
     def format_inexistant_prices(self, sticker_price):
         
         time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
-        
-
             # Iterate over the time periods
         for i in range(len(time_periods)):
             current_period = time_periods[i]
@@ -187,9 +139,7 @@ class Utility():
         
         return sticker_price["last_24h"]
         
-        
-        
-    async def add_buttons(self,interactions, message, function_keep, function_sell, weapon):
+    async def add_buttons(self, message, function_keep, function_sell, weapon):
         keep_button = Button(style=discord.ButtonStyle.green, label="Keep", custom_id="keep")
         sell_button = Button(style=discord.ButtonStyle.red, label="Sell", custom_id="sell")
         
@@ -213,23 +163,17 @@ class Utility():
         # Disable the buttons
         view = View()
         await message.edit(view=view, embed=None)
-        
-        
+           
     def create_weapon_from_info(self, weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, weapon_image, is_stattrak, color, weapon_price):
-        weapon_image = weapon_info["image"]
-        # Keep the price value to 2 decimal places
-        weapon_price = round(weapon_price, 2)
-        # Keep the float value to 5 decimal places
-        gun_float = round(gun_float, 5)
         return {
             "name": weapon_name,
             "pattern": weapon_pattern,
-            "image": weapon_image,
-            "float": gun_float,
+            "image": weapon_info["image"],
+            "float": round(gun_float, 5),
             "wear": wear_level,
             "stattrak": is_stattrak,
             "color": color,
-            "price": weapon_price
+            "price": round(weapon_price, 2)
         }
         
     def create_color_text(self, color):
@@ -252,10 +196,6 @@ class Utility():
         
         return color_text
             
-            
-        
-
-    
     async def add_page_buttons(self, message,inventory,  function_previous, function_next):
         previous_button = Button(style=discord.ButtonStyle.green, label="⬅️", custom_id="previous")
         next_button = Button(style=discord.ButtonStyle.green, label="➡️", custom_id="next")
@@ -279,7 +219,6 @@ class Utility():
             return False
         return True
     
-    
     def has_sufficient_balance(self, user, amount):
         # Check if the user has sufficient balance
         return user["balance"] >= amount
@@ -287,44 +226,36 @@ class Utility():
     def calculate_profit(self, total, item_price):
         # Calculate the profit
         return total - item_price
-    
-    
-
 
     def add_experience(self,server_id, user_id, payout):
         if payout < 0:
             return
-        # Get the user
-        user = self.database.get_user(server_id, user_id)
         # Update the user's experience  
         self.database.update_user_experience(server_id, user_id, payout)
-        
-        
-
-     
-        
-        
-        
+           
 class EmbedMessage():
     def __init__(self):
         self.utility = Utility()
         
     def create_coinflip_embed_message(self, interactions, bet, result, result_emoji, winner, winnings, balance, opponent_balance):
-        
+        # Embed message for the coinflip command
         embed = discord.Embed(
             title="Coinflip Results",
             color=discord.Color.gold()
         )
-        
+        # Add the user's name and the opponent to the embed message
         embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
         embed.add_field(name="👤 Opponent", value=f"**{winner}**", inline=False)
         
+        # Add the bet amount and the coin result to the embed message
         embed.add_field(name="💰 Bet Amount", value=f"**${bet}**", inline=True)
         embed.add_field(name="🪙 Coin Result", value=f"**{result}**", inline=True)
         
+        # Add the user and opponents balance to the embed message
         embed.add_field(name="🏦 Your Balance", value=f"**${balance:.2f}**", inline=False)
         embed.add_field(name="🏦 Opponent Balance", value=f"**${opponent_balance:.2f}**", inline=True)
         
+        # Add the winner of the coinflip to the embed message
         embed.add_field(name="🎉 Winner", value=f"**{winner}**", inline=False)
         embed.add_field(name="💰 Winnings", value=f"**${winnings}**", inline=False)
         
@@ -339,9 +270,6 @@ class EmbedMessage():
         else:
             color = discord.Color.red()
             value = f"😢 You lose! Better luck next time noob. 😢"
-            
-        
-
         # Create the embed message
         embed = discord.Embed(
             title="🎲 Roll Result 🎲",
@@ -353,7 +281,7 @@ class EmbedMessage():
         embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
         embed.add_field(name="Result", value=f"{value}", inline=False)
 
-        # Add fields with enhanced formatting
+        # Add the user's number, the rolled number, the bet amount, the winnings, and the balance to the embed message
         embed.add_field(name="🎲 Your Number", value=f"**{number}**", inline=True)
         embed.add_field(name="🎲 Rolled Number", value=f"**{rolled_number}**", inline=True)
         embed.add_field(name="💰 Bet Amount", value=f"**${bet:.2f}**", inline=True)
@@ -389,39 +317,39 @@ class EmbedMessage():
         # Add the bet amount, profit/loss, and balance with emojis
         embed.add_field(name="💰 Bet Amount", value=f"**${amount_betted:.2f}**", inline=True)
         embed.add_field(name="📈 Profit/Loss", value=f"**${profit:.2f}**", inline=True)
-        embed.add_field(name="🏦 Total", value=f"**${bet:.2f}**", inline=True)
+        embed.add_field(name="🏦 Total", value=f"**${(bet + profit):.2f}**", inline=True)
         embed.add_field(name="💼 Balance", value=f"**${balance:.2f}**", inline=True)
 
         return embed
     
     
-    def create_inventory_embed_message(self,interactions, user_inventory, page, username):
+    def create_inventory_embed_message(self, user_inventory, page, username):
         try:
             embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
-            # Add the user's name to the embed message
             embed.add_field(name="👤 User", value=f"**{username}**", inline=False)
-            # Add the user's inventory to the embed message 
-            # Loop through the user's inventory and add each item
-            total_value = 0
 
-            # Sort the user's inventory by price
+            if not user_inventory:
+                embed.add_field(name="No items", value="Your inventory is empty.", inline=False)
+                return embed
+
+            # Sort the user's inventory by price and calculate total value
+            total_value = sum(item["price"] for item in user_inventory)
             user_inventory = sorted(user_inventory, key=lambda x: x["price"], reverse=True)
-     
-            
+
             # Get the 10 items of the current page
-            items = user_inventory[page * 10: (page + 1) * 10] 
-            
-            
-            for item in items:               
-                embed.add_field(name=f"{self.utility.create_color_text(item["color"])} {item["name"]} | {item["pattern"]}", value=f"**Price:** ${item["price"]:.2f}", inline=False)
-            for item in user_inventory:
-                total_value += item["price"]
-                
-                
-            
-            # Add the total value of the user's inventory
+            items = user_inventory[page * 10: (page + 1) * 10]
+            if not items:
+                embed.add_field(name="Invalid Page", value="There are no items on this page.", inline=False)
+                return embed
+
+            for item in items:
+                embed.add_field(
+                    name=f"{self.utility.create_color_text(item['color'])} {item['name']} | {item['pattern']}",
+                    value=f"**Price:** ${item['price']:.2f}",
+                    inline=False
+                )
+
             embed.add_field(name="💰 Total Value", value=f"**${total_value:.2f}**", inline=False)
-            
             return embed
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in inventory.py: {e}")
@@ -561,7 +489,7 @@ class EmbedMessage():
             logger.error(f"Error while trying to create an embed message in on_member_remove_message: {e}")
             return None
         
-    def now_playing_song_embed(song_title, thumbnail, song_duration):
+    def now_playing_song_embed(self, song_title, thumbnail, song_duration):
         """
         Create an embed message that contains the title of the song, the thumbnail, and the duration.
 
@@ -588,7 +516,7 @@ class EmbedMessage():
             return
         
         
-    def create_gambling_embed_message(symbols, profit, balance):
+    def create_gambling_embed_message(self, symbols, profit, balance):
         try:
             # Determine the color based on profit
             if profit > 0:
@@ -627,8 +555,7 @@ class EmbedMessage():
             return None
         
     
-    @staticmethod
-    def create_slots_9x9_embed_message(grid, bet, payout, balance):
+    def create_slots_9x9_embed_message(self, grid, bet, payout, balance):
         try:
             
             # Create the embed message with a vibrant color and a dynamic title

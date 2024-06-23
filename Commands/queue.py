@@ -10,13 +10,11 @@ logger = setup_logging("queue.py", conf.LOGS_PATH)
 class QueueOperations:
     # Initialize the queue attribute
     shared_queue = deque()  
-    
     def __init__(self, song_session=None):
         # Initialize the song session attribute
         self.song_session = song_session
         # Initialize the queue attribute
         self.queue = self.shared_queue
-        
 
     def display_queue(self):
         """
@@ -43,12 +41,8 @@ class QueueOperations:
                 if self.return_queue() == 0:
                     await interactions.response.send_message("No songs in queue.")
                     return
-                # Get the queue
-                queue = self.display_queue()
-                # Create an embed message that contains the queue
-                embed = discord.Embed(title="Queue", description="\n".join(queue), color=discord.Color.green())
                 # Send the embed
-                await interactions.response.send_message(embed=embed)
+                await interactions.response.send_message(embed=discord.Embed(title="Queue", description="\n".join(self.display_queue()), color=discord.Color.green()))
             except Exception as e:
                 logger.error(f"An error occurred when trying to display the queue. {e}")
                 raise e
@@ -77,17 +71,12 @@ class QueueOperations:
             None
         """
         try:
-            # Add the source and title to the queue as a dictionary
-            song_info = {"source": youtube_source, "title": title, "duration": song_duration, "thumbnail": thumbnail}
-
             # Append the song info to the queue
-            self.queue.append(song_info)
-
+            self.queue.append({"source": youtube_source, "title": title, "duration": song_duration, "thumbnail": thumbnail})
             # Check if the bot is playing something
             if not vc.is_playing():
                 # If not, play the next song
                 self.song_session.play_next(vc)
-                pass
         except Exception as e:
             logger.error(f"Error while trying to add to queue in queue.py: {e}")
             return

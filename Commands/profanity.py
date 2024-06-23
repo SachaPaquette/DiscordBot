@@ -14,8 +14,7 @@ class Profanity():
         
     async def on_message_command(self, message):
         try:
-
-            # Check that it is not an emoji reaction (:emoji:)
+            # Check that it is not a message from the bot or an emoji reaction (:emoji:)
             if message.author.bot or self.utility.is_emoji(message.content):
                 return     
             # Check if the message contains profanity

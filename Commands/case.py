@@ -245,7 +245,7 @@ class Case():
             embed_message = await first_message.edit(embed=embed)
 
             # Add buttons to the message
-            await self.utility.add_buttons(interactions=interactions, message=embed_message, function_keep=self.keep_function, function_sell=self.sell_function, weapon=weapon)
+            await self.utility.add_buttons(message=embed_message, function_keep=self.keep_function, function_sell=self.sell_function, weapon=weapon)
             
             # Wait 5 seconds before selling
             await asyncio.sleep(5)

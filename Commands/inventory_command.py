@@ -22,7 +22,7 @@ class Inventory():
             if inventory is None or len(inventory) == 0:
                 await interactions.response.send_message("You don't have any items in your inventory.")
                 return
-            embed = self.embedMessage.create_inventory_embed_message(interactions, inventory, self.page, self.username)
+            embed = self.embedMessage.create_inventory_embed_message(inventory, self.page, self.username)
             await interactions.response.send_message(embed=embed)
             embed_message = await interactions.original_response()
             
@@ -46,7 +46,7 @@ class Inventory():
             self.page += 1
             
             # Get the next 10 items from the inventory
-            embed = self.utility.create_inventory_embed_message(interactions=interactions, user_inventory=inventory, page=self.page, username=self.username)
+            embed = self.embedMessage.create_inventory_embed_message(user_inventory=inventory, page=self.page, username=self.username)
             
             # Edit the message
             await message.edit(embed=embed)
@@ -68,7 +68,7 @@ class Inventory():
             self.page -= 1
 
             # Get the previous 10 items from the inventory
-            embed = self.embedMessage.create_inventory_embed_message(interactions, inventory, self.page, self.username)
+            embed = self.embedMessage.create_inventory_embed_message(inventory, self.page, self.username)
             
             # Edit the message
             await message.edit(embed=embed)
