@@ -57,22 +57,17 @@ class Roll():
             # Deduct the bet from the user's balance
             user["balance"] -= bet
             
-            
-            
             # Roll a number between 1 and 100
             rolled_number = random.randint(1, 100)
             
-            # Calculate the winnings
-            winnings = self.calculate_winnings(bet, number, rolled_number)
-            
             # Add the winnings to the user's balance
-            user["balance"] += winnings
+            user["balance"] += self.calculate_winnings(bet, number, rolled_number)
             
             # Update the user's balance in the database
             self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
             
             # Create an embed message
-            embed = self.embedMessage.create_roll_embed_message(interactions, bet, number, rolled_number, winnings, user["balance"])
+            embed = self.embedMessage.create_roll_embed_message(interactions, bet, number, rolled_number, self.calculate_winnings(bet, number, rolled_number), user["balance"])
             
             # Send the embed message to the user
             await interactions.response.send_message(embed=embed)
