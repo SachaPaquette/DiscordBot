@@ -30,6 +30,8 @@ Create a .env file that is in the root of the project and add your discord token
 ```bash
 # .env file content
 DISCORD_TOKEN="your_discord_token"
+TESTING_GUILD_ID="your_guild_id" (This lets the commands sync automatically and without any cooldown)
+BOT_OWNER_ID="your_id" (This lets you use commands that are only for the admin)
 ```
 
 ##### Usage
@@ -45,8 +47,8 @@ python discordbot.py
 - /health: Health check for the bot.
 - /join: Join the voice channel.
 - /leave: Leave the voice channel.
-- /ping <username>: Ping a user.
-- /play <url>: Play a song.
+- /ping &lt;username&gt;: Ping a user.
+- /play &lt;url&gt;: Play a song.
 - /skip: Skip the current song.
 - /nowplaying: Display the current song.
 - /queue: Display the queue.
@@ -55,14 +57,18 @@ python discordbot.py
 - /resume: Resume the current song.
 - /shuffle: Shuffle the queue.
 - /lyrics: Display the lyrics of the current song.
-- /userinfo <member>: Display user information.
-- /gamble <amount>: Gamble your money.
+- /userinfo &lt;member&gt;: Display user information.
+- /gamble &lt;amount&gt;: Gamble your money.
 - /leaderboard: Display the leaderboard.
 - /rank: Display your rank.
 - /work: Work to earn money.
 - /balance: Display your bank balance.
-- /slots <bet>: Play the slots.
+- /slots &lt;bet&gt;: Play the slots.
 - /case: Open a Counter-Strike case.
+- /sticker: Open a Counter-Strike capsule of stickers.
+- /blackjack: Play a game of blackjack.
+- /stocks &lt;option&gt; : Buy or sell a stock.
+- /portfolio: Display your stocks owned.
 
 ## Dependencies
 
