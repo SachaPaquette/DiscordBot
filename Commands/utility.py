@@ -360,7 +360,7 @@ class EmbedMessage():
         try:
             embed = discord.Embed(title="🎉 Sticker Opening Results 🎉", color=discord.Colour(color))
             # Add sticker name
-            embed.add_field(name="🎨 Sticker", value=f"**{sticker["name"]}**", inline=False)   
+            embed.add_field(name="🎨 Sticker", value='**{sticker["name"]}**', inline=False)   
             
             # Add sticker image     
             embed.set_thumbnail(url=sticker["image"])
@@ -569,7 +569,7 @@ class EmbedMessage():
             slot_rows = ""
             for row in grid:
                 row_with_emojis = "║ " + " ║ ".join(row) + " ║"
-                slot_rows += f"{"⠀" * 8}{row_with_emojis}\n"
+                slot_rows += f'{" " * 8}{row_with_emojis}\n'
             embed.add_field(name="\u200b", value=slot_rows, inline=False)
 
             # Format the bet, payout, and balance details with bold text and emojis
@@ -628,7 +628,8 @@ class EmbedMessage():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet** {user["total_bet"]}",
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']}",
+
                     inline=False
                 )
 
@@ -659,4 +660,23 @@ class EmbedMessage():
         
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in rank.py: {e}")
+            return None
+        
+    def create_embed_user_information(self, member):
+        try:
+            # Create an embed to display user information
+            embed = discord.Embed(title=f'User Information - {member.display_name}', color=member.color)
+            # Add the user's avatar
+            embed.set_thumbnail(url=member.avatar)
+            # Add the user's information
+            embed.add_field(name='Username', value=member.name, inline=True)
+            # Add the user's ID
+            embed.add_field(name='User ID', value=member.id, inline=True)
+            # Add the user's join date to the server
+            embed.add_field(name='Joined Server On', value=member.joined_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
+            # Add the user's account creation date
+            embed.add_field(name='Account Created On', value=member.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=True)
+            return embed
+        except Exception as e:
+            logger.error(f"Error creating user information embed: {e}")
             return None

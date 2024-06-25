@@ -5,7 +5,7 @@ from Config.config import conf
 from Commands.queue import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.ytdl import YTDLSource
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 import asyncio
 # Load the .env file
 load_dotenv()
@@ -45,6 +45,7 @@ class SongSession:
         self.thumbnail = None
         
         self.utility = Utility()
+        self.embedMessage = EmbedMessage()
         
         self.source = None
 
@@ -271,7 +272,7 @@ class SongSession:
                 await result_message.edit(content=f"Added {song_title} to the queue.")
             else:
                 # Send the now playing message
-                embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
+                embed = self.embedMessage.now_playing_song_embed(song_title, thumbnail, song_duration)
                 await result_message.edit(embed=embed, content=None)
                 # Play the song
                 await self.play(source=URL, song_title=song_title, song_duration=song_duration, thumbnail=thumbnail)

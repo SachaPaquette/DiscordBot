@@ -33,10 +33,12 @@ class BlackJack():
         random.shuffle(self.deck)
         
     def deal_cards(self):
-        self.player_hand.append(self.deck.pop())
-        self.dealer_hand.append(self.deck.pop())
-        self.player_hand.append(self.deck.pop())
-        self.dealer_hand.append(self.deck.pop())
+        # Deal two cards to the player and dealer
+        # Loop twice to deal two cards
+        for _ in range(2):
+            self.player_hand.append(self.deck.pop())
+            self.dealer_hand.append(self.deck.pop())
+        
         
     def calculate_score(self, hand):
         score = 0

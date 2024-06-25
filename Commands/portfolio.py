@@ -26,11 +26,11 @@ class Portfolio():
             
             for stock_symbol, stock in stocks.items():
                 # Get the stock data
-                stock_data = yf.Ticker(stock["symbol"])
+                stock_data = yf.Ticker(stock['symbol'])
                 stock_info = stock_data.info
 
                 # Determine the current price of the stock
-                current_price = stock_info.get("currentPrice") or stock_info.get("regularMarketPreviousClose")
+                current_price = stock_info.get('currentPrice') or stock_info.get('regularMarketDayHigh')
                 
                 # If the current price is not available, send a message to the user
                 if current_price is None:
@@ -38,14 +38,14 @@ class Portfolio():
                     return
 
                 # Calculate the change in price (in percentage) since the stock was bought
-                change = (((current_price * stock["amount"])  - stock["total_price"]) / stock["total_price"]) * 100
+                change = (((current_price * stock['amount'])  - stock['total_price']) / stock['total_price']) * 100
                 # Add field for each stock in the embed
                 embed.add_field(
                     name=f"{stock_info['symbol']}",
                     value=(
                         f"Shares: {stock['amount']}\n"
                         f"Current Price: ${current_price:.2f}\n"
-                        f"Total Value: ${(current_price * stock["amount"]):.2f}\n"
+                        f"Total Value: ${(current_price * stock['amount']):.2f}\n"
                         f"Change: {change:.2f}%"
                     ),
                     inline=False

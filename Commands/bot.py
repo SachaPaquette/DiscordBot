@@ -178,6 +178,26 @@ async def on_member_remove(member):
         logger.error(f"Error in the on member remove event: {e}")
         raise e
 
+@bot.event
+async def on_member_update(before, after):
+    """
+    Event handler that is triggered when a member is updated.
+    Check if a user is playing Valorant or Dead by Daylight and send a message to the general channel. 
+    """
+    
+    try:
+        print(f"Before: {before.activity}")
+        print(f"After: {after.activity}")
+        
+        if after.activity and after.activity.name == "Dead by Daylight":
+            # Send a message to the general channel
+            channel = discord.utils.get(after.guild.text_channels, name="general")
+            await channel.send(f"{after.mention} please stop playing Dead by Daylight.")
+    except Exception as e:
+        logger.error(f"Error in the on member update event: {e}")
+        raise e
+
+
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
 async def health(interactions):

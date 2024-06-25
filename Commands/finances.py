@@ -11,7 +11,7 @@ from enum import Enum
 with open("Commands/Finances/tickers.txt") as f:
     STOCKS = f.read().splitlines()
 
-
+# TODO 
     
 class Finance():
     def __init__(self):
