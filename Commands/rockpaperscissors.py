@@ -44,36 +44,25 @@ class RockPaperScissors():
         
     async def rockpaperscissors_command(self, interactions, bet: float, choice: Choices):
         try:
+            # Check if the bet is positive
             if bet <= 0:
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
-            
+            # Check if the user has enough money
             user = self.database.get_user(interactions.guild.id, interactions.user.id)
             if not self.utility.has_sufficient_balance(user, bet):
                 await interactions.response.send_message(f'{interactions.user.mention}, you are too broke.')
                 return
-
+            # Get the bot's choice 
             bot_choice = random.choice(self.choices)
-            game_result = self.game_logic(choice, bot_choice)
-            
-            # Calculate profit and update bet
-            if game_result == GameStates.WIN:
-                profit = bet
-                new_balance = user["balance"] + bet
-            elif game_result == GameStates.LOSE:
-                profit = -bet
-                new_balance = user["balance"] - bet
-            else:  # GameStates.DRAW
-                profit = 0
-                new_balance = user["balance"]
-
-            self.database.update_user_balance(interactions.guild.id, interactions.user.id, new_balance)
-            
-            embed = self.embedMessage.create_rockpaperscissors_embed(
-                choice.value, bot_choice.value, game_result.value, bet, new_balance, interactions.user.display_name, profit, bet
-            )
-            
-            await interactions.response.send_message(embed=embed)
+            # Calculate the profit
+            profit = bet if self.game_logic(choice, bot_choice) == GameStates.WIN else -bet if self.game_logic(choice, bot_choice) == GameStates.LOSE else 0
+            # Update the user's balance
+            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"] + profit)
+            # Send the result to the user 
+            await interactions.response.send_message(embed=self.embedMessage.create_rockpaperscissors_embed(
+                choice.value, bot_choice.value,  self.game_logic(choice, bot_choice).value, bet, user["balance"] + profit, interactions.user.display_name, profit, bet
+            ))
         except Exception as e:
             logger.error(f"Error in the rockpaperscissors_command function: {e}")
             await interactions.response.send_message("An error occurred while processing your request.")

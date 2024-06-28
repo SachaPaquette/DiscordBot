@@ -82,14 +82,12 @@ class SongSession:
         None
         """
         try:
-            # Declare a voice client variable
-            vc = interactions.guild.voice_client
             # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
+            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
                 await interactions.response.send_message("No music is currently playing to pause.")
                 return
             # Pause the song
-            vc.pause()
+            interactions.guild.voice_client.pause()
             # Send a message that the song was paused
             await interactions.response.send_message("Paused the current song.")
         except Exception as e:
@@ -109,16 +107,13 @@ class SongSession:
         None
         """
         try:
-            # Declare a voice client variable
-            vc = interactions.guild.voice_client
-            
             # Check if the bot is playing something
-            if vc is None or not vc.is_paused():
+            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_paused():
                 await interactions.response.send_message("No music is currently paused to resume.")
                 return
             
             # Resume the song
-            vc.resume()
+            interactions.guild.voice_client.resume()
             
             # Send a message that the song was resumed
             await interactions.response.send_message("Resumed the current song.")
@@ -144,24 +139,23 @@ class SongSession:
 
     async def skip(self, interactions):
         try:
-            # Declare a voice client variable
-            vc = interactions.guild.voice_client
-            
             # Check if the bot is playing something
-            if vc is None or not vc.is_playing():
+            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
                 await interactions.response.send_message("No music is currently playing to skip.")
                 return
 
             # Check if the queue is empty
             if self.queue_operations.return_queue() == 0:
                 await interactions.response.send_message("No more songs in the queue to skip.")
+                # Stop the audio
+                await self.stop(interactions.guild.voice_client)
                 return
             
             else:
                 # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
                 self.skipped = True
                 # Play the next song
-                await self.play_next(vc)
+                await self.play_next(interactions.guild.voice_client)
                 
                 # Send a message saying that the song was skipped
                 await interactions.response.send_message("Skipped to the next song.")

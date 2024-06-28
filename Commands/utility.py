@@ -692,6 +692,8 @@ class EmbedMessage():
             embed.add_field(name="💰 Balance", value=f"**${balance:.2f}**", inline=False)
             # Add the minimum and maximum amount of money that can be earned
             embed.add_field(name="💼 Salary Range", value=f"**${job['min_earnings']} - ${job['max_earnings']}**", inline=False)
+            # Add the user's picture to the embed
+            embed.set_thumbnail(url=interactions.user.avatar)  
             return embed
         except Exception as e:
             logger.error(f"Error while trying to create an embed message in work.py: {e}")

@@ -1,5 +1,5 @@
 import discord
-from Commands.utility import Utility
+from Commands.utility import Utility, EmbedMessage
 from Config.logging import setup_logging
 from Config.config import conf
 # Create a logger for this file
@@ -17,24 +17,16 @@ class NowPlaying():
             None
             """
             try:
-                # Get the voice client
-                vc = interactions.guild.voice_client
-                
-                # Check if the bot is playing something
-                if vc is None or not vc.is_playing():
-                    await interactions.response.send_message("No music is currently playing.")
-                    return
-                
                 # Get the title of the song
                 song_title = session.get_song_title()
                 
                 # Check if the song title is None
-                if song_title is None:
+                if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing() or song_title is None:
                     await interactions.response.send_message("No music is currently playing.")
                     return
-
+                embedMessage = EmbedMessage()
                 # Create an embed message that contains the title of the song, the thumbnail, and the duration
-                embed = Utility.now_playing_song_embed(song_title, session.thumbnail, session.song_duration)
+                embed = embedMessage.now_playing_song_embed(song_title, session.thumbnail, session.song_duration)
                     
                 # Send the embed
                 await interactions.response.send_message(embed=embed)
