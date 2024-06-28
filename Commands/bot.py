@@ -30,7 +30,7 @@ from Config.config import conf
 
 
 # Import logging
-from Config.logging import setup_logging
+from Config.logging import setup_logging, return_debug
 
 
 # Create a logger for this file
@@ -48,6 +48,9 @@ intents = discord.Intents.all()
 #client = discord.Client(intents=intents)
 #tree = app_commands.CommandTree(client)
 bot = commands.Bot(command_prefix='/', intents=intents)
+
+# Chane log level to debug
+
 
 session = None
 
@@ -813,11 +816,10 @@ def main():
     Main function that runs the bot.
     """
     try:
-        token = os.environ.get("DISCORD_TOKEN")
-        if token is None:
+        
+        if os.environ.get("DISCORD_TOKEN") is None:
             raise Exception("No token found in the environment variables.")
-        # Run the bot
-        bot.run(token)
+        bot.run(os.environ.get("DISCORD_TOKEN"), reconnect=True, log_level=return_debug())
     except Exception as e:
         logger.error(f"Error in the main function: {e}")
         raise e

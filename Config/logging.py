@@ -20,3 +20,12 @@ def setup_logging(logger_name, log_file):
     logger.addHandler(file_handler) # Add the file handler to the logger
 
     return logger
+
+def return_debug():
+    """
+    Return the debug level.
+
+    Returns:
+        int: Debug level.
+    """
+    return logging.WARN
