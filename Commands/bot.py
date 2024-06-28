@@ -69,7 +69,7 @@ health_check = HealthCheck(bot)
 
 lyrics_operations = LyricsOperations(bot)
 
-profanity = Profanity(bot)
+
 
 commands_list = []
 
@@ -122,6 +122,8 @@ async def on_message(message):
             return
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
+        
+        profanity = Profanity(bot)
         # Check for profanity in the message
         await profanity.on_message_command(message)
     except Exception as e:

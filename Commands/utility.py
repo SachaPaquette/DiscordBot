@@ -680,3 +680,19 @@ class EmbedMessage():
         except Exception as e:
             logger.error(f"Error creating user information embed: {e}")
             return None
+        
+    def create_work_embed(self, interactions, job, amount_earned, balance):
+        # Create an embed message for the work command
+        try:
+            embed = discord.Embed(
+                title="Work Results",
+                description=f"You worked as a {job['title']} {job['icon']} and earned ${amount_earned}!",
+                color=discord.Color.green()
+            )
+            embed.add_field(name="💰 Balance", value=f"**${balance:.2f}**", inline=False)
+            # Add the minimum and maximum amount of money that can be earned
+            embed.add_field(name="💼 Salary Range", value=f"**${job['min_earnings']} - ${job['max_earnings']}**", inline=False)
+            return embed
+        except Exception as e:
+            logger.error(f"Error while trying to create an embed message in work.py: {e}")
+            return None
