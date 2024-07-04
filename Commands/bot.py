@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -813,17 +814,31 @@ async def portfolio(interactions):
         logger.error(f"Error in the portfolio command: {e}")
         raise e
 
+
+async def run_bot(token):
+    while True:
+        try:
+            await bot.start(token, reconnect=True)
+        except ConnectionResetError as e:
+            print(f"Connection error: {e}")
+            await asyncio.sleep(5)  # Wait for 5 seconds before reconnecting
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            await asyncio.sleep(5)  # Wait for 5 seconds before reconnecting
+
 def main():
     """
     Main function that runs the bot.
     """
     try:
-        
         if os.environ.get("DISCORD_TOKEN") is None:
             raise Exception("No token found in the environment variables.")
-        bot.run(os.environ.get("DISCORD_TOKEN"), reconnect=True, log_level=return_debug())
+        asyncio.get_event_loop().run_until_complete(run_bot(os.environ.get("DISCORD_TOKEN")))
+    except KeyboardInterrupt:
+        print("\nBot stopped by user.")
+        return
     except Exception as e:
-        logger.error(f"Error in the main function: {e}")
+        print(f"Error in the main function: {e}")
         raise e
 
 
