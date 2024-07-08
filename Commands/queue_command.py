@@ -135,18 +135,19 @@ class QueueOperations:
         try:
             # Check if the queue is empty
             if self.return_queue() == 0:
-                return None, None
+                return None, None, None, None
             
             # Get the next song from the queue
             next_song = self.queue.popleft()
             
-            # Get the source and title of the next song
+            # Extract song information
             next_source = next_song.get("source")
             next_title = next_song.get("title")
             next_song_duration = next_song.get("duration")
             next_song_thumbnail = next_song.get("thumbnail")
-            
-            if next_source is not None and next_title is not None and next_song_duration is not None and next_song_thumbnail is not None:
+   
+            # Check if all song information is available
+            if all((next_source, next_title, next_song_duration, next_song_thumbnail)):
                 return next_source, next_title, next_song_duration, next_song_thumbnail
             else:
                 print("Some song information is None.")

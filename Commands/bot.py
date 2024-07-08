@@ -23,7 +23,7 @@ from Commands.lyrics_command import LyricsOperations
 from Commands.music import SongSession
 from Commands.nowplaying_command import NowPlaying
 from Commands.portfolio_command import Portfolio
-from Commands.profanity import Profanity
+from Commands.profanity_event import Profanity
 from Commands.queue_command import QueueOperations
 from Commands.roll_command import Roll
 from Commands.rockpaperscissors_command import RockPaperScissors, Choices
@@ -159,7 +159,7 @@ async def on_presence_update(before, after):
     """
     Event handler that is triggered when a member is updated.
     Check if a user is playing Valorant or Dead by Daylight and send a message to the general channel. 
-    """
+    
     try:        
         if after.activity and after.activity.name == "Dead by Daylight":
             # Send a message to the general channel
@@ -168,7 +168,8 @@ async def on_presence_update(before, after):
     except Exception as e:
         logger.error(f"Error in the on member update event: {e}")
         raise e
-
+    """
+    pass
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
 async def health(interactions):
@@ -225,15 +226,14 @@ async def ping(interactions, username: discord.User):
 
 @bot.tree.command(name='skip', description='Skip the current song.')
 async def skip(interactions):
-    if utility.bot_check_session(session):   
-        try:
-            # Call the skip function in SongSession
-            await session.skip(interactions)
-        except Exception as e:
-            logger.error(f"Error in the skip command: {e}")
-            raise e
-    else:
-        await interactions.response.send_message("No song is currently playing.")
+    try:
+        # Call the skip function in SongSession
+        session = SongSession(interactions.guild, interactions)
+        await session.skip(interactions)
+    except Exception as e:
+        logger.error(f"Error in the skip command: {e}")
+        raise e
+
 @bot.tree.command(name='play', description='Play a song.')
 async def play(interactions, url: str):
     """
@@ -247,17 +247,15 @@ async def play(interactions, url: str):
     None
     """
     try:
-        # Create a global session variable to store the SongSession instance
         global session
-        # Check if a music session instance was already created
-        if not session:
-            # Create an instance of SongSession
-            session = SongSession(interactions.guild, interactions)
+        # Get or create the singleton instance of SongSession
+        session = SongSession(interactions.guild, interactions)
+        
+        # Call the play command on the session instance
         await session.play_command(interactions, url, bot.loop)
+    
     except Exception as e:
-        # Leave the channel if an error occurs
-        logger.error(
-            f"An error occurred when trying to play the song. {e}")
+        logger.error(f"An error occurred when trying to play the song. {e}")
         await interactions.response.send_message("An error occurred while processing your request.")
         raise e
 
@@ -273,6 +271,7 @@ async def nowplaying(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
+        
 @bot.tree.command(name='lyrics', description='Display the lyrics of the current song.')
 async def lyrics(interactions):
     if utility.bot_check_session(session):

@@ -1,6 +1,4 @@
-
-from Commands.music import SongSession
-import re, time
+import re
 from .Scripts import azlyrics
 from Config.logging import setup_logging
 from Config.config import conf

@@ -11,7 +11,19 @@ import asyncio
 load_dotenv()
 
 class SongSession:
-    def __init__(self, guild,  interactions) -> None:
+    _instance = None
+    
+    def __new__(cls, guild, interactions):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.__initialized = False
+        return cls._instance
+    
+    def __init__(self, guild, interactions):
+        if self.__initialized:
+            return
+        self.__initialized = True
+        
         """
         Initializes a music session object.
 
@@ -28,27 +40,16 @@ class SongSession:
         - song_duration (str): The duration of the currently playing song.
         - thumbnail (str): The thumbnail of the currently playing song.
         """
-        # Define the guild attribute
         self.guild = guild
-        # Define the voice client object
-        vc = interactions.guild.voice_client
-        # Assign the voice client to the voice_client attribute
-        self.voice_client = vc
-        # Initialize the skipped attribute
-        self.skipped = False  
-        # Initialize the queue operations object 
+        self.voice_client = interactions.guild.voice_client
+        self.skipped = False
         self.queue_operations = QueueOperations(self)
-        # Initialize the current song and song duration attributes
         self.current_song = None
         self.song_duration = None
-        # Initialize the thumbnail attribute of the song
         self.thumbnail = None
-        
         self.utility = Utility()
         self.embedMessage = EmbedMessage()
-        
         self.source = None
-
 
     async def stop(self, vc):
         """
@@ -155,7 +156,7 @@ class SongSession:
                 # Set the skipped flag to True (this will be checked in play_next and after_playing to determine if the song was skipped or not -> after_playing will not play the next song if the song was skipped)
                 self.skipped = True
                 # Play the next song
-                await self.play_next(interactions.guild.voice_client)
+                await self.play_next()
                 
                 # Send a message saying that the song was skipped
                 await interactions.response.send_message("Skipped to the next song.")
@@ -193,8 +194,6 @@ class SongSession:
 
         Args:
             source (str): The source of the song to be played.
-            vc (discord.VoiceChannel): The voice channel to play the song in.
-            after (Callable, optional): A function to be called after the song finishes playing. Defaults to None.
             song_title (str, optional): The title of the song. Defaults to None.
             song_duration (str, optional): The duration of the song. Defaults to None.
             thumbnail (str, optional): The thumbnail of the song. Defaults to None.
@@ -202,16 +201,25 @@ class SongSession:
         try:
             # Define the song information such as the title and duration
             self.define_song_info(song_title, song_duration, thumbnail)
-            # Play the source
-            await self.voice_client.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(
-                source, **conf.FFMPEG_OPTIONS)), after=self.after_playing_callback)
-            self.source = discord.PCMVolumeTransformer(self.voice_client.source)
-        except Exception as e:
-            print(f"Error at play function in music.py: {e}")
-            return
+            
 
-    def after_playing_callback(self, error):
-        asyncio.run(self.after_playing(self.voice_client))
+            # Play the source
+            self.source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(
+                source, **conf.FFMPEG_OPTIONS))
+            self.voice_client.play(self.source, after=self.after_playing_callback)
+            
+        except Exception as e:
+            print(f"Error in play function in music.py: {e}")
+
+
+    def after_playing_callback(self):
+        try:
+            # Run the after_playing function
+            asyncio.run(self.after_playing(self.voice_client))
+        except Exception as e:
+            print(f"Error at after_playing_callback function in music.py: {e}")
+            return
+        
 
     async def play_command(self, interactions, url, loop):
         """
@@ -279,7 +287,7 @@ class SongSession:
             raise e
 
 
-    async def play_next(self, vc):
+    async def play_next(self):
         """
         Plays the next song in the queue.
 
@@ -291,7 +299,7 @@ class SongSession:
         """
         try:
             # Check if the queue is empty or if the song was skipped
-            self.queue_operations.check_queue_skipped_status(vc, self.skipped)
+            self.queue_operations.check_queue_skipped_status(self.voice_client, self.skipped)
 
             # Get the next song from the queue
             next_source, next_title, next_song_duration, next_song_thumbnail = self.queue_operations.get_next_song()
@@ -299,7 +307,7 @@ class SongSession:
             if next_source is None or next_title is None or next_song_duration is None or next_song_thumbnail is None:
                 raise Exception("Song information is None.")
 
-            if not vc:
+            if not self.voice_client:
                 raise Exception("Voice client is None.")
             
             # Play the next song
@@ -315,7 +323,7 @@ class SongSession:
             print(f"Error while trying to play next song in music.py: {e}")
             return
 
-    async def after_playing(self, vc):
+    async def after_playing(self):
         """
         Callback function called after a song finishes playing.
 
@@ -328,9 +336,10 @@ class SongSession:
         """
         try:
             # Check if the skipped flag is False (if it is, the song ended naturally and was not skipped)
-            if not self.skipped:
+            if not self.skipped and self.voice_client is not None and self.voice_client.is_playing() is False and self.queue_operations.return_queue() > 0: 
                 # Play the next song in the queue
-                await self.play_next(vc)
+                await self.play_next()
+                pass
         except Exception as e:
             print(f"Error at after_playing function in music.py: {e}")
             return

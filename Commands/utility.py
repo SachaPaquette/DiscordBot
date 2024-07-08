@@ -350,8 +350,7 @@ class EmbedMessage():
 
             for item in items:
                 embed.add_field(
-                    name=f"{self.utility.create_color_text(item['color'])} {item['name']} | {
-                        item['pattern']}",
+                    name = f"{self.utility.create_color_text(item['color'])} {item['name']} | {item['pattern']}",
                     value=f"**Price:** ${item['price']:.2f}",
                     inline=False
                 )
@@ -476,8 +475,7 @@ class EmbedMessage():
             # Create an embed message
             embed = discord.Embed(
                 title="Welcome to the server!",
-                description=f"Welcome to the server, {
-                    member.display_name}! We're glad to have you here.",
+                description=f"Welcome to the server, {member.display_name}! We're glad to have you here.",
                 color=discord.Color.green()
             )
 
@@ -557,8 +555,7 @@ class EmbedMessage():
 
             # Add slot symbols
             symbols_str = " |".join(symbols)
-            embed.add_field(name="Slot Symbols", value=f"```{
-                            symbols_str}```", inline=True)
+            embed.add_field(name="Slot Symbols", value=f"```{symbols_str}```", inline=True)
 
             # Add result without a title
             embed.add_field(name=" ", value=f"**{result}**", inline=False)
@@ -566,8 +563,7 @@ class EmbedMessage():
             # Add profit/loss and balance
             embed.add_field(name="Result", value=field_value, inline=False)
             # Add balance with 2 decimal places
-            embed.add_field(name="Balance", value=f'{
-                            "{:.2f}".format(balance)} :coin:', inline=False)
+            embed.add_field(name="Balance", value=f'{"{:.2f}".format(balance)} :coin:', inline=False)
 
             # Add footer with additional information
             embed.set_footer(text="Feeling lucky? Spin again!")
@@ -656,9 +652,7 @@ class EmbedMessage():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {
-                        user['experience']:.2f} | **Total Bet:** {user['total_bet']}",
-
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']}",
                     inline=False
                 )
 
@@ -678,8 +672,7 @@ class EmbedMessage():
             embed.set_thumbnail(url=interactions.user.avatar)
 
             # Add the user's name to the embed message
-            embed.add_field(name="Your Name", value=f"{
-                            interactions.user.name}", inline=False)
+            embed.add_field(name="Your Name", value=f"{interactions.user.name}", inline=False)
 
             # Add the user's rank to the embed message
             embed.add_field(name="Your level",
@@ -723,15 +716,13 @@ class EmbedMessage():
         try:
             embed = discord.Embed(
                 title="Work Results",
-                description=f"You worked as a {job['title']} {
-                    job['icon']} and earned ${amount_earned}!",
+                description=f"You worked as a {job['title']} {job['icon']} and earned ${amount_earned}!",
                 color=discord.Color.green()
             )
             embed.add_field(name="💰 Balance",
                             value=f"**${balance:.2f}**", inline=False)
             # Add the minimum and maximum amount of money that can be earned
-            embed.add_field(name="💼 Salary Range", value=f"**${job['min_earnings']} - ${
-                            job['max_earnings']}**", inline=False)
+            embed.add_field(name="💼 Salary Range", value=f"**${job['min_earnings']} - ${job['max_earnings']}**", inline=False)
             # Add the user's picture to the embed
             embed.set_thumbnail(url=interactions.user.avatar)
             return embed
