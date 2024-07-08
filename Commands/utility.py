@@ -227,11 +227,10 @@ class Utility():
         # Calculate the profit
         return total - item_price
 
-    def add_experience(self,server_id, user_id, payout):
-        if payout < 0:
-            return
-        # Update the user's experience  
-        self.database.update_user_experience(server_id, user_id, payout)
+    def add_experience(self,interactions, payout):
+        if payout > 0:
+            # Update the user's experience  
+            self.database.update_user_experience(interactions, payout)
            
 class EmbedMessage():
     def __init__(self):
@@ -360,7 +359,7 @@ class EmbedMessage():
         try:
             embed = discord.Embed(title="🎉 Sticker Opening Results 🎉", color=discord.Colour(color))
             # Add sticker name
-            embed.add_field(name="🎨 Sticker", value='**{sticker["name"]}**', inline=False)   
+            embed.add_field(name="🎨 Sticker", value=f'**{sticker["name"]}**', inline=False)   
             
             # Add sticker image     
             embed.set_thumbnail(url=sticker["image"])
@@ -441,11 +440,11 @@ class EmbedMessage():
         
     def create_keep_message(self, user_name, weapon):
         # Create a message to keep the weapon
-        return f"{user_name} has decided to keep the **{weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
+        return f"{user_name} has decided to keep the **{weapon['wear']} {weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
         
     def create_sell_message(self, user_name, weapon):
         # Create a message to sell the weapon
-        return f"{user_name} has decided to sell the **{weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
+        return f"{user_name} has decided to sell the **{weapon['wear']} {weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
         
           
     async def on_member_join_message(self, member):

@@ -38,7 +38,7 @@ class Gambling():
                 return
             
             user_id = interactions.user.id
-            user = self.database.get_user(interactions.guild.id,user_id)
+            user = self.database.get_user(interactions)
             
             if user["balance"] < bet:
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
@@ -53,7 +53,7 @@ class Gambling():
             
             if payout > 0: 
                 # Update the user's experience
-                self.database.update_user_experience(interactions.guild.id,user_id, payout)
+                self.database.update_user_experience(interactions, payout)
             # Send initial message
             result_message = await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)
             
@@ -116,7 +116,7 @@ class Slot3x3Machine():
                 return
             
             
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             
             if user["balance"] < bet:
                 await interactions.response.send_message("You don't have enough money to bet that amount.")
@@ -132,7 +132,7 @@ class Slot3x3Machine():
             
             if payout > 0:
                 # Update the user's experience
-                self.database.update_user_experience(interactions.guild.id, interactions.user.id, payout)
+                self.database.update_user_experience(interactions, payout)
             
             # Send initial message
             await interactions.response.send_message(f'{interactions.user.mention} spun the slots!', ephemeral=False)

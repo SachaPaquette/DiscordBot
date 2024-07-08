@@ -5,8 +5,9 @@ from io import BytesIO
 import discord
 class User():
     # The constructor method for the User class
-    def __init__(self, user_id: int, balance: int, experience: int):
+    def __init__(self, user_id: int, user_name:str, balance: int, experience: int):
         self.user_id = user_id
+        self.user_name = user_name
         self.balance = balance
         self.experience = experience 
         self.level = self.calculate_level()
@@ -42,7 +43,7 @@ class User():
         """
         Create a user object.
         """
-        return {"user_id": self.user_id, "balance": self.balance, "experience": self.experience, "level": self.calculate_level(), "total_bet": 0}
+        return {"user_id": self.user_id,"user_name": self.user_name, "balance": self.balance, "experience": self.experience, "level": self.calculate_level(), "total_bet": 0}
     
     def fetch_user(self, user_id):
         """

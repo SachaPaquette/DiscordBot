@@ -29,7 +29,7 @@ class Stocks():
             stock_info = stock_data.info
             
             # Check if the user has enough money to buy the stock
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             
             
             message = await interactions.response.send_message(interactions.user.mention + f", processing your request to {option.value} {quantity} shares of {stock}.")

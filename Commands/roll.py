@@ -47,7 +47,7 @@ class Roll():
                 await interactions.response.send_message(f'{interactions.user.mention}, the number must be between 1 and 100.')
                 return
             
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             
             # Check if the user has enough money
             if self.utility.has_sufficient_balance(user, bet) == False:

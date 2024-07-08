@@ -194,7 +194,7 @@ class Case():
             first_message = await interactions.original_response()
 
             # Check if the user has enough balance to buy the case
-            user = self.database.get_user(self.server_id , interactions.user.id)
+            user = self.database.get_user(interactions)
             self.user_id = interactions.user.id
             
             if self.utility.has_sufficient_balance(user, self.case_price) is False:
@@ -230,7 +230,7 @@ class Case():
             self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"], self.case_price)
             
             # Add experience to the user
-            self.utility.add_experience(self.server_id, interactions.user.id, self.utility.calculate_profit(float(prices), self.case_price))
+            self.utility.add_experience(interactions, self.utility.calculate_profit(float(prices), self.case_price))
             
             weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, prices)
             
@@ -278,7 +278,7 @@ class Case():
         
         
         # Add the skin to the user's inventory
-        self.inventory.add_or_remove_item_to_inventory(interactions.user.id, weapon, "add")
+        self.inventory.add_or_remove_item_to_inventory(interactions, weapon, "add")
         
         return
     

@@ -86,7 +86,7 @@ class Capsule():
     async def open_capsule(self, interactions):
         try:
   
-            user = self.database.get_user(self.server_id, interactions.user.id)
+            user = self.database.get_user(interactions)
             
             # Check if the user has enough balance to buy the sticker capsule
             if self.utility.has_sufficient_balance(user, self.sticker_capsule_price) is False:
@@ -125,7 +125,7 @@ class Capsule():
             
             if self.utility.calculate_profit(sticker_price, self.sticker_capsule_price) > 0:
                 # Add experience to the user
-                self.utility.add_experience(self.server_id, interactions.user.id, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price))
+                self.utility.add_experience(interactions, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price))
             
             # Create an embed message for the sticker
             embed = self.embedMessage.create_sticker_embed(sticker, user["balance"], sticker_price, self.utility.calculate_profit(sticker_price, self.sticker_capsule_price), self.color)

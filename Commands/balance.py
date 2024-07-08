@@ -10,7 +10,7 @@ class Balance():
     async def balance_command(self, interactions):
         try:
             # Get the user from the database
-            user = self.database.get_user(interactions.guild.id,interactions.user.id)
+            user = self.database.get_user(interactions)
             # Send a message to the user with their balance
             await interactions.response.send_message(f'Your balance is {user["balance"]:.2f} dollars.')
         except Exception as e:

@@ -14,7 +14,7 @@ class Portfolio():
         
     async def portfolio_command(self, interactions):
         try:
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             
             # Get the stocks that the user owns and the quantity of each stock
             stocks = user.get("stocks", {})

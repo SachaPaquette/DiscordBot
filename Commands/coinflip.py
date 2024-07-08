@@ -36,7 +36,7 @@ class CoinFlip():
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
 
-            command_user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            command_user = self.database.get_user(interactions)
             opposing_user = self.database.get_user(interactions.guild.id, opponent.id)
 
             # Check if both users have enough money

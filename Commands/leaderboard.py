@@ -31,7 +31,7 @@ class Leaderboard():
     async def rank_command(self, interactions):
         try:
             # Get the user's rank
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
 
             # Create an embed message that contains the user's rank
             embed = self.embedMessage.create_rank_embed(interactions, user["level"], user["total_bet"])

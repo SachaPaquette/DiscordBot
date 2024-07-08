@@ -58,32 +58,54 @@ class Database():
             print(f"Error closing the database connection: {e}")
             raise e
         
-    def insert_user(self,server_id, user_id):
-        collection = self.get_collection(server_id)
+    def insert_user(self, interactions, user_id):
+        collection = self.get_collection(interactions.guild.id)
         # Insert a user into the database
-        collection.insert_one(User(user_id, 100, 0).return_user())
+        collection.insert_one(User(user_id=user_id, user_name=interactions.user.display_name, balance=100, experience=0).return_user())
         
-    def get_user(self, server_id, user_id):
+    def get_user(self, interactions, user_id=None):
         """
         Retrieves a user from the database.
-        
+
         Parameters:
         - user_id: The id of the user to retrieve.
-        
+
         Returns:
         - user: The user object.
         """
-        # Check if were connected to the database
-        collection = self.get_collection(server_id)
+        user_id = user_id or interactions.user.id
+        collection = self.get_collection(interactions.guild.id)
         user = collection.find_one({"user_id": user_id})
-        if not user:
-            self.insert_user(server_id, user_id)
-            user = collection.find_one({"user_id": user_id})
         
-        # Update the user's level
-        user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
+        if not user:
+            self.insert_user(interactions, user_id)
+            user = collection.find_one({"user_id": user_id})
+            
+        # Define the required fields and their default values
+        required_fields = {
+            "user_name": interactions.user.name,
+            "balance": 0,
+            "experience": 0,
+            "total_bet": 0,
+            "stocks": {},
+            "last_work": 0,
+            "level": 0
+        }
+        
+        # Check if required fields are missing and update the user document
+        update_fields = {}
+        for field, default_value in required_fields.items():
+            if field not in user:
+                user[field] = default_value
+                update_fields[field] = default_value
+        
+        if update_fields:
+            collection.update_one({"user_id": user_id}, {"$set": update_fields})
+        
+        user["level"] = User(user_id=user["user_id"], user_name=user["user_name"], balance=user["balance"], experience=user["experience"]).calculate_level()
         
         return user
+
     
 
     def update_user_balance(self, server_id, user_id, balance,bet=0, update_last_work_time=False):
@@ -97,10 +119,10 @@ class Database():
         """
         collection = self.get_collection(server_id)
         update_fields = {"balance": balance}
-        
+        # Update the last work time (a user can only work every X minutes)
         if update_last_work_time:
             update_fields["last_work"] = time.time()
-            # Combine the $set and $inc operations in a single update_one call
+        # Update the user's balance
         collection.update_one(
             {"user_id": user_id},
             {
@@ -109,7 +131,7 @@ class Database():
             }
         )
         
-    def update_user_experience(self,server_id, user_id, payout):
+    def update_user_experience(self,interactions, payout):
         """
         Updates the experience of a user.
         
@@ -117,8 +139,8 @@ class Database():
         - user_id: The id of the user to update.
         - experience: The experience to add to the user.
         """
-        collection = self.get_collection(server_id)
-        collection.update_one({"user_id": user_id}, {"$inc": {"experience": payout}})
+        collection = self.get_collection(interactions.guild.id)
+        collection.update_one({"user_id": interactions.user.id}, {"$inc": {"experience": payout}})
         
     def get_top_users(self,server_id, limit):
         """
@@ -128,7 +150,7 @@ class Database():
         lists = list(collection.find().sort("experience", -1).limit(limit))
         # Change the user's level to the correct level
         for user in lists:
-            user["level"] = User(user["user_id"], user["balance"], user["experience"]).calculate_level()
+            user["level"] = User(user["user_id"],user["user_name"], user["balance"], user["experience"]).calculate_level()
         return lists
         
     def add_stocks(self,server_id, user_id, stock, amount, stock_price):

@@ -55,7 +55,7 @@ class Work():
     async def work_command(self, interactions):
         try:
             # Get the user's data
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             # Check if the user has worked in the last 10 minutes
             if user.get("last_work", 0) + 600 > time.time():
                 await interactions.response.send_message("You can only work every 10 minutes.")

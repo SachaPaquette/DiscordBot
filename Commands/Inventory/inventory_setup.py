@@ -6,15 +6,15 @@ class Inventory_class():
         self.users = {}
         self.server_id = server_id
         
-    def get_inventory(self, user_id):
-        user = self.collection.find_one({"user_id": user_id})
+    def get_inventory(self, interactions):
+        user = self.collection.find_one({"user_id": interactions.user.id})
         if user is None:
             # Create a new user
-            user = self.database.get_user(self.server_id, user_id)
+            user = self.database.get_user(interactions)
         return user.get("inventory", [])
     
-    def add_or_remove_item_to_inventory(self, user_id, item, condition:str):
-        inventory = self.get_inventory(user_id)
+    def add_or_remove_item_to_inventory(self, interactions, item, condition:str):
+        inventory = self.get_inventory(interactions.user.id)
         
         if condition == "add":
             inventory.append(item)
@@ -23,7 +23,7 @@ class Inventory_class():
         else:
             return
         
-        self.collection.update_one({"user_id": user_id}, {"$set": {"inventory": inventory}})
+        self.collection.update_one({"user_id": interactions.user.id}, {"$set": {"inventory": inventory}})
         
     
     

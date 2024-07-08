@@ -49,7 +49,7 @@ class RockPaperScissors():
                 await interactions.response.send_message(f'{interactions.user.mention}, you must bet a positive amount.')
                 return
             # Check if the user has enough money
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             if not self.utility.has_sufficient_balance(user, bet):
                 await interactions.response.send_message(f'{interactions.user.mention}, you are too broke.')
                 return

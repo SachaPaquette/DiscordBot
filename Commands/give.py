@@ -27,7 +27,7 @@ class Give():
                 return
                 
             giving_user_id = interactions.user.id
-            user = self.database.get_user(interactions.guild.id, giving_user_id)
+            user = self.database.get_user(interactions)
             
             if user["balance"] < amount:
                 await interactions.response.send_message("You don't have enough money to give that amount.")
@@ -36,7 +36,7 @@ class Give():
             user["balance"] -= amount
             self.database.update_user_balance(interactions.guild.id, giving_user_id, user["balance"])
             
-            receiving_user = self.database.get_user(interactions.guild.id, destination_user.id)
+            receiving_user = self.database.get_user(interactions, destination_user.id)
             receiving_user["balance"] += amount
             self.database.update_user_balance(interactions.guild.id, destination_user.id, receiving_user["balance"])
             

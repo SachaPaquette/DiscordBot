@@ -75,7 +75,7 @@ class BlackJack():
                 return
             
             # Check if the user has enough money
-            user = self.database.get_user(interactions.guild.id, interactions.user.id)
+            user = self.database.get_user(interactions)
             if self.utility.has_sufficient_balance(user, bet) == False:
                 await self.send_or_edit_message(interactions,f'{interactions.user.mention}, you don\'t have enough money to bet that amount.')
                 return
