@@ -269,8 +269,10 @@ class Case():
         
         self.is_sold_or_bought = True
         
+        keep_message = self.embedMessage.create_keep_message(interactions.user.display_name, weapon)
+        
         # Modify the message to show that the skin was kept
-        await message.edit(content=f"{interactions.user.display_name} kept the skin.")
+        await message.edit(content=f"{keep_message}")
         # Disable the buttons
         await self.utility.disable_buttons(interactions, message)
         
@@ -287,8 +289,10 @@ class Case():
         
         self.is_sold_or_bought = True
         
+        sell_message = self.embedMessage.create_sell_message(interactions.user.display_name, weapon)
+        
         # Modify the message to show that the skin was sold
-        await message.edit(content=f"{interactions.user.display_name} sold the skin.")
+        await message.edit(content=f"{sell_message}")
         
         # Disable the buttons
         await self.utility.disable_buttons(interactions, message)

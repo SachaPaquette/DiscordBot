@@ -58,21 +58,17 @@ session = None
 # Create an instance of QueueOperations to handle the music queue
 queue_operations = QueueOperations(session)
 
-# Create an instance of LinkMessage to handle messages that contain URLs
-linkmessage = LinkMessage(bot)
+
 # Create an instance of Utility to handle utility commands
 utility = Utility()
-embedMessage = EmbedMessage()
+
 # Create an instance of NowPlaying to handle the nowplaying command
 playing_operations = NowPlaying()
 # Create an instance of HealthCheck to handle the health command
 health_check = HealthCheck(bot)
 
-lyrics_operations = LyricsOperations(bot)
 
 
-
-commands_list = []
 
 @bot.event
 async def on_ready():
@@ -121,6 +117,8 @@ async def on_message(message):
         # Ignore messages sent by the bot
         if message.author == bot.user:
             return
+        # Create an instance of LinkMessage to handle messages that contain URLs
+        linkmessage = LinkMessage(bot)
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
         
@@ -148,7 +146,7 @@ async def on_member_join(member):
     Exception: If an error occurs while sending the welcome message.
     """
     try:
-        
+        embedMessage = EmbedMessage()
         # Send a welcome message to the member
         embed = await embedMessage.on_member_join_message(member)
         # Send the message in the general channel
@@ -175,6 +173,7 @@ async def on_member_remove(member):
     Exception: If an error occurs while sending the goodbye message.
     """
     try:
+        embedMessage = EmbedMessage()
         # Send a goodbye message to the member
         embed = await embedMessage.on_member_leave_message(member)
         # Send the message in the general channel
@@ -185,16 +184,12 @@ async def on_member_remove(member):
         raise e
 
 @bot.event
-async def on_member_update(before, after):
+async def on_presence_update(before, after):
     """
     Event handler that is triggered when a member is updated.
     Check if a user is playing Valorant or Dead by Daylight and send a message to the general channel. 
     """
-    
-    try:
-        print(f"Before: {before.activity}")
-        print(f"After: {after.activity}")
-        
+    try:        
         if after.activity and after.activity.name == "Dead by Daylight":
             # Send a message to the general channel
             channel = discord.utils.get(after.guild.text_channels, name="general")
@@ -315,6 +310,7 @@ async def nowplaying(interactions):
 async def lyrics(interactions):
     if utility.bot_check_session(session):
         try:
+            lyrics_operations = LyricsOperations(bot)
             await lyrics_operations.lyrics_command(interactions, session)
         except Exception as e:
             logger.error(
@@ -818,6 +814,7 @@ async def portfolio(interactions):
 async def run_bot(token):
     while True:
         try:
+            print("Bot is started.")
             await bot.start(token, reconnect=True)
         except ConnectionResetError as e:
             print(f"Connection error: {e}")

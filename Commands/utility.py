@@ -439,25 +439,27 @@ class EmbedMessage():
             return None
         
         
+    def create_keep_message(self, user_name, weapon):
+        # Create a message to keep the weapon
+        return f"{user_name} has decided to keep the **{weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
+        
+    def create_sell_message(self, user_name, weapon):
+        # Create a message to sell the weapon
+        return f"{user_name} has decided to sell the **{weapon['name']} | {weapon['pattern']}** worth $**{weapon['price']:.2f}**."
+        
           
     async def on_member_join_message(self, member):
         # Function to create an embed message when a member joins the server
-        try:
-            # Get the member's nickname
-            member_name = member.display_name            
-            # Get the member's avatar
-            avatar = member.avatar
-            
-            
+        try:            
             # Create an embed message
             embed = discord.Embed(
                 title="Welcome to the server!",
-                description=f"Welcome to the server, {member_name}! We're glad to have you here.",
+                description=f"Welcome to the server, {member.display_name }! We're glad to have you here.",
                 color=discord.Color.green()
             )
             
             # Set the member's avatar as the thumbnail
-            embed.set_thumbnail(url=avatar)
+            embed.set_thumbnail(url=member.avatar)
             
             return embed
             
@@ -468,21 +470,16 @@ class EmbedMessage():
         
     async def on_member_leave_message(self, member):
         # Function to create an embed message when a member leaves the server
-        try:
-            # Get the member's nickname
-            member_name = member.display_name
-            # Get the member's avatar
-            avatar = member.avatar
-            
+        try:            
             # Create an embed message
             embed = discord.Embed(
                 title="Goodbye!",
-                description=f"Goodbye, {member_name}! We'll miss you.",
+                description=f"Goodbye, {member.display_name}! We'll miss you.",
                 color=discord.Color.red()
             )
             
             # Set the member's avatar as the thumbnail
-            embed.set_thumbnail(url=avatar)
+            embed.set_thumbnail(url=member.avatar)
             
             return embed
         except Exception as e:
