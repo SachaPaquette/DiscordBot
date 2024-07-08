@@ -20,41 +20,82 @@ class Stocks():
     async def stocks_command(self, interactions, option: Options, stock: str, quantity: float):
         try:
             # Check if the stock is in the list of stocks
-            if stock not in self.finance.return_stock():
-                await interactions.response.send_message(f'{interactions.user.mention}, that stock is not in the list of stocks.')
+            if not self.is_stock_valid(stock):
+                await interactions.response.send_message(
+                    f'{interactions.user.mention}, that stock is not in the list of stocks.'
+                )
                 return
             
-            
-            stock_data = yf.Ticker(stock)
-            stock_info = stock_data.info
+            # Fetch stock information
+            stock_info = self.get_stock_info(stock)
             
             # Check if the user has enough money to buy the stock
             user = self.database.get_user(interactions)
             
-            
-            message = await interactions.response.send_message(interactions.user.mention + f", processing your request to {option.value} {quantity} shares of {stock}.")
+            # Send initial processing message
+            message = await interactions.response.send_message(
+                f"{interactions.user.mention}, processing your request to {option.value} {quantity} shares of {stock}."
+            )
             message = await interactions.original_response()
             
+            # Execute the buy or sell command
             if option == Options.BUY:
-                await self.buy_stock(interactions, stock_info, quantity, user, message)
+                await self.handle_buy(interactions, stock_info, quantity, user, message)
             elif option == Options.SELL:
-                await self.sell_stock(interactions, stock_info, quantity, user, message)
-            
-            
+                await self.handle_sell(interactions, stock_info, quantity, user, message)
         except Exception as e:
-            logger.error(f"Error in the stocks function in stocks.py: {e}")
-            return
-        
+            logger.error(f"Error in the stocks_command function: {e}")
+
+    def is_stock_valid(self, stock: str) -> bool:
+        """
+        Check if the stock is in the list of valid stocks.
+        """
+        return stock in self.finance.return_stock()
+
+    def get_stock_info(self, stock: str) -> dict:
+        """
+        Retrieve stock information using yfinance.
+        """
+        return yf.Ticker(stock).info
+
+    async def handle_buy(self, interactions, stock_info: dict, quantity: float, user: dict, message):
+        """
+        Handle buying stocks.
+        """
+        # Implement buy stock logic here
+        await self.buy_stock(interactions, stock_info, quantity, user, message)
+
+    async def handle_sell(self, interactions, stock_info: dict, quantity: float, user: dict, message):
+        """
+        Handle selling stocks.
+        """
+        # Implement sell stock logic here
+        await self.sell_stock(interactions, stock_info, quantity, user, message)
+            
+            
+    def get_stock_price(self, stock_info):
+        """
+        Get the current price of the stock, falling back to regularMarketPreviousClose if necessary.
+        """
+        return stock_info.get("currentPrice", stock_info.get("regularMarketPreviousClose"))
+
+    def has_sufficient_balance(self, user, stock_price, quantity):
+        """
+        Check if the user has sufficient balance to buy the specified quantity of stock.
+        """
+        return user["balance"] >= stock_price * quantity
+
+            
     async def buy_stock(self, interactions, stock_info, quantity, user, message):
         try:
             # Check for currentPrice or use regularMarketPreviousClose as a fallback
-            stock_price = stock_info.get("currentPrice", stock_info.get("regularMarketPreviousClose"))
+            stock_price = self.get_stock_price(stock_info)
             
             if not stock_price:
                 await message.edit(content=f"{interactions.user.mention}, the stock price information is unavailable.")
                 return
 
-            if user["balance"] < stock_price * quantity:
+            if not self.has_sufficient_balance(user, stock_price, quantity):
                 await message.edit(content=f"{interactions.user.mention}, you don't have enough money to buy that stock.")
                 return
             
