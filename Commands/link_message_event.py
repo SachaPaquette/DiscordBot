@@ -20,10 +20,20 @@ class LinkMessage:
             # Check if the message contains a URL
             if not re.search(conf.REGEX_URL_PATTERN, message.content):
                 return
-
-            # Format the domain information 
-            formatted_domain_info = self.format_domain_info_message(self.get_domain_info(re.search(conf.REGEX_URL_PATTERN, message.content).group(0)))
             
+            # Get the URL from the message
+            url = re.search(conf.REGEX_URL_PATTERN, message.content).group(0)
+
+            # Get the domain information
+            domain_info = self.get_domain_info(url)
+            
+            # Check if the domain information is None
+            if domain_info is None:
+                return
+            
+            # Format the domain information
+            formatted_domain_info = self.format_domain_info_message(domain_info)
+    
             # Check if the domain information is None
             if formatted_domain_info is None:
                 return
@@ -54,11 +64,9 @@ class LinkMessage:
         try:
             # Get WHOIS information for the domain
             domain_info = whois.whois(self.extract_domain_from_url(url))
-
-
             return {
                 'ORIGIN': domain_info.get('country', None),
-                'CREATION_DATE': domain_info.get('creation_date', None)[0].strftime("%Y-%m-%d %H:%M:%S"),
+                'CREATION_DATE': domain_info.get('creation_date', None),
                 'NAME_SERV': domain_info.get('name_servers', None),
                 'NAME_DOMAIN': domain_info.get('domain_name', None),
                 'ORGANIZATION': domain_info.get('org', None)
@@ -70,13 +78,18 @@ class LinkMessage:
     
     def format_domain_info_message(self, domain_info):
         try:
+            def format_list_or_none(value):
+                if isinstance(value, list):
+                    return ', '.join(value)
+                return value if value else 'Not available'
+
             return (
                 f"**Origin:** {domain_info['ORIGIN']}\n"
                 f"**Creation Date:** {domain_info['CREATION_DATE']}\n"
-                f"**Name Servers:** {', '.join(domain_info['NAME_SERV'])}\n"
-                f"**Name Domain:** {', '.join(domain_info['NAME_DOMAIN'])}\n"
-                f"**Organization:** {domain_info['ORGANIZATION']}"
-                )
+                f"**Name Servers:** {format_list_or_none(domain_info['NAME_SERV'])}\n"
+                f"**Name Domain:** {format_list_or_none(domain_info['NAME_DOMAIN'])}\n"
+                f"**Organization:** {domain_info['ORGANIZATION'] or 'Not available'}"
+            )
             
         except Exception as e:
             logger.error(f"Error while formatting domain info message: {e}")

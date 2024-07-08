@@ -80,3 +80,4 @@ class HealthCheck():
             return days, hours, minutes, seconds    
         except Exception as e:
             logger.error(f"Error in calculate_time_components in health.py: {e}")
+            raise e

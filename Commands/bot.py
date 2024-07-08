@@ -1,74 +1,56 @@
+# Standard library imports
 import asyncio
+import os
+
+# Third-party imports
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-from discord import app_commands
-from Commands.balance import Balance
-from Commands.music import SongSession
-from Commands.lyrics import LyricsOperations
-from Commands.queue import QueueOperations
-from Commands.userinfo import UserInfo
-from Commands.linkmessage import LinkMessage
-from Commands.profanity import Profanity
-from Commands.utility import Utility, EmbedMessage
-from Commands.nowplaying import NowPlaying
-from Commands.health import HealthCheck
-from Commands.gambling import Gambling, Slot3x3Machine
-from Commands.give import Give
-from Commands.leaderboard import Leaderboard
-from Commands.inventory_command import Inventory
-from Commands.rockpaperscissors import RockPaperScissors, Choices
-from Commands.work import Work
-from Commands.case import Case
-from Commands.roll import Roll
-from Commands.capsule import Capsule
-from Commands.blackjack import BlackJack
-from Commands.coinflip import CoinFlip, CoinChoices
+
+# Commands import
+from Commands.balance_command import Balance
+from Commands.blackjack_command import BlackJack
+from Commands.case_command import Case
+from Commands.capsule_command import Capsule
+from Commands.coinflip_command import CoinFlip
 from Commands.finances import Finance
-from Commands.stocks import Stocks, Options
-from Commands.portfolio import Portfolio
+from Commands.gambling import Gambling, Slot3x3Machine
+from Commands.give_command import Give
+from Commands.health_command import HealthCheck
+from Commands.inventory_command import Inventory
+from Commands.leaderboard_command import Leaderboard
+from Commands.link_message_event import LinkMessage
+from Commands.lyrics_command import LyricsOperations
+from Commands.music import SongSession
+from Commands.nowplaying_command import NowPlaying
+from Commands.portfolio_command import Portfolio
+from Commands.profanity import Profanity
+from Commands.queue_command import QueueOperations
+from Commands.roll_command import Roll
+from Commands.rockpaperscissors_command import RockPaperScissors, Choices
+from Commands.stocks_command import Stocks, Options
+from Commands.user_info_command import UserInfo
+from Commands.utility import Utility, EmbedMessage
+from Commands.work_command import Work
+
+# Config imports
 from Config.config import conf
+from Config.logging import setup_logging
 
-
-# Import logging
-from Config.logging import setup_logging, return_debug
-
+# Load the .env file
+from dotenv import load_dotenv
+load_dotenv()
 
 # Create a logger for this file
 logger = setup_logging("bot.py", conf.LOGS_PATH)
 
-# Load the .env file
-load_dotenv()
-
-import os
-
-
 intents = discord.Intents.all()
-#intents.message_content = True
-# Create a discord client instance and give it the intents 
-#client = discord.Client(intents=intents)
-#tree = app_commands.CommandTree(client)
 bot = commands.Bot(command_prefix='/', intents=intents)
-
-# Chane log level to debug
-
-
 session = None
-
 # Create an instance of QueueOperations to handle the music queue
-queue_operations = QueueOperations(session)
 
 
-# Create an instance of Utility to handle utility commands
+# Create an instance of Utility to handle utility functions
 utility = Utility()
-
-# Create an instance of NowPlaying to handle the nowplaying command
-playing_operations = NowPlaying()
-# Create an instance of HealthCheck to handle the health command
-health_check = HealthCheck(bot)
-
-
-
 
 @bot.event
 async def on_ready():
@@ -83,6 +65,7 @@ async def on_ready():
         # Instant sync to the testing guild
         bot.tree.copy_global_to(guild=guild)
         await bot.tree.sync(guild=guild)
+        print(f'{bot.user} has connected to Discord!')
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")
         raise e
@@ -91,28 +74,18 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     """
-    Event handler that is triggered when a message is sent in a channel.
-
-    This function checks if the message contains a URL. If it does, it will fetch the domain information and send it as a message.
+    Event handler for incoming messages.
 
     Parameters:
-    - message (discord.Message): The message object that was sent.
+    - message: The message object representing the incoming message.
 
     Returns:
-    None
+    - None
 
     Raises:
-    Exception: If an error occurs while fetching the domain information.
-
-    Examples:
-    https://www.youtube.com/watch?v=vJwKKKd2ZYE&list=RDMMvrQWhFysPKY&index=3 ->
-
-    Origin: US
-    Creation Date: 2005-02-15 05:13:12
-    Name Servers: NS1.GOOGLE.COM, NS2.GOOGLE.COM, NS3.GOOGLE.COM, NS4.GOOGLE.COM, ns2.google.com, ns1.google.com, ns4.google.com, ns3.google.com
-    Name Domain: YOUTUBE.COM, youtube.com
-    Organization: Google LLC
+    - Exception: If an error occurs while processing the message.
     """
+
     try:
         # Ignore messages sent by the bot
         if message.author == bot.user:
@@ -174,11 +147,9 @@ async def on_member_remove(member):
     """
     try:
         embedMessage = EmbedMessage()
-        # Send a goodbye message to the member
-        embed = await embedMessage.on_member_leave_message(member)
         # Send the message in the general channel
         channel = discord.utils.get(member.guild.text_channels, name="general")
-        await channel.send(embed=embed)
+        await channel.send(embed=await embedMessage.on_member_leave_message(member))
     except Exception as e:
         logger.error(f"Error in the on member remove event: {e}")
         raise e
@@ -198,7 +169,6 @@ async def on_presence_update(before, after):
         logger.error(f"Error in the on member update event: {e}")
         raise e
 
-
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
 async def health(interactions):
@@ -211,6 +181,7 @@ async def health(interactions):
         return
     
     try:
+        health_check = HealthCheck(bot)
         await health_check.health_command(interactions, bot)
         await bot.tree.sync()
         
@@ -218,8 +189,6 @@ async def health(interactions):
         print(f"Error in the health command: {e}")
         raise e
 
-
-    
 @bot.tree.command(name='join', description='Join the voice channel.')
 async def join(interactions: discord.Interaction):
     """
@@ -230,7 +199,6 @@ async def join(interactions: discord.Interaction):
     If the bot is in a different channel, it will move to the correct channel.
     If the bot is not in any channel, it will connect to the voice channel.
     """
-
     try:
         await utility.join(interactions)
     except Exception as e:
@@ -285,9 +253,7 @@ async def play(interactions, url: str):
         if not session:
             # Create an instance of SongSession
             session = SongSession(interactions.guild, interactions)
-
         await session.play_command(interactions, url, bot.loop)
-
     except Exception as e:
         # Leave the channel if an error occurs
         logger.error(
@@ -299,6 +265,7 @@ async def play(interactions, url: str):
 async def nowplaying(interactions):
     if utility.bot_check_session(session):
         try:
+            playing_operations = NowPlaying()
             await playing_operations.nowplaying_command(interactions, session)
         except Exception as e:
             logger.error(
@@ -333,6 +300,7 @@ async def queue(interactions):
     None
     """
     try:
+        queue_operations = QueueOperations(session)
         # Call the queue function in QueueOperations
         await queue_operations.display_queue_command(interactions, discord)
     except Exception as e:
@@ -352,6 +320,7 @@ async def clear(interactions):
     None
     """
     try:
+        queue_operations = QueueOperations(session)
         queue_operations.clear_command(interactions)
     except Exception as e:
         logger.error(
@@ -378,6 +347,7 @@ async def pause(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
+        
 @bot.tree.command(name='resume', description='Resume the current song.')
 async def resume(interactions):
     """
@@ -419,6 +389,7 @@ async def shuffle(interactions):
     - None
     """
     try:
+        queue_operations = QueueOperations(session)
         # Call the queue shuffle function in QueueOperations
         await queue_operations.shuffle_queue_command(interactions)
     except Exception as e:
@@ -814,7 +785,6 @@ async def portfolio(interactions):
 async def run_bot(token):
     while True:
         try:
-            print("Bot is started.")
             await bot.start(token, reconnect=True)
         except ConnectionResetError as e:
             print(f"Connection error: {e}")

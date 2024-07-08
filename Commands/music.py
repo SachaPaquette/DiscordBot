@@ -2,7 +2,7 @@ import discord
 import nacl
 from dotenv import load_dotenv
 from Config.config import conf
-from Commands.queue import QueueOperations
+from Commands.queue_command import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.ytdl import YTDLSource
 from Commands.utility import Utility, EmbedMessage
