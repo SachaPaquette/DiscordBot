@@ -55,6 +55,6 @@ websockets==12.0
 wheel==0.43.0
 wsproto==1.2.0
 yarl==1.9.3
-yt-dlp==2024.7.1
+yt-dlp==2024.7.7
 matplotlib==3.8.4
 yfinance==0.2.40
