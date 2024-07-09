@@ -1,17 +1,11 @@
 import json
-import time
 from Commands.Inventory.inventory_setup import Inventory_class
 from Commands.database import Database
 import random
-from bs4 import BeautifulSoup
-import re
 from Commands.utility import Utility, EmbedMessage
-from Config.Driver.driver_config import driver_setup
 from Config.logging import setup_logging
 from Config.config import conf
-
 import asyncio
-
 # Create a logger for this file
 logger = setup_logging("case.py", conf.LOGS_PATH)
 class Case():
