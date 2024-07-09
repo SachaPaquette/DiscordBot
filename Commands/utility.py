@@ -574,54 +574,6 @@ class EmbedMessage():
                 f"Error while trying to create an embed message in gambling.py: {e}")
             return None
 
-    def create_slots_3x3_embed_message(self, grid, bet, payout, balance):
-        try:
-
-            # Create the embed message with a vibrant color and a dynamic title
-            embed = discord.Embed(
-                title=f"🎰 3x3 Slots 🎰",
-                description=f"🔥 Try your luck! 🔥",
-                color=discord.Color.gold()
-            )
-
-            # Add each row with emojis to represent the slot items
-            slot_rows = ""
-            for row in grid:
-                row_with_emojis = "║ " + " ║ ".join(row) + " ║"
-                slot_rows += f'{" " * 8}{row_with_emojis}\n'
-            embed.add_field(name="\u200b", value=slot_rows, inline=False)
-
-            # Format the bet, payout, and balance details with bold text and emojis
-            embed.add_field(name="💸 Bet Amount",
-                            value=f"**{bet}** coins", inline=True)
-            embed.add_field(name="💰 Payout",
-                            value=f"**{payout:.2f}** coins", inline=True)
-            embed.add_field(name="💼 New Balance",
-                            value=f"**{balance:.2f}** coins", inline=True)
-
-            # Add a celebratory or consoling message based on the payout
-            if payout > 0:
-                embed.add_field(
-                    name=f"🎉 Congratulations! 🎉",
-                    value=f"You've won **{payout:.2f}** coins! 🥳",
-                    inline=False
-                )
-            else:
-                embed.add_field(
-                    name=f"💔 Better luck next time! 💔",
-                    value=f"A gambler never gives up! 🍀",
-                    inline=False
-                )
-
-            # Optionally, you can add a footer or a thumbnail for better aesthetics
-            embed.set_footer(text="Good luck in your next spin!")
-
-            return embed
-        except Exception as e:
-            logger.error(
-                f"Error while trying to create an embed message in slots.py: {e}")
-            return None
-
     async def create_leaderboard_embed(self, interactions, users):
         try:
             """

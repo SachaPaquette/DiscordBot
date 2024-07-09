@@ -13,7 +13,7 @@ from Commands.case_command import Case
 from Commands.capsule_command import Capsule
 from Commands.coinflip_command import CoinFlip
 from Commands.finances import Finance
-from Commands.gambling import Gambling, Slot3x3Machine
+from Commands.gambling import Gambling
 from Commands.give_command import Give
 from Commands.health_command import HealthCheck
 from Commands.inventory_command import Inventory
@@ -421,6 +421,7 @@ async def volume(interactions, volume: int):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
+        
 @bot.tree.command(name="userinfo", description="Get information about a user.")
 async def user_information(interactions,*, member: discord.Member = None):
     """
@@ -569,26 +570,6 @@ async def give(interactions, member: discord.Member, amount: int):
         await give.give_command(interactions, member, amount)
     except Exception as e:
         logger.error(f"Error in the give command: {e}")
-        raise e
-
-
-@bot.tree.command(name='slots', description='Play the slots.')
-async def slots(interactions, bet: int):
-    """
-    Play the slots.
-
-    Parameters:
-    - interactions (Context): The context object representing the invocation context of the command.
-
-    Returns:
-    - None
-    """
-    try:
-        slots = Slot3x3Machine(interactions.guild.id)
-        # Call the slots function in Gambling
-        await slots.play(interactions, bet)
-    except Exception as e:
-        logger.error(f"Error in the slots command: {e}")
         raise e
 
 @bot.tree.command(name="case", description="Open a Counter-Strike case.")
