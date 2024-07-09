@@ -16,43 +16,64 @@ import asyncio
 logger = setup_logging("case.py", conf.LOGS_PATH)
 class Case():
     def __init__(self, server_id):
-        with open("./Commands/Case/case.json", "r") as f:
-            self.cases = json.load(f)
-        self.case = self.get_random_case()
+        self.server_id = server_id
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
-        self.weapon_rarity = {
+        self.cases = self.load_cases()
+        self.case = self.get_random_case()
+        self.weapon_rarity = self.get_weapon_rarity()
+        self.rarity_colors = self.get_rarity_colors()
+        self.wear_levels = self.get_wear_levels()
+        self.case_price = 5
+        self.utility = Utility()
+        self.is_sold_or_bought = False
+        self.inventory = Inventory_class(server_id)
+        self.user_id = None
+        self.embedMessage = EmbedMessage()
+        self.color = None
+    
+    def load_cases(self):
+        """
+        Loads case information from the JSON file.
+        """
+        with open("./Commands/Case/case.json", "r") as f:
+            return json.load(f)
+
+    def get_weapon_rarity(self):
+        """
+        Returns the dictionary mapping weapon rarities to their probabilities.
+        """
+        return {
             "Mil-Spec Grade": 0.7997,
             "Restricted": 0.1598,
             "Classified": 0.032,
             "Covert": 0.0064,
             "Rare Special Item": 0.0026,
         }
-        self.rarity_colors = {
+
+    def get_rarity_colors(self):
+        """
+        Returns the dictionary mapping weapon rarities to their corresponding colors.
+        """
+        return {
             "Mil-Spec Grade": 0x4B69FF,
             "Restricted": 0x8847FF,
             "Classified": 0xD32CE6,
             "Covert": 0xEB4B4B,
             "Rare Special Item": 0xADE55C 
         }
-        self.color = None
-        self.wear_levels = {
-            "Factory New": (0.00,0.07),
-            "Minimal Wear": (0.07,0.15),
-            "Field-Tested": (0.15,0.38),
-            "Well-Worn": (0.38,0.45),
-            "Battle-Scarred": (0.45,1)
+
+    def get_wear_levels(self):
+        """
+        Returns the dictionary mapping wear levels to their corresponding float value ranges.
+        """
+        return {
+            "Factory New": (0.00, 0.07),
+            "Minimal Wear": (0.07, 0.15),
+            "Field-Tested": (0.15, 0.38),
+            "Well-Worn": (0.38, 0.45),
+            "Battle-Scarred": (0.45, 1.00)
         }
-        # The price of a case
-        self.case_price = 5
-        # Create a Utility object
-        self.utility = Utility()
-        # Set the server id
-        self.server_id = server_id
-        self.is_sold_or_bought = False
-        self.inventory = Inventory_class(server_id) 
-        self.user_id = None
-        self.embedMessage = EmbedMessage()
         
     def get_random_case(self):
         # Get a random case from the json file ./Cases/cases.json
@@ -105,13 +126,16 @@ class Case():
         - weapon_information: The information of the weapon.
         """
         try:   
-            # From the weapon id, find the weapon information in skins.json
+            # Load weapon information from skins.json
             with open("./Commands/Case/skins.json", "r") as f:
                 skins = json.load(f)
                 
+            # Find the weapon by its id
             for skin in skins:
-                if skin["id"] == weapon["id"]:
+                if skin.get("id") == weapon.get("id"):
                     return skin
+            
+            # If weapon is not found
             return None
         except Exception as e:
             print(f"Error getting weapon information: {e}")
@@ -140,11 +164,12 @@ class Case():
 
     def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         def format_weapon_name(weapon_name, is_rare, is_stattrak):
+            formatted_name = weapon_name
             if is_stattrak:
-                weapon_name = f"StatTrak™ {weapon_name}"
+                formatted_name = f"StatTrak™ {formatted_name}"
             if is_rare:
-                weapon_name = f"★ {weapon_name}"
-            return weapon_name
+                formatted_name = f"★ {formatted_name}"
+            return formatted_name
 
         def assemble_weapon_title(weapon_name, weapon_pattern, wear_level):
             return f"{weapon_name} | {weapon_pattern} ({wear_level})"
@@ -303,4 +328,3 @@ class Case():
         self.collection.update_one({"user_id": interactions.user.id}, {"$inc": {"balance": weapon["price"]}})
         
         return
-    
