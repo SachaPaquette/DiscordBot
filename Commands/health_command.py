@@ -20,43 +20,28 @@ class HealthCheck():
             Exception: If there is an error during the calculation.
         """
         try:
-            # Get the current time for reference
-            current_time = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
-            # Calculate the uptime
-            uptime_delta = current_time - self.start_time
-            # Calculate the days, hours, minutes, and seconds that make up the uptime
-            days, hours, minutes, seconds = self.calculate_time_components(uptime_delta)
-            # Create a string representation of the uptime
-            uptime_str = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
-
-            return uptime_str
+            # Calculate the days, hours, minutes, and seconds that make up the uptime 
+            days, hours, minutes, seconds = self.calculate_time_components(datetime.datetime.now(datetime.UTC).replace(tzinfo=None) - self.start_time)
+            # Return a string representation of the uptime
+            return f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
         except Exception as e:
             logger.error(f"Error in create_bot_uptime in health.py: {e}")
             raise e
         
-    
     async def health_command(self, interactions, bot):
         """
         Check if the bot is running and provide detailed health information.
         """
         try:
-            # Get the bot's latency
-            latency = round(bot.latency * 1000)  # in milliseconds
-
-            # Get the bot's uptime
-            uptime_str = self.create_bot_uptime()
-
             # Create an embed with health information
             embed = discord.Embed(title="**Bot Health Check**", color=discord.Color.green())
             embed.add_field(name="Bot Status", value="I am alive and functioning!", inline=False)
-            embed.add_field(name="Latency", value=f"{latency} ms", inline=False)
-            embed.add_field(name="Uptime", value=uptime_str, inline=False)
+            embed.add_field(name="Latency", value=f"{round(bot.latency * 1000)} ms", inline=False)
+            embed.add_field(name="Uptime", value=self.create_bot_uptime(), inline=False)
             embed.add_field(name="Channels", value=len(self.bot.guilds), inline=True)
             embed.add_field(name="Users", value=sum([guild.member_count for guild in self.bot.guilds]), inline=True)
-
             # Send the embed as a response
             await interactions.response.send_message(embed=embed)
-
         except Exception as e:
             logger.error(f"Error in the health command in health.py: {e}")
             raise e
