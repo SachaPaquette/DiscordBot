@@ -142,7 +142,7 @@ class SongSession:
         try:
             # Check if the bot is playing something
             if interactions.guild.voice_client is None:
-                await interactions.response.send_message("No music is currently playing to skip.")
+                await interactions.response.send_message("The bot is not in a voice channel.")
                 return
 
             # Check if the queue is empty
@@ -163,7 +163,6 @@ class SongSession:
         except Exception as e:
             print(f"Error in the skip command: {e}")
             raise e
-
 
     def define_song_info(self, song_title, song_duration, song_thumbnail):
         """
@@ -211,7 +210,6 @@ class SongSession:
         except Exception as e:
             print(f"Error in play function in music.py: {e}")
 
-
     def after_playing_callback(self):
         try:
             # Run the after_playing function
@@ -220,7 +218,6 @@ class SongSession:
             print(f"Error at after_playing_callback function in music.py: {e}")
             return
         
-
     async def play_command(self, interactions, url, loop):
         """
         Play a song.
@@ -260,17 +257,15 @@ class SongSession:
                 await result_message.edit(content="No song found.")
                 return
 
-            # Get the voice client
-            vc = interactions.guild.voice_client
             self.voice_client = interactions.guild.voice_client
-            if vc is None:
+            if interactions.guild.voice_client is None:
                 await result_message.edit(content="The bot is not in a voice channel.")
                 return
         
             # Check if the bot is already playing something
-            if vc.is_playing():
+            if interactions.guild.voice_client.is_playing():
                 # Add the song to the queue
-                self.queue_operations.add_to_queue(URL, song_title, vc, song_duration, thumbnail)
+                self.queue_operations.add_to_queue(URL, song_title, interactions.guild.voice_client, song_duration, thumbnail)
                 await result_message.edit(content=f"Added {song_title} to the queue.")
             else:
                 # Send the now playing message
@@ -278,14 +273,12 @@ class SongSession:
                 await result_message.edit(embed=embed, content=None)
                 # Play the song
                 await self.play(source=URL, song_title=song_title, song_duration=song_duration, thumbnail=thumbnail)
-                # Asynchronously play the next song
         except Exception as e:
             # Handle any errors gracefully
             print(f"An error occurred when trying to play the song: {e}")
             # Leave the channel if an error occurs
             await self.utility.leave(interactions)
             raise e
-
 
     async def play_next(self):
         """
@@ -303,8 +296,6 @@ class SongSession:
 
             # Get the next song from the queue
             next_source, next_title, next_song_duration, next_song_thumbnail = self.queue_operations.get_next_song()
-
-
             if not self.voice_client:
                 raise Exception("Voice client is None.")
             # Define the current song information
@@ -338,6 +329,7 @@ class SongSession:
         except Exception as e:
             print(f"Error at after_playing function in music.py: {e}")
             return
+        
     def get_song_title(self):
         """
         Returns the title of the current song.
@@ -352,8 +344,6 @@ class SongSession:
         except Exception as e:
             print(f"Error at get_song_title function in music.py: {e}")
             return None
-
-    
     
     async def change_volume(self, volume, interactions):
         """
@@ -361,25 +351,31 @@ class SongSession:
 
         Args:
             volume (float): The volume to change to.
+            interactions: The interaction context.
 
         Returns:
             None
         """
         try:
-            # Check if the volume is valid
-            if volume < 0 or volume > 100:
+            # Validate volume range
+            if not 0 <= volume <= 100:
                 await interactions.response.send_message("Please enter a valid volume between 0 and 100.")
                 return
             
-            # Put the volume in the correct range (0.0 - 1.0)
-            volume = float(volume) / 100
+            # Adjust volume to correct range (0.0 - 1.0)
+            adjusted_volume = volume / 100
             
-            # Change the volume of the bot
-            interactions.guild.voice_client.source.volume = volume
+            # Check if the voice client and source are available
+            voice_client = interactions.guild.voice_client
+            if not voice_client or not voice_client.source:
+                await interactions.response.send_message("Voice client or source not available.")
+                return
+
+            # Change the volume
+            voice_client.source.volume = adjusted_volume
             
-            # Send a message that the volume was changed
-            await interactions.response.send_message(f"Changed the volume to {volume * 100}%")
+            # Send a confirmation message
+            await interactions.response.send_message(f"Changed the volume to {volume}%.")
         except Exception as e:
             print(f"Error at change_volume function in music.py: {e}")
-            return
-
+            await interactions.response.send_message("An error occurred while changing the volume.")

@@ -188,78 +188,74 @@ class Case():
         
     async def open_case(self, interactions):
         try:
-            
-            # Send a message that the case is being bought
+            # Send initial message about opening the case
             await interactions.response.send_message(embed=self.embedMessage.create_open_case_embed_message(self.case, "Case", self.case_price))
             first_message = await interactions.original_response()
 
-            # Check if the user has enough balance to buy the case
+            # Retrieve user information
             user = self.database.get_user(interactions)
             self.user_id = interactions.user.id
-            
-            if self.utility.has_sufficient_balance(user, self.case_price) is False:
+
+            # Check user balance
+            if not self.utility.has_sufficient_balance(user, self.case_price):
                 await interactions.followup.send(f"{interactions.user.display_name} has insufficient balance to buy the case.")
                 return
-            
-            # Get a random weapon from the case
+
+            # Get weapon from case and its information
             weapon, is_rare = self.get_weapon_from_case()
-            
-            # Get the weapon information
             weapon_info = self.get_weapon_information(weapon)
-            
-            # Calculate the float value of the weapon
             gun_float = self.calculate_float(weapon_info)
-            
-            # Calculate the wear level of the weapon
             wear_level = self.calculate_wear_level(gun_float)
-            
-            # Get the weapon name and pattern
             weapon_name = self.get_weapon_name(weapon_info)
             weapon_pattern = self.get_weapon_pattern(weapon_info)
-            
-            # Check if the weapon can be stattrak and roll for it
             is_stattrak = self.roll_stattrak() if self.can_be_stattrak(weapon_info) else False
-            
-            # Get the weapon price
-            prices = self.utility.format_inexistant_prices(self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
-            
-            # Update the user's balance (subtract the case price from the user's balance)
+            prices = self.utility.format_inexistant_prices(
+                self.get_weapon_price(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak))
+
+            # Update user balance
             user["balance"] -= self.case_price
-            
-            # Update the user's balance
             self.database.update_user_balance(self.server_id, interactions.user.id, user["balance"], self.case_price)
-            
+
             # Add experience to the user
             self.utility.add_experience(interactions, self.utility.calculate_profit(float(prices), self.case_price))
-            
-            weapon = self.utility.create_weapon_from_info(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, prices)
-            
-            # Create the embed message
-            embed  = self.embedMessage.create_case_embed(user["balance"], self.utility.calculate_profit(float(prices), self.case_price), prices, wear_level, gun_float, weapon_name, weapon_pattern, self.get_weapon_image(weapon_info), is_stattrak, self.color, interactions.user.display_name)
+
+            # Create weapon and embed message
+            weapon = self.utility.create_weapon_from_info(
+                weapon_info, gun_float, wear_level, weapon_name, weapon_pattern,
+                self.get_weapon_image(weapon_info), is_stattrak, self.color, prices
+            )
+            embed = self.embedMessage.create_case_embed(
+                balance=user["balance"], 
+                profit=self.utility.calculate_profit(float(prices), self.case_price), 
+                prices=prices, 
+                wear_level=wear_level, 
+                gun_float=gun_float,
+                weapon_name=weapon_name, 
+                weapon_pattern=weapon_pattern, 
+                weapon_image=self.get_weapon_image(weapon_info),
+                is_stattrak=is_stattrak, 
+                color=self.color, 
+                user_nickname=interactions.user.display_name
+            )
             
             if embed is None:
                 await interactions.followup.send("An error occurred while opening the case.")
                 return
-            
-            # Send the embed message
+
+            # Edit message with embed and add buttons
             embed_message = await first_message.edit(embed=embed)
+            await self.utility.add_buttons(
+                message=embed_message, function_keep=self.keep_function, function_sell=self.sell_function, weapon=weapon
+            )
 
-            # Add buttons to the message
-            await self.utility.add_buttons(message=embed_message, function_keep=self.keep_function, function_sell=self.sell_function, weapon=weapon)
-            
-            # Wait 5 seconds before selling
+            # Wait before selling if no action taken
             await asyncio.sleep(5)
-
-            # If the user hasn't sold or kept the skin, sell it
             if not self.is_sold_or_bought:
                 await self.sell_function(interactions, weapon, embed_message)
-            return
-            
         except Exception as e:
             print(f"Error opening case: {e}")
             await interactions.followup.send("An error occurred while opening the case.")
-            return
-        
+
     async def keep_function(self, interactions, weapon, message):
         # Make sure the person that is clicking on the button is the same person that opened the case
         if interactions.user.id != interactions.user.id:
