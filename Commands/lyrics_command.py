@@ -24,7 +24,7 @@ class LyricsOperations:
         try:
             # Get the song's title
             song_name, artist_name = self.parse_song_title(song_title)
-            
+            print(song_name, artist_name)
             # Assign the song title to the AZlyrics object
             self.fetch_lyrics.title = song_name
             self.fetch_lyrics.artist = artist_name
@@ -34,37 +34,37 @@ class LyricsOperations:
         except Exception as e:
             logger.error(f"Error while getting lyrics: {e}")
             return None
-        
-        
 
     async def lyrics_command(self, interactions, song_session):
         """Searches for lyrics of the song you want"""
         try:
-            # Check if the song session is None
-            if song_session is None:
-                await interactions.response.send_message('No song is currently playing.')
+            if not song_session:
+                await self.send_message(interactions, 'No song is currently playing.')
                 return
-            
-            # Send a message that the bot is searching for lyrics (since this command takes a while to execute and the bot will timeout if it doesn't send a message within a couple of seconds)
-            await interactions.response.send_message("Searching for lyrics...")
+
+            await self.send_message(interactions, "Searching for lyrics...")
             original_message = await interactions.original_response()
-            # get the lyrics of the song
+
             lyrics = await self.get_lyrics(song_session.get_song_title())
-            
-            # Check if the lyrics is None
-            if lyrics is None:
+
+            if not lyrics:
                 await original_message.edit(content='No lyrics found.')
                 return
-            
-            # Format the lyrics since itc can be too long (max 2000 characters) and discord will not allow it
-            # Send the first 2000 characters of the lyrics
-            # And then send the rest of the lyrics in other messages
-            if len(lyrics) > 2000:
-                for i in range(0, len(lyrics), 2000):
-                    await interactions.followup.send(lyrics[i:i+2000])
-            else:
-                await interactions.followup.send(lyrics)
 
+            await self.send_lyrics(interactions, original_message, lyrics)
         except Exception as e:
             await original_message.edit(content='No lyrics found.')
             logger.error(f"Error while searching for lyrics: {e}")
+            
+    async def send_message(self, interactions, content):
+        """Helper function to send a message"""
+        await interactions.response.send_message(content)
+       
+    async def send_lyrics(self, interactions, original_message, lyrics):
+        """Helper function to send lyrics in chunks"""
+        if len(lyrics) > 2000:
+            await original_message.edit(content=lyrics[:2000])
+            for i in range(2000, len(lyrics), 2000):
+                await interactions.followup.send(lyrics[i:i+2000])
+        else:
+            await original_message.edit(content=lyrics)

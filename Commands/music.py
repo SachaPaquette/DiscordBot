@@ -141,7 +141,7 @@ class SongSession:
     async def skip(self, interactions):
         try:
             # Check if the bot is playing something
-            if interactions.guild.voice_client is None or not interactions.guild.voice_client.is_playing():
+            if interactions.guild.voice_client is None:
                 await interactions.response.send_message("No music is currently playing to skip.")
                 return
 
@@ -303,22 +303,17 @@ class SongSession:
 
             # Get the next song from the queue
             next_source, next_title, next_song_duration, next_song_thumbnail = self.queue_operations.get_next_song()
-            # Check if the source and title are valid
-            if next_source is None or next_title is None or next_song_duration is None or next_song_thumbnail is None:
-                raise Exception("Song information is None.")
+
 
             if not self.voice_client:
                 raise Exception("Voice client is None.")
-            
+            # Define the current song information
+            self.define_song_info(next_title, next_song_duration, next_song_thumbnail)
             # Play the next song
             await self.play(next_source, next_title, next_song_duration, next_song_thumbnail)
 
             # Reset the skipped flag to False
             self.skipped = False
-
-            # Define the current song information
-            self.define_song_info(
-                next_title, next_song_duration, next_song_thumbnail)
         except Exception as e:
             print(f"Error while trying to play next song in music.py: {e}")
             return

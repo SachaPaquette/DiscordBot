@@ -18,7 +18,7 @@ class Inventory():
         try:
             self.user_id = interactions.user.id
             self.username = interactions.user.name
-            inventory = self.inventory.get_inventory(self.user_id)
+            inventory = self.inventory.get_inventory(interactions)
             if inventory is None or len(inventory) == 0:
                 await interactions.response.send_message("You don't have any items in your inventory.")
                 return
