@@ -59,7 +59,6 @@ class Utility():
 
             # Connect to the voice channel
             await user_voice.channel.connect(reconnect=True)
-
             # Send a message that the bot joined the channel
             # await interactions.response.send_message(f"Joined {channel}")
         except Exception as e:

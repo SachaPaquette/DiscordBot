@@ -1,14 +1,11 @@
 from Commands.database import Database
-from Commands.utility import Utility
-from .UserProfile.user import User
 import random
-import time
 from Config.logging import setup_logging
 from Config.config import conf
 from Commands.utility import EmbedMessage
-import discord
 # Create a logger for this file
 logger = setup_logging("gambling.py", conf.LOGS_PATH)
+
 
 class Gambling():
     def __init__(self, server_id):
@@ -18,7 +15,7 @@ class Gambling():
 
     def get_slot_symbols(self):
         return random.choices(['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣'], k=3)
-    
+
     def calculate_payout(self, symbols, bet):
         if symbols[0] == symbols[1] == symbols[2]:
             if symbols[0] == '7️⃣':
@@ -28,14 +25,14 @@ class Gambling():
             return bet * 2
         else:
             return -bet
-        
+
     async def gamble(self, interactions, bet: int):
         try:
             if not await self.is_valid_bet(interactions, bet):
                 return
 
             user = self.get_user(interactions)
-            
+
             if not self.has_sufficient_balance(user, bet):
                 await self.send_insufficient_balance_message(interactions)
                 return
@@ -43,7 +40,7 @@ class Gambling():
             symbols = self.get_slot_symbols()
             payout = self.calculate_payout(symbols, bet)
             self.update_user_balance(interactions, user, payout, bet)
-            
+
             if payout > 0:
                 self.update_user_experience(interactions, payout)
 
@@ -70,7 +67,8 @@ class Gambling():
 
     def update_user_balance(self, interactions, user, payout, bet):
         user["balance"] += payout
-        self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
+        self.database.update_user_balance(
+            interactions.guild.id, interactions.user.id, user["balance"], bet)
 
     def update_user_experience(self, interactions, payout):
         self.database.update_user_experience(interactions, payout)

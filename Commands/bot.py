@@ -13,7 +13,7 @@ from Commands.case_command import Case
 from Commands.capsule_command import Capsule
 from Commands.coinflip_command import CoinFlip
 from Commands.finances import Finance
-from Commands.gambling import Gambling
+from Commands.gambling_command import Gambling
 from Commands.give_command import Give
 from Commands.health_command import HealthCheck
 from Commands.inventory_command import Inventory
@@ -43,14 +43,12 @@ load_dotenv()
 # Create a logger for this file
 logger = setup_logging("bot.py", conf.LOGS_PATH)
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='/', intents=intents)
-session = None
-# Create an instance of QueueOperations to handle the music queue
-
+# Create a bot instance
+bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 
 # Create an instance of Utility to handle utility functions
 utility = Utility()
+
 
 @bot.event
 async def on_ready():
@@ -69,8 +67,8 @@ async def on_ready():
     except Exception as e:
         logger.error(f"Error in the on ready event: {e}")
         raise e
-    
-    
+
+
 @bot.event
 async def on_message(message):
     """
@@ -85,22 +83,23 @@ async def on_message(message):
     Raises:
     - Exception: If an error occurs while processing the message.
     """
-
     try:
         # Ignore messages sent by the bot
         if message.author == bot.user:
             return
+
         # Create an instance of LinkMessage to handle messages that contain URLs
         linkmessage = LinkMessage(bot)
         # Fetch the domain information from the message url and send it as a message
         await linkmessage.on_message_command(message)
-        
+
         profanity = Profanity(bot)
         # Check for profanity in the message
         await profanity.on_message_command(message)
     except Exception as e:
         logger.error(f"Error in the on message event: {e}")
         raise e
+
 
 @bot.event
 async def on_member_join(member):
@@ -129,7 +128,8 @@ async def on_member_join(member):
         logger.error(f"Error in the on member join event: {e}")
         raise e
 
-@bot.event 
+
+@bot.event
 async def on_member_remove(member):
     """
     Event handler that is triggered when a member leaves the server.
@@ -154,12 +154,13 @@ async def on_member_remove(member):
         logger.error(f"Error in the on member remove event: {e}")
         raise e
 
+
 @bot.event
 async def on_presence_update(before, after):
     """
     Event handler that is triggered when a member is updated.
     Check if a user is playing Valorant or Dead by Daylight and send a message to the general channel. 
-    
+
     try:        
         if after.activity and after.activity.name == "Dead by Daylight":
             # Send a message to the general channel
@@ -170,6 +171,8 @@ async def on_presence_update(before, after):
         raise e
     """
     pass
+
+
 @bot.tree.command(name='health', description='Display information about the bot.')
 @commands.has_permissions(administrator=True)
 async def health(interactions):
@@ -180,15 +183,16 @@ async def health(interactions):
     if interactions.user.id != int(os.environ.get("BOT_OWNER_ID")):
         await interactions.response.send_message("You do not have permission to run this command.")
         return
-    
+
     try:
         health_check = HealthCheck(bot)
         await health_check.health_command(interactions, bot)
         await bot.tree.sync()
-        
+
     except Exception as e:
         print(f"Error in the health command: {e}")
         raise e
+
 
 @bot.tree.command(name='join', description='Join the voice channel.')
 async def join(interactions: discord.Interaction):
@@ -207,6 +211,7 @@ async def join(interactions: discord.Interaction):
             f"An error occurred when trying to join the channel. {e}")
         raise e
 
+
 @bot.tree.command(name='leave', description='Makes the bot leave the voice channel.')
 async def leave(interactions):
     try:
@@ -214,6 +219,7 @@ async def leave(interactions):
     except Exception as e:
         logger.error(f"Error in the leave command: {e}")
         raise e
+
 
 @bot.tree.command(name='ping', description='Ping a user.')
 async def ping(interactions, username: discord.User):
@@ -224,6 +230,7 @@ async def ping(interactions, username: discord.User):
         logger.error(f"Error in the ping command: {e}")
         raise e
 
+
 @bot.tree.command(name='skip', description='Skip the current song.')
 async def skip(interactions):
     try:
@@ -233,6 +240,7 @@ async def skip(interactions):
     except Exception as e:
         logger.error(f"Error in the skip command: {e}")
         raise e
+
 
 @bot.tree.command(name='play', description='Play a song.')
 async def play(interactions, url: str):
@@ -250,14 +258,15 @@ async def play(interactions, url: str):
         global session
         # Get or create the singleton instance of SongSession
         session = SongSession(interactions.guild, interactions)
-        
+
         # Call the play command on the session instance
         await session.play_command(interactions, url, bot.loop)
-    
+
     except Exception as e:
         logger.error(f"An error occurred when trying to play the song. {e}")
         await interactions.response.send_message("An error occurred while processing your request.")
         raise e
+
 
 @bot.tree.command(name='nowplaying', description='Display the current playing song.')
 async def nowplaying(interactions):
@@ -271,7 +280,8 @@ async def nowplaying(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
-        
+
+
 @bot.tree.command(name='lyrics', description='Display the lyrics of the current song.')
 async def lyrics(interactions):
     if utility.bot_check_session(session):
@@ -284,7 +294,8 @@ async def lyrics(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
-        
+
+
 @bot.tree.command(name='queue', description='Display the queue.')
 async def queue(interactions):
     """
@@ -307,6 +318,7 @@ async def queue(interactions):
             f"An error occurred when trying to display the queue. {e}")
         raise e
 
+
 @bot.tree.command(name="clear", description="Clear the music queue.")
 async def clear(interactions):
     """
@@ -326,6 +338,7 @@ async def clear(interactions):
             f"An error occurred when trying to clear the queue. {e}")
         raise e
 
+
 @bot.tree.command(name='pause', description='Pause the current song.')
 async def pause(interactions):
     """
@@ -338,7 +351,7 @@ async def pause(interactions):
     None
     """
     if utility.bot_check_session(session):
-        try:     
+        try:
             await session.pause_command(interactions)
         except Exception as e:
             logger.error(
@@ -346,7 +359,8 @@ async def pause(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
-        
+
+
 @bot.tree.command(name='resume', description='Resume the current song.')
 async def resume(interactions):
     """
@@ -371,6 +385,8 @@ async def resume(interactions):
             raise e
     else:
         await interactions.response.send_message("No song is currently paused.")
+
+
 @bot.tree.command(name='shuffle', description='Shuffle the queue.')
 async def shuffle(interactions):
     """
@@ -394,6 +410,7 @@ async def shuffle(interactions):
     except Exception as e:
         logger.error(f"Error in the shuffle command: {e}")
         raise e
+
 
 @bot.tree.command(name='volume', description="Change the music's volume.")
 async def volume(interactions, volume: int):
@@ -421,9 +438,10 @@ async def volume(interactions, volume: int):
             raise e
     else:
         await interactions.response.send_message("No song is currently playing.")
-        
+
+
 @bot.tree.command(name="userinfo", description="Get information about a user.")
-async def user_information(interactions,*, member: discord.Member = None):
+async def user_information(interactions, *, member: discord.Member = None):
     """
     Fetches and displays information about a user.
 
@@ -457,6 +475,7 @@ async def user_information(interactions,*, member: discord.Member = None):
         logger.error(f"Error in the user info command: {e}")
         raise e
 
+
 @bot.tree.command(name='gamble', description='Gamble your money.')
 async def gamble(interactions, amount: int):
     """
@@ -477,6 +496,7 @@ async def gamble(interactions, amount: int):
         logger.error(f"Error in the gamble command: {e}")
         raise e
 
+
 @bot.tree.command(name='leaderboard', description='Display the leaderboard.')
 async def leaderboard(interactions):
     """
@@ -489,14 +509,15 @@ async def leaderboard(interactions):
     - None
     """
     try:
-        
+
         leaderboard = Leaderboard()
         # Call the leaderboard function in Leaderboard
         await leaderboard.leaderboard_command(interactions)
     except Exception as e:
         logger.error(f"Error in the leaderboard command: {e}")
         raise e
-    
+
+
 @bot.tree.command(name='rank', description='Display your rank.')
 async def rank(interactions):
     """
@@ -516,6 +537,7 @@ async def rank(interactions):
         logger.error(f"Error in the rank command: {e}")
         raise e
 
+
 @bot.tree.command(name='work', description='Work to earn money.')
 async def work(interactions):
     """
@@ -534,6 +556,7 @@ async def work(interactions):
         logger.error(f"Error in the work command: {e}")
         raise e
 
+
 @bot.tree.command(name='balance', description='Display your bank balance.')
 async def balance(interactions):
     """
@@ -551,7 +574,8 @@ async def balance(interactions):
     except Exception as e:
         logger.error(f"Error in the balance command: {e}")
         raise e
- 
+
+
 @bot.tree.command(name="give", description="Give money to another user.")
 async def give(interactions, member: discord.Member, amount: int):
     """
@@ -572,6 +596,7 @@ async def give(interactions, member: discord.Member, amount: int):
         logger.error(f"Error in the give command: {e}")
         raise e
 
+
 @bot.tree.command(name="case", description="Open a Counter-Strike case.")
 async def case(interactions):
     """
@@ -590,7 +615,8 @@ async def case(interactions):
     except Exception as e:
         logger.error(f"Error in the case command: {e}")
         raise e
-    
+
+
 @bot.tree.command(name="sticker", description="Open a Counter-Strike sticker capsule.")
 async def capsule(interactions):
     """
@@ -609,7 +635,8 @@ async def capsule(interactions):
     except Exception as e:
         logger.error(f"Error in the capsule command: {e}")
         raise e
-    
+
+
 @bot.tree.command(name="inventory", description="Display your inventory.")
 async def inventory(interactions):
     """
@@ -628,10 +655,10 @@ async def inventory(interactions):
     except Exception as e:
         logger.error(f"Error in the inventory command: {e}")
         raise e
-    
+
 
 @bot.tree.command(name="rps", description="Play rock, paper, scissors.")
-async def rps(interactions,bet:float,  choice: Choices):
+async def rps(interactions, bet: float,  choice: Choices):
     """
     Play rock, paper, scissors.
 
@@ -649,6 +676,7 @@ async def rps(interactions,bet:float,  choice: Choices):
     except Exception as e:
         logger.error(f"Error in the rps command: {e}")
         raise e
+
 
 @bot.tree.command(name='roll', description='Roll a dice between 1-100.')
 async def roll(interactions, bet: int, number: int):
@@ -668,6 +696,7 @@ async def roll(interactions, bet: int, number: int):
         logger.error(f"Error in the roll command: {e}")
         raise e
 
+
 @bot.tree.command(name='blackjack', description='Play blackjack.')
 async def blackjack(interactions, bet: int):
     """
@@ -685,6 +714,7 @@ async def blackjack(interactions, bet: int):
     except Exception as e:
         logger.error(f"Error in the blackjack command: {e}")
         raise e
+
 
 @bot.tree.command(name='coinflip', description='Flip a coin.')
 async def coinflip(interactions, bet: float, user: discord.Member):
@@ -704,6 +734,7 @@ async def coinflip(interactions, bet: float, user: discord.Member):
         logger.error(f"Error in the coinflip command: {e}")
         raise e
 
+
 @bot.tree.command(name='finance', description='Get the live price of a stock.')
 async def finance(interactions, stock: str):
     """
@@ -721,6 +752,7 @@ async def finance(interactions, stock: str):
     except Exception as e:
         logger.error(f"Error in the finance command: {e}")
         raise e
+
 
 @bot.tree.command(name="stocks", description="Buy or sell stocks.")
 async def stocks(interactions, option: Options, stock: str, quantity: float):
@@ -742,7 +774,8 @@ async def stocks(interactions, option: Options, stock: str, quantity: float):
     except Exception as e:
         logger.error(f"Error in the stocks command: {e}")
         raise e
-    
+
+
 @bot.tree.command(name='portfolio', description='Display your stock portfolio.')
 async def portfolio(interactions):
     """
@@ -773,6 +806,7 @@ async def run_bot(token):
             print(f"An unexpected error occurred: {e}")
             await asyncio.sleep(5)  # Wait for 5 seconds before reconnecting
 
+
 def main():
     """
     Main function that runs the bot.
@@ -780,14 +814,11 @@ def main():
     try:
         if os.environ.get("DISCORD_TOKEN") is None:
             raise Exception("No token found in the environment variables.")
-        asyncio.get_event_loop().run_until_complete(run_bot(os.environ.get("DISCORD_TOKEN")))
+        asyncio.get_event_loop().run_until_complete(
+            run_bot(os.environ.get("DISCORD_TOKEN")))
     except KeyboardInterrupt:
         print("\nBot stopped by user.")
         return
     except Exception as e:
         print(f"Error in the main function: {e}")
         raise e
-
-
-
-
