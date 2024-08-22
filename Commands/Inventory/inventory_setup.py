@@ -8,22 +8,15 @@ class Inventory_class():
         
     def get_inventory(self, interactions):
         user = self.collection.find_one({"user_id": interactions.user.id})
+        
         if user is None:
             # Create a new user
             user = self.database.get_user(interactions)
         return user.get("inventory", [])
     
-    def add_or_remove_item_to_inventory(self, interactions, item, condition:str):
-        inventory = self.get_inventory(interactions.user.id)
-        
-        if condition == "add":
-            inventory.append(item)
-        elif condition == "remove":
-            inventory.remove(item)
-        else:
-            return
-        
-        self.collection.update_one({"user_id": interactions.user.id}, {"$set": {"inventory": inventory}})
+    def add_or_remove_item_to_inventory(self, interactions, item, condition: str):
+        operator = "$push" if condition == "add" else "$pull"
+        self.collection.update_one({"user_id": interactions.user.id}, {operator: {"inventory": item}}, upsert=True)
         
     
     

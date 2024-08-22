@@ -1,5 +1,4 @@
 from Config.logging import setup_logging
-from Commands.database import Database
 from Config.config import conf
 from Commands.utility import Utility, EmbedMessage
 from Commands.Inventory.inventory_setup import Inventory_class
