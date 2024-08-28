@@ -31,7 +31,7 @@ from Commands.stocks_command import Stocks, Options
 from Commands.user_info_command import UserInfo
 from Commands.utility import Utility, EmbedMessage
 from Commands.work_command import Work
-from Commands.unshorten_link_command import Unshorten_URL
+
 # Config imports
 from Config.config import conf
 from Config.logging import setup_logging
@@ -791,25 +791,6 @@ async def portfolio(interactions):
         await portfolio.portfolio_command(interactions)
     except Exception as e:
         logger.error(f"Error in the portfolio command: {e}")
-        raise e
-
-@bot.tree.command(name='unshorten', description='Unshorten a shortened URL.')
-async def unshorten(interactions, url: str):
-    """
-    Unshorten a shortened URL.
-
-    Parameters:
-    - interactions (Context): The context object representing the invocation context of the command.
-    - url (str): The URL to unshorten.
-
-    Returns:
-    - None
-    """
-    try:
-        unshorten = Unshorten_URL()
-        await unshorten.unshorten_link_command(interactions, url)
-    except Exception as e:
-        logger.error(f"Error in the unshorten command: {e}")
         raise e
 
 async def run_bot(token):
