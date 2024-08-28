@@ -681,3 +681,4 @@ class EmbedMessage():
             logger.error(
                 f"Error while trying to create an embed message in work.py: {e}")
             return None
+        

@@ -31,7 +31,7 @@ from Commands.stocks_command import Stocks, Options
 from Commands.user_info_command import UserInfo
 from Commands.utility import Utility, EmbedMessage
 from Commands.work_command import Work
-
+from Commands.unshorten_link_command import Unshorten_URL
 # Config imports
 from Config.config import conf
 from Config.logging import setup_logging
@@ -89,9 +89,9 @@ async def on_message(message):
             return
 
         # Create an instance of LinkMessage to handle messages that contain URLs
-        linkmessage = LinkMessage(bot)
+        #linkmessage = LinkMessage(bot)
         # Fetch the domain information from the message url and send it as a message
-        await linkmessage.on_message_command(message)
+        #await linkmessage.on_message_command(message)
 
         profanity = Profanity(bot)
         # Check for profanity in the message
@@ -188,7 +188,6 @@ async def health(interactions):
         health_check = HealthCheck(bot)
         await health_check.health_command(interactions, bot)
         await bot.tree.sync()
-
     except Exception as e:
         print(f"Error in the health command: {e}")
         raise e
@@ -794,6 +793,24 @@ async def portfolio(interactions):
         logger.error(f"Error in the portfolio command: {e}")
         raise e
 
+@bot.tree.command(name='unshorten', description='Unshorten a shortened URL.')
+async def unshorten(interactions, url: str):
+    """
+    Unshorten a shortened URL.
+
+    Parameters:
+    - interactions (Context): The context object representing the invocation context of the command.
+    - url (str): The URL to unshorten.
+
+    Returns:
+    - None
+    """
+    try:
+        unshorten = Unshorten_URL()
+        await unshorten.unshorten_link_command(interactions, url)
+    except Exception as e:
+        logger.error(f"Error in the unshorten command: {e}")
+        raise e
 
 async def run_bot(token):
     while True:
