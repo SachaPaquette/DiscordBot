@@ -99,7 +99,7 @@ class Utility():
 
     def format_inexistant_prices(self, sticker_price):
 
-        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d"]
+        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d", "last_ever"]
         # Iterate over the time periods
         for i in range(len(time_periods)):
             current_period = time_periods[i]

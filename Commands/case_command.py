@@ -121,25 +121,31 @@ class Case():
             self.color = self.rarity_colors[rarity]
             return rarity
             
-                
-    def get_weapon_from_case(self):
-        """
-        Randomly selects a weapon from the case.
+               
+    def increase_rarity(self, rarity):
+        weapon_rarity = list(self.weapon_rarity.keys())
+        index = weapon_rarity.index(rarity)
+        return weapon_rarity[index + 1] if index + 1 < len(weapon_rarity) else rarity
 
-        Returns:
-        - weapon: The weapon that was selected.
-        - is_rare: Whether the selected weapon is a rare special item.
-        """
-        rarity = self.gamble_rarity()
-        is_rare = rarity == "Rare Special Item"
-    
-        possible_guns_list = (
+    def get_weapon_from_case(self):
+        try:
+            rarity = self.gamble_rarity()
+            while True:
+                is_rare = rarity == "Rare Special Item"
+                possible_guns_list = self.get_possible_guns(rarity, is_rare)
+                if possible_guns_list:
+                    return random.choice(possible_guns_list), is_rare
+                rarity = self.increase_rarity(rarity)
+        except Exception as e:
+            logger.error(f"Error getting weapon from case: {e}")
+            return None, False
+
+    def get_possible_guns(self, rarity, is_rare):
+        return (
             self.case["contains_rare"] if is_rare
             else [weapon for weapon in self.case["contains"] if weapon["rarity"]["name"] == rarity]
         )
-
-        return random.choice(possible_guns_list), is_rare
-    
+        
     def get_weapon_information(self, weapon):
         """
         Retrieves the information of the weapon.
@@ -156,7 +162,7 @@ class Case():
             
             return next((skin for skin in skins if skin.get("id") == weapon.get("id")), None)
         except Exception as e:
-            print(f"Error getting weapon information: {e}")
+            logger.error(f"Error getting weapon information: {e}")
             return None
     
     def calculate_float(self, weapon):   
@@ -173,8 +179,11 @@ class Case():
         Returns:
         - str: The wear level of the gun, or None if no match is found.
         """
-        return next((wear_level for wear_level, (min_float, max_float) in self.wear_levels.items() if min_float <= gun_float <= max_float), None)
-        
+        try:
+            return next((wear_level for wear_level, (min_float, max_float) in self.wear_levels.items() if min_float <= gun_float <= max_float), None)
+        except Exception as e:
+            logger.error(f"Error calculating wear level: {e}")
+            return None
     def get_weapon_name(self, weapon):
         return weapon["weapon"]["name"]
     
@@ -239,7 +248,8 @@ class Case():
             await self.wait_and_sell_if_needed(interactions, weapon)
         except Exception as e:
             await self.handle_exception(e, interactions)
-
+            logger.error(f"Error opening case: {e}")
+            
     async def send_initial_message(self, interactions):
         await interactions.response.send_message(embed=self.embedMessage.create_open_case_embed_message(self.case, "Case", self.case_price))
         self.first_message = await interactions.original_response()
