@@ -15,9 +15,11 @@ class Case():
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
         self.cases = self.load_cases()
+        self.is_souvenir = False
         self.case = self.get_random_case()
-        self.weapon_rarity = self.get_weapon_rarity()
-        self.rarity_colors = self.get_rarity_colors()
+        
+        self.weapon_rarity = self.get_weapon_rarity(self.is_souvenir)
+        self.rarity_colors = self.get_rarity_colors(self.is_souvenir)
         self.wear_levels = self.get_wear_levels()
         self.case_price = 5
         self.utility = Utility()
@@ -39,29 +41,56 @@ class Case():
             logger.error(f"Error loading cases: {e}")
             return []
         
-    def get_weapon_rarity(self):
+    def get_weapon_rarity(self, souvenir=False):
         """
         Returns the dictionary mapping weapon rarities to their probabilities.
-        """
-        return {
-            "Mil-Spec Grade": 0.7997,
-            "Restricted": 0.1598,
-            "Classified": 0.032,
-            "Covert": 0.0064,
-            "Rare Special Item": 0.0026,
-        }
 
-    def get_rarity_colors(self):
+        Args:
+        - souvenir (bool): Whether to return the souvenir rarity probabilities. Defaults to False.
+        """
+        if souvenir:
+        
+            return {
+                "Consumer Grade": 0.7997,
+                "Industrial Grade": 0.1598,
+                "Mil-Spec Grade": 0.0333,
+                "Restricted": 0.0066,
+                "Classified": 0.0013,
+                "Covert": 0.00027
+            }
+        else:
+            return {
+                "Mil-Spec Grade": 0.7997,
+                "Restricted": 0.1598,
+                "Classified": 0.032,
+                "Covert": 0.0064,
+                "Rare Special Item": 0.0026,
+            }
+            
+            
+
+    def get_rarity_colors(self, souvenir=False):
         """
         Returns the dictionary mapping weapon rarities to their corresponding colors.
         """
-        return {
-            "Mil-Spec Grade": 0x4B69FF,
-            "Restricted": 0x8847FF,
-            "Classified": 0xD32CE6,
-            "Covert": 0xEB4B4B,
-            "Rare Special Item": 0xADE55C 
-        }
+        if souvenir:
+            return {
+                "Consumer Grade": 0xF5F5F5,
+                "Industrial Grade": 0x4B69FF,
+                "Mil-Spec Grade": 0x1E90FF,
+                "Restricted": 0x800080,
+                "Classified": 0xD32CE6,
+                "Covert": 0xEB4B4B
+            }
+        else:
+            return {
+                "Mil-Spec Grade": 0x4B69FF,
+                "Restricted": 0x8847FF,
+                "Classified": 0xD32CE6,
+                "Covert": 0xEB4B4B,
+                "Rare Special Item": 0xADE55C 
+            }
+            
 
     def get_wear_levels(self):
         """
@@ -77,7 +106,9 @@ class Case():
         
     def get_random_case(self):
         # Get a random case from the json file case.json
-        return random.choice(self.cases)
+        case = random.choice(self.cases)
+        self.is_souvenir = case["type"] == "Souvenir"
+        return case
     
     def gamble_rarity(self):
             """
@@ -101,7 +132,7 @@ class Case():
         """
         rarity = self.gamble_rarity()
         is_rare = rarity == "Rare Special Item"
-
+    
         possible_guns_list = (
             self.case["contains_rare"] if is_rare
             else [weapon for weapon in self.case["contains"] if weapon["rarity"]["name"] == rarity]
