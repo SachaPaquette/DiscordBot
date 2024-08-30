@@ -10,6 +10,7 @@ import asyncio
 logger = setup_logging("case.py", conf.LOGS_PATH)
 class Case():
     def __init__(self, server_id):
+        self.caseDir = "./Commands/CaseData/"
         self.server_id = server_id
         self.database = Database.getInstance()
         self.collection = self.database.get_collection(server_id)
@@ -25,14 +26,19 @@ class Case():
         self.user_id = None
         self.embedMessage = EmbedMessage()
         self.color = None
+        
     
     def load_cases(self):
         """
         Loads case information from the JSON file.
         """
-        with open("./Commands/Case/case.json", "r") as f:
-            return json.load(f)
-
+        try:
+            with open(f"{self.caseDir}case.json", "r") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading cases: {e}")
+            return []
+        
     def get_weapon_rarity(self):
         """
         Returns the dictionary mapping weapon rarities to their probabilities.
@@ -70,7 +76,7 @@ class Case():
         }
         
     def get_random_case(self):
-        # Get a random case from the json file ./Cases/cases.json
+        # Get a random case from the json file case.json
         return random.choice(self.cases)
     
     def gamble_rarity(self):
@@ -80,57 +86,44 @@ class Case():
             - rarity: The rarity of the item.
             """
             rarity = random.choices(list(self.weapon_rarity.keys()), weights=list(self.weapon_rarity.values()))[0]
-            self.get_color_from_rarity(rarity)
+            # Set the rarity color
+            self.color = self.rarity_colors[rarity]
             return rarity
             
-    def get_color_from_rarity(self, rarity):
-        self.color = self.rarity_colors[rarity]
-            
+                
     def get_weapon_from_case(self):
         """
         Randomly selects a weapon from the case.
 
         Returns:
         - weapon: The weapon that was selected.
+        - is_rare: Whether the selected weapon is a rare special item.
         """
-        # Use the rarity to get a weapon
         rarity = self.gamble_rarity()
-        possible_guns_list = []
-        is_rare = False
+        is_rare = rarity == "Rare Special Item"
 
-        # Check if the rarity is for a rare special item (knife, gloves, etc.) 0.26% chance
-        if rarity == "Rare Special Item":
-            possible_guns_list = self.case["contains_rare"]
-            is_rare = True
-        else:
-            # Collect weapons of the specified rarity from the case
-            possible_guns_list = [
-                weapon for weapon in self.case["contains"] if weapon["rarity"]["name"] == rarity]
-        # Return a random weapon from the possible guns list and whether it is rare 
+        possible_guns_list = (
+            self.case["contains_rare"] if is_rare
+            else [weapon for weapon in self.case["contains"] if weapon["rarity"]["name"] == rarity]
+        )
+
         return random.choice(possible_guns_list), is_rare
     
     def get_weapon_information(self, weapon):
         """
         Retrieves the information of the weapon.
-        
+
         Parameters:
         - weapon: The weapon to get the information from.
-        
+
         Returns:
         - weapon_information: The information of the weapon.
         """
-        try:   
-            # Load weapon information from skins.json
-            with open("./Commands/Case/skins.json", "r") as f:
+        try:
+            with open(f"{self.caseDir}skins.json", "r") as f:
                 skins = json.load(f)
-                
-            # Find the weapon by its id
-            for skin in skins:
-                if skin.get("id") == weapon.get("id"):
-                    return skin
             
-            # If weapon is not found
-            return None
+            return next((skin for skin in skins if skin.get("id") == weapon.get("id")), None)
         except Exception as e:
             print(f"Error getting weapon information: {e}")
             return None
@@ -140,13 +133,17 @@ class Case():
         return random.uniform(weapon["min_float"], weapon["max_float"])
 
     def calculate_wear_level(self, gun_float):
-        # Iterate through the wear levels and find the one that includes the gun_float value
-        for wear_level, (min_float, max_float) in self.wear_levels.items():
-            if min_float <= gun_float <= max_float:
-                return wear_level
-        # If no wear level matches the gun_float value, return None
-        return None
-    
+        """
+        Calculates the wear level of a gun based on its float value.
+
+        Args:
+        - gun_float (float): The float value of the gun.
+
+        Returns:
+        - str: The wear level of the gun, or None if no match is found.
+        """
+        return next((wear_level for wear_level, (min_float, max_float) in self.wear_levels.items() if min_float <= gun_float <= max_float), None)
+        
     def get_weapon_name(self, weapon):
         return weapon["weapon"]["name"]
     
@@ -158,12 +155,8 @@ class Case():
 
     def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         def format_weapon_name(weapon_name, is_rare, is_stattrak):
-            formatted_name = weapon_name
-            if is_stattrak:
-                formatted_name = f"StatTrak™ {formatted_name}"
-            if is_rare:
-                formatted_name = f"★ {formatted_name}"
-            return formatted_name
+            prefixes = ["★ " if is_rare else "", "StatTrak™ " if is_stattrak else ""]
+            return "".join(prefixes) + weapon_name
 
         def assemble_weapon_title(weapon_name, weapon_pattern, wear_level):
             return f"{weapon_name} | {weapon_pattern} ({wear_level})"
@@ -177,7 +170,7 @@ class Case():
 
         weapon_name = format_weapon_name(weapon_name, is_rare, is_stattrak)
         weapon_title = assemble_weapon_title(weapon_name, weapon_pattern, wear_level)
-        latest_data = load_latest_data("./Commands/Case/latest_data.json")
+        latest_data = load_latest_data(f"{self.caseDir}latest_data.json")
         
         return find_weapon_price(weapon_title, latest_data)
     

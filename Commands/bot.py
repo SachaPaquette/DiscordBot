@@ -118,15 +118,14 @@ async def on_member_join(member):
     Exception: If an error occurs while sending the welcome message.
     """
     try:
-        embedMessage = EmbedMessage()
-        # Send a welcome message to the member
-        embed = await embedMessage.on_member_join_message(member)
-        # Send the message in the general channel
-        channel = discord.utils.get(member.guild.text_channels, name="general")
-        await channel.send(embed=embed)
+        embed_message = EmbedMessage()
+        channel = discord.utils.get(member.guild.text_channels, name=os.environ.get("GENERAL_CHANNEL_NAME"))
+        if channel:
+            await channel.send(embed=await embed_message.on_member_join_message(member))
+        else:
+            logger.error(f"General channel not found: {os.environ.get('GENERAL_CHANNEL_NAME')}")
     except Exception as e:
-        logger.error(f"Error in the on member join event: {e}")
-        raise e
+        logger.error(f"Error sending welcome message: {e}")
 
 
 @bot.event
@@ -146,31 +145,14 @@ async def on_member_remove(member):
     Exception: If an error occurs while sending the goodbye message.
     """
     try:
-        embedMessage = EmbedMessage()
-        # Send the message in the general channel
-        channel = discord.utils.get(member.guild.text_channels, name="general")
-        await channel.send(embed=await embedMessage.on_member_leave_message(member))
+        embed_message = EmbedMessage()
+        channel = discord.utils.get(member.guild.text_channels, name=os.environ.get("GENERAL_CHANNEL_NAME"))
+        if channel:
+            await channel.send(embed=await embed_message.on_member_leave_message(member))
+        else:
+            logger.error(f"General channel not found: {os.environ.get('GENERAL_CHANNEL_NAME')}")
     except Exception as e:
-        logger.error(f"Error in the on member remove event: {e}")
-        raise e
-
-
-@bot.event
-async def on_presence_update(before, after):
-    """
-    Event handler that is triggered when a member is updated.
-    Check if a user is playing Valorant or Dead by Daylight and send a message to the general channel. 
-
-    try:        
-        if after.activity and after.activity.name == "Dead by Daylight":
-            # Send a message to the general channel
-            channel = discord.utils.get(after.guild.text_channels, name="general")
-            await channel.send(f"{after.mention} please stop playing Dead by Daylight.")
-    except Exception as e:
-        logger.error(f"Error in the on member update event: {e}")
-        raise e
-    """
-    pass
+        logger.error(f"Error sending goodbye message: {e}")
 
 
 @bot.tree.command(name='health', description='Display information about the bot.')
@@ -178,6 +160,7 @@ async def on_presence_update(before, after):
 async def health(interactions):
     """
     Check if the bot is alive and provide detailed health information.
+    Used to sync the commands with the guild.
     """
     # Make sure the user has the correct permissions (by having the userid of the bot owner)
     if interactions.user.id != int(os.environ.get("BOT_OWNER_ID")):
@@ -196,12 +179,7 @@ async def health(interactions):
 @bot.tree.command(name='join', description='Join the voice channel.')
 async def join(interactions: discord.Interaction):
     """
-    Join the voice channel.
-
     This command makes the bot join the voice channel of the user who sent the command.
-    If the bot is already in the correct channel, it will send a message indicating that it is already in the channel.
-    If the bot is in a different channel, it will move to the correct channel.
-    If the bot is not in any channel, it will connect to the voice channel.
     """
     try:
         await utility.join(interactions)
@@ -220,10 +198,9 @@ async def leave(interactions):
         raise e
 
 
-@bot.tree.command(name='ping', description='Ping a user.')
+@bot.tree.command(name='ping', description='Pings a user.')
 async def ping(interactions, username: discord.User):
     try:
-        # check if there is a @ in the username
         await interactions.response.send_message(f"Hello {username.mention}")
     except Exception as e:
         logger.error(f"Error in the ping command: {e}")
@@ -233,7 +210,6 @@ async def ping(interactions, username: discord.User):
 @bot.tree.command(name='skip', description='Skip the current song.')
 async def skip(interactions):
     try:
-        # Call the skip function in SongSession
         session = SongSession(interactions.guild, interactions)
         await session.skip(interactions)
     except Exception as e:

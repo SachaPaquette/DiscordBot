@@ -17,7 +17,7 @@ class Capsule():
         self.server_id = server_id
         self.color = None
         self.embedMessage = EmbedMessage()
-            
+        self.caseDir = "./Commands/CaseData/"
     def get_all_sticker_rarity(self):
         return {
             "High Grade": 0.7997,
@@ -35,7 +35,7 @@ class Capsule():
         }
     
     def get_random_sticker_case(self):
-        with open("./Commands/Case/sticker_cases.json", "r") as f:
+        with open(f"{self.caseDir}sticker_cases.json", "r") as f:
             sticker_cases = json.load(f)
         return random.choice(sticker_cases)
         
