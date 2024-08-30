@@ -335,8 +335,6 @@ class EmbedMessage():
                                 value="Your inventory is empty.", inline=False)
                 return embed
 
-            # Sort the user's inventory by price and calculate total value
-            total_value = sum(item["price"] for item in user_inventory)
             user_inventory = sorted(
                 user_inventory, key=lambda x: x["price"], reverse=True)
 
@@ -355,7 +353,7 @@ class EmbedMessage():
                 )
 
             embed.add_field(name="💰 Total Value",
-                            value=f"**${total_value:.2f}**", inline=False)
+                            value=f"**${sum(item["price"] for item in user_inventory):.2f}**", inline=False)
             return embed
         except Exception as e:
             logger.error(
@@ -397,13 +395,10 @@ class EmbedMessage():
             return None
 
     def create_open_case_embed_message(self, case, title: str, price: float):
-        # find the case image
-        case_image = case["image"]
         # Create an embed message with the case image
-        embed = discord.Embed(
-            title=f"🎉 {title} Opening 🎉", color=discord.Color.gold())
+        embed = discord.Embed(title=f"🎉 {title} Opening 🎉", color=discord.Color.gold())
         # Add the case image to the embed message
-        embed.set_image(url=case_image)
+        embed.set_image(url=case["image"])
         # Add the case name to the embed message
         embed.add_field(name="Case", value=case["name"], inline=False)
         # Add a field for the price of the case to the embed message
