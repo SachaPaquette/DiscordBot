@@ -405,8 +405,11 @@ class EmbedMessage():
         embed.add_field(name="Price", value=f"${price}", inline=True)
         return embed
 
-    def create_case_embed(self, balance: float, profit: float, prices: float, wear_level: str, gun_float: float, weapon_name: str, weapon_pattern: float, weapon_image: str, is_stattrak: bool, color: str, user_nickname: str):
+    def create_case_embed(self, data):
         try:
+            # Unpack the data
+            balance, profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, is_souvenir, color, user_nickname = data.values()
+            
             embed = discord.Embed(
                 title=f"🎉 Case Opening Results 🎉", color=discord.Colour(color))
 
@@ -414,8 +417,12 @@ class EmbedMessage():
             embed.add_field(
                 name="👤 User", value=f"**{user_nickname}**", inline=False)
 
-            if is_stattrak:
+            if is_stattrak and not is_souvenir:
                 weapon_name = "StatTrak™ " + weapon_name
+            elif is_souvenir:
+                weapon_name = "Souvenir " + weapon_name
+                
+            
 
             # Add weapon name and pattern
             embed.add_field(

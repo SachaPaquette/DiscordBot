@@ -184,6 +184,7 @@ class Case():
         except Exception as e:
             logger.error(f"Error calculating wear level: {e}")
             return None
+        
     def get_weapon_name(self, weapon):
         return weapon["weapon"]["name"]
     
@@ -195,7 +196,11 @@ class Case():
 
     def get_weapon_price(self, weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak):
         def format_weapon_name(weapon_name, is_rare, is_stattrak):
-            prefixes = ["★ " if is_rare else "", "StatTrak™ " if is_stattrak else ""]
+            prefixes = [
+                "★ " if is_rare else "",
+                "Souvenir " if self.is_souvenir else "",
+                "StatTrak™ " if is_stattrak and not self.is_souvenir else ""
+            ]
             return "".join(prefixes) + weapon_name
 
         def assemble_weapon_title(weapon_name, weapon_pattern, wear_level):
@@ -290,18 +295,22 @@ class Case():
             self.get_weapon_image(weapon_info), is_stattrak, self.color, prices)
 
     def create_embed(self, user, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak, interactions):
-        return self.embedMessage.create_case_embed(
-            balance=user["balance"],
-            profit=self.utility.calculate_profit(float(prices), self.case_price),
-            prices=prices,
-            wear_level=wear_level,
-            gun_float=gun_float,
-            weapon_name=weapon_name,
-            weapon_pattern=weapon_pattern,
-            weapon_image=self.get_weapon_image(weapon_info),
-            is_stattrak=is_stattrak,
-            color=self.color,
-            user_nickname=interactions.user.display_name)
+        data = {
+            "balance": user["balance"],
+            "profit": self.utility.calculate_profit(float(prices), self.case_price),
+            "prices": prices,
+            "wear_level": wear_level,
+            "gun_float": gun_float,
+            "weapon_name": weapon_name,
+            "weapon_pattern": weapon_pattern,
+            "weapon_image": self.get_weapon_image(weapon_info),
+            "is_stattrak": is_stattrak,
+            "is_souvenir": self.is_souvenir,
+            "color": self.color,
+            "user_nickname": interactions.user.display_name
+        }
+        
+        return self.embedMessage.create_case_embed(data)
 
     async def send_error_message(self, interactions):
         await interactions.followup.send("An error occurred while opening the case.")
