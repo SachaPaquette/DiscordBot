@@ -4,7 +4,7 @@ from discord.ext import commands
 from Config.logging import setup_logging
 from Config.config import conf
 
-from Commands.database import Database
+from Commands.Services.database import Database
 # Create a logger for this file
 logger = setup_logging("utility.py", conf.LOGS_PATH)
 

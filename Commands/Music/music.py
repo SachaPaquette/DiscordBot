@@ -5,7 +5,7 @@ from Config.config import conf
 from Commands.Music.queue_command import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.Music.ytdl import YTDLSource
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 import asyncio
 # Load the .env file
 load_dotenv()

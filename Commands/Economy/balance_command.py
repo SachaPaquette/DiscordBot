@@ -1,7 +1,7 @@
 # Command to display the balance of a user
 from Config.logging import setup_logging
 from Config.config import conf
-from Commands.database import Database
+from Commands.Services.database import Database
 # Create a logger for this file
 logger = setup_logging("balance.py", conf.LOGS_PATH)
 class Balance():

@@ -1,10 +1,10 @@
 # Rock paper scissors command
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 from Config.logging import setup_logging
 from Config.config import conf
 import discord
 import random
-from Commands.database import Database
+from Commands.Services.database import Database
 # Create a logger for this file
 logger = setup_logging("rockpaperscissors.py", conf.LOGS_PATH)
 from enum import Enum

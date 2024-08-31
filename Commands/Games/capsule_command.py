@@ -1,8 +1,8 @@
 import json
 import time
-from Commands.database import Database
+from Commands.Services.database import Database
 import random
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 from Config.logging import setup_logging
 from Config.config import conf
 # Create a logger for this file

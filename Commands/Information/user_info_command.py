@@ -2,7 +2,7 @@
 import discord 
 from Config.logging import setup_logging
 from Config.config import conf
-from Commands.utility import EmbedMessage
+from Commands.Services.utility import EmbedMessage
 # Create a logger for this file
 logger = setup_logging("userinfo.py", conf.LOGS_PATH)
 class UserInfo:

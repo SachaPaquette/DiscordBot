@@ -2,9 +2,9 @@
 import random 
 import discord
 from Config.logging import setup_logging
-from Commands.database import Database
+from Commands.Services.database import Database
 from Config.config import conf
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 # Create a logger for this file
 logger = setup_logging("roll.py", conf.LOGS_PATH)
 

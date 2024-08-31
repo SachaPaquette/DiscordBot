@@ -1,6 +1,6 @@
 # Command to display the leaderboard of the server.
-from Commands.utility import Utility, EmbedMessage
-from Commands.database import Database
+from Commands.Services.utility import Utility, EmbedMessage
+from Commands.Services.database import Database
 from ..UserProfile.user import UserCard
 from Config.logging import setup_logging
 from Config.config import conf

@@ -1,8 +1,8 @@
-from Commands.database import Database
+from Commands.Services.database import Database
 import random
 from Config.logging import setup_logging
 from Config.config import conf
-from Commands.utility import EmbedMessage
+from Commands.Services.utility import EmbedMessage
 # Create a logger for this file
 logger = setup_logging("gambling.py", conf.LOGS_PATH)
 

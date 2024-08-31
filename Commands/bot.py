@@ -29,7 +29,7 @@ from Commands.Games.roll_command import Roll
 from Commands.Games.rockpaperscissors_command import RockPaperScissors, Choices
 from Commands.Economy.stocks_command import Stocks, Options
 from Commands.Information.user_info_command import UserInfo
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 from Commands.Economy.work_command import Work
 
 # Config imports

@@ -1,6 +1,6 @@
 # Used to check for profanity in messages and warn users
 from .better_profanity import profane
-from Commands.utility import Utility
+from Commands.Services.utility import Utility
 from Config.logging import setup_logging
 from Config.config import conf
 # Create a logger for this file

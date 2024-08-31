@@ -2,7 +2,7 @@
 import pymongo, time, os, re
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
-from .UserProfile.user import User
+from ..UserProfile.user import User
 from Config.logging import setup_logging
 from Config.config import conf
  

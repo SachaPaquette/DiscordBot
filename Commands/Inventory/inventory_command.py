@@ -1,6 +1,6 @@
 from Config.logging import setup_logging
 from Config.config import conf
-from Commands.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage
 from Commands.Inventory.inventory_setup import Inventory_class
 # Create a logger for this file
 logger = setup_logging("inventory.py", conf.LOGS_PATH)

@@ -1,5 +1,5 @@
-from Commands.database import Database
-from Commands.utility import Utility
+from Commands.Services.database import Database
+from Commands.Services.utility import Utility
 from ..UserProfile.user import User
 import random
 import time

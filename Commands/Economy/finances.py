@@ -3,7 +3,7 @@
 import yfinance as yf
 import discord
 from Config.logging import setup_logging
-from Commands.database import Database
+from Commands.Services.database import Database
 from Config.config import conf
 # Create a logger for this file
 logger = setup_logging("finance.py", conf.LOGS_PATH)

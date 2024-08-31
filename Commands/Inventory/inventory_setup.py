@@ -1,4 +1,4 @@
-from Commands.database import Database
+from Commands.Services.database import Database
 class Inventory_class():
     def __init__(self, server_id):
         self.database = Database.getInstance()
