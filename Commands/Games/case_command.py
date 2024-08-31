@@ -318,12 +318,8 @@ class Case():
         if action_type == "keep":
             await self.inventory.add_or_remove_item_to_inventory(interactions, weapon, "add")
         elif action_type == "sell":
-            await self.update_balance(interactions.user.id, weapon["price"])
+            await self.database.update_user_balance(self.server_id, interactions.user.id, bet=weapon["price"])
 
     async def update_message(self, message, username, weapon, update_method):
         content = update_method(username, weapon)
         await message.edit(content=content)
-
-    async def update_balance(self, user_id, price):
-        self.collection.update_one({"user_id": user_id}, {
-                                   "$inc": {"balance": price}})

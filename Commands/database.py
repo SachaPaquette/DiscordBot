@@ -112,29 +112,27 @@ class Database():
 
     
 
-    def update_user_balance(self, server_id, user_id, balance,bet=0, update_last_work_time=False):
+    def update_user_balance(self, server_id, user_id, balance=None, bet=0, update_last_work_time=False):
         """
         Updates the balance of a user.
-        
+
         Parameters:
         - user_id: The id of the user to update.
-        - balance: The balance of the user.
-        - update_last_work_time: Whether to update the last work time.
+        - balance: The new balance of the user (optional).
+        - bet: The amount to increment the total bet by (default: 0).
+        - update_last_work_time: Whether to update the last work time (default: False).
         """
         collection = self.get_collection(server_id)
-        update_fields = {"balance": balance}
-        # Update the last work time (a user can only work every X minutes)
+        update_fields = {}
+        if balance is not None:
+            update_fields["balance"] = balance
         if update_last_work_time:
             update_fields["last_work"] = time.time()
-        # Update the user's balance
-        collection.update_one(
-            {"user_id": user_id},
-            {
-                "$set": update_fields,
-                "$inc": {"total_bet": bet}
-            }
-        )
-        
+        update = {"$set": update_fields}
+        if bet != 0:
+            update["$inc"] = {"total_bet": bet}
+        collection.update_one({"user_id": user_id}, update)
+            
     def update_user_experience(self,interactions, payout):
         """
         Updates the experience of a user.
