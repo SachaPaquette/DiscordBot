@@ -23,7 +23,7 @@ class Case():
         self.wear_levels = self.get_wear_levels()
         self.case_price = 5
         self.utility = Utility()
-        self.is_sold_or_bought = False
+        self.is_item_sold_or_kept = False
         self.inventory = Inventory_class(server_id)
         self.user_id = None
         self.embedMessage = EmbedMessage()
@@ -326,8 +326,8 @@ class Case():
             message=embed_message, function_keep=self.keep_function, function_sell=self.sell_function, weapon=weapon)
 
     async def wait_and_sell_if_needed(self, interactions, weapon):
-        await asyncio.sleep(5)
-        if not self.is_sold_or_bought:
+        await asyncio.sleep(3)
+        if not self.is_item_sold_or_kept:
             await self.sell_function(interactions, weapon, self.first_message)
 
     async def handle_exception(self, e, interactions):
@@ -338,7 +338,7 @@ class Case():
         if interactions.user.id != self.user_id:
             return
         
-        self.is_sold_or_bought = True
+        self.is_item_sold_or_kept = True
         
         update_method = self.embedMessage.create_keep_message if action_type == "keep" else self.embedMessage.create_sell_message
         await self.update_message(message, interactions.user.display_name, weapon, update_method)
