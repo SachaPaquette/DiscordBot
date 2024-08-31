@@ -48,47 +48,47 @@ class Case():
         Args:
         - souvenir (bool): Whether to return the souvenir rarity probabilities. Defaults to False.
         """
+        base_rarities = {
+            "Mil-Spec Grade": 0.7997,
+            "Restricted": 0.1598,
+            "Classified": 0.032 if not souvenir else 0.0013,
+            "Covert": 0.0064 if not souvenir else 0.00027,
+        }
+
         if souvenir:
-        
             return {
+                **base_rarities,
                 "Consumer Grade": 0.7997,
                 "Industrial Grade": 0.1598,
-                "Mil-Spec Grade": 0.0333,
-                "Restricted": 0.0066,
-                "Classified": 0.0013,
-                "Covert": 0.00027
             }
         else:
             return {
-                "Mil-Spec Grade": 0.7997,
-                "Restricted": 0.1598,
-                "Classified": 0.032,
-                "Covert": 0.0064,
+                **base_rarities,
                 "Rare Special Item": 0.0026,
             }
-            
-            
+                
 
     def get_rarity_colors(self, souvenir=False):
         """
         Returns the dictionary mapping weapon rarities to their corresponding colors.
         """
+        base_rarities = {
+            "Mil-Spec Grade": 0x4B69FF,
+            "Restricted": 0x8847FF,
+            "Classified": 0xD32CE6,
+            "Covert": 0xEB4B4B,
+        }
+
         if souvenir:
             return {
+                **base_rarities,
                 "Consumer Grade": 0xF5F5F5,
-                "Industrial Grade": 0x4B69FF,
-                "Mil-Spec Grade": 0x1E90FF,
-                "Restricted": 0x800080,
-                "Classified": 0xD32CE6,
-                "Covert": 0xEB4B4B
+                "Industrial Grade": 0x1E90FF,
             }
         else:
             return {
-                "Mil-Spec Grade": 0x4B69FF,
-                "Restricted": 0x8847FF,
-                "Classified": 0xD32CE6,
-                "Covert": 0xEB4B4B,
-                "Rare Special Item": 0xADE55C 
+                **base_rarities,
+                "Rare Special Item": 0xADE55C,
             }
             
 
@@ -226,6 +226,15 @@ class Case():
         # There is a 10% chance that the weapon will be stattrak
         return random.random() < 0.1
         
+    def open_case_get_weapon(self):
+        weapon, is_rare = self.get_weapon_from_case()
+        weapon_info = self.get_weapon_information(weapon)
+        gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak = self.process_weapon_info(weapon_info)
+        prices = self.get_weapon_prices(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
+        weapon = self.create_weapon(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices)
+        
+        return weapon, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak
+    
     async def open_case(self, interactions):
         try:
             await self.send_initial_message(interactions)
@@ -235,14 +244,10 @@ class Case():
                 await self.send_insufficient_balance_message(interactions)
                 return
 
-            weapon, is_rare = self.get_weapon_from_case()
-            weapon_info = self.get_weapon_information(weapon)
-            gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak = self.process_weapon_info(weapon_info)
-            prices = self.get_weapon_prices(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
-
+            weapon, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak = self.open_case_get_weapon()
+            
             self.update_user_balance(user, interactions)
             self.add_user_experience(interactions, prices)
-            weapon = self.create_weapon(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices)
             embed = self.create_embed(user, weapon_info,  prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak, interactions)
 
             if embed is None:
@@ -326,42 +331,33 @@ class Case():
             await self.sell_function(interactions, weapon, self.first_message)
 
     async def handle_exception(self, e, interactions):
-        print(f"Error opening case: {e}")
+        logger.error(f"Error opening case: {e}")
         await interactions.followup.send("An error occurred while opening the case.")
 
-    async def keep_function(self, interactions, weapon, message):
-        # Make sure the person that is clicking on the button is the same person that opened the case
+    async def process_action(self, interactions, weapon, message, action_type):
         if interactions.user.id != self.user_id:
             return
-        # Acknowledge the interaction
-        await interactions.response.defer()
         
         self.is_sold_or_bought = True
         
-        # Modify the message to show that the skin was kept
-        await message.edit(content=f"{self.embedMessage.create_keep_message(interactions.user.display_name, weapon)}")
-        # Disable the buttons
+        update_method = self.embedMessage.create_keep_message if action_type == "keep" else self.embedMessage.create_sell_message
+        await self.update_message(message, interactions.user.display_name, weapon, update_method)
         await self.utility.disable_buttons(interactions, message)
-        
-        # Add the skin to the user's inventory
-        self.inventory.add_or_remove_item_to_inventory(interactions, weapon, "add")
-        
-        return
-    
-    async def sell_function(self, interactions, weapon, message):
-         # Make sure the person that is clicking on the button is the same person that opened the case
-        if self.user_id != interactions.user.id:
-            return
-        
-        self.is_sold_or_bought = True
 
-        # Modify the message to show that the skin was sold
-        await message.edit(content=f"{self.embedMessage.create_sell_message(interactions.user.display_name, weapon)}")
-        
-        # Disable the buttons
-        await self.utility.disable_buttons(interactions, message)
-        
-        # Sell the skin
-        self.collection.update_one({"user_id": interactions.user.id}, {"$inc": {"balance": weapon["price"]}})
-        
-        return
+        if action_type == "keep":
+            await self.inventory.add_or_remove_item_to_inventory(interactions, weapon, "add")
+        elif action_type == "sell":
+            await self.update_balance(interactions.user.id, weapon["price"])
+
+    async def update_message(self, message, username, weapon, update_method):
+        content = update_method(username, weapon)
+        await message.edit(content=content)
+
+    async def keep_function(self, interactions, weapon, message):
+        await self.process_action(interactions, weapon, message, "keep")
+
+    async def sell_function(self, interactions, weapon, message):
+        await self.process_action(interactions, weapon, message, "sell")
+
+    async def update_balance(self, user_id, price):
+        self.collection.update_one({"user_id": user_id}, {"$inc": {"balance": price}})
