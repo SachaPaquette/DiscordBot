@@ -233,7 +233,27 @@ class Case():
         prices = self.get_weapon_prices(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
         weapon = self.create_weapon(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices)
         
-        return weapon, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak
+        return {
+            "weapon": weapon,
+            "weapon_info": weapon_info,
+            "price": prices,
+            "wear_level": wear_level,
+            "gun_float": gun_float,
+            "weapon_name": weapon_name,
+            "weapon_pattern": weapon_pattern,
+            "is_stattrak": is_stattrak,
+        }
+    
+    async def process_case_opening(self, interactions, user, case_data, embed):
+        try:
+            self.update_user_balance(user, interactions)
+            self.add_user_experience(interactions, case_data["price"])
+            
+            await self.send_embed_message(embed, interactions, case_data["weapon"])
+            await self.wait_and_sell_if_needed(interactions, case_data["weapon"])
+        except Exception as e:
+            await self.handle_exception(e, interactions)
+            logger.error(f"Error processing case opening: {e}")
     
     async def open_case(self, interactions):
         try:
@@ -244,18 +264,16 @@ class Case():
                 await self.send_insufficient_balance_message(interactions)
                 return
 
-            weapon, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak = self.open_case_get_weapon()
+            case_data = self.open_case_get_weapon()
             
-            self.update_user_balance(user, interactions)
-            self.add_user_experience(interactions, prices)
-            embed = self.create_embed(user, weapon_info,  prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak, interactions)
+            
+            embed = self.create_embed(user, case_data, interactions)
 
             if embed is None:
                 await self.send_error_message(interactions)
                 return
 
-            await self.send_embed_message(embed, interactions, weapon)
-            await self.wait_and_sell_if_needed(interactions, weapon)
+            await self.process_case_opening(interactions, user, case_data, embed)
         except Exception as e:
             await self.handle_exception(e, interactions)
             logger.error(f"Error opening case: {e}")
@@ -299,23 +317,18 @@ class Case():
             weapon_info, gun_float, wear_level, weapon_name, weapon_pattern,
             self.get_weapon_image(weapon_info), is_stattrak, self.color, prices)
 
-    def create_embed(self, user, weapon_info, prices, wear_level, gun_float, weapon_name, weapon_pattern, is_stattrak, interactions):
-        data = {
+    def create_embed(self, user, case_data, interactions):
+        embed_data = {
             "balance": user["balance"],
-            "profit": self.utility.calculate_profit(float(prices), self.case_price),
-            "prices": prices,
-            "wear_level": wear_level,
-            "gun_float": gun_float,
-            "weapon_name": weapon_name,
-            "weapon_pattern": weapon_pattern,
-            "weapon_image": self.get_weapon_image(weapon_info),
-            "is_stattrak": is_stattrak,
+            "profit": self.utility.calculate_profit(float(case_data["price"]), self.case_price),
+            **case_data,
             "is_souvenir": self.is_souvenir,
             "color": self.color,
             "user_nickname": interactions.user.display_name
         }
         
-        return self.embedMessage.create_case_embed(data)
+        
+        return self.embedMessage.create_case_embed(embed_data)
 
     async def send_error_message(self, interactions):
         await interactions.followup.send("An error occurred while opening the case.")

@@ -409,19 +409,20 @@ class EmbedMessage():
         try:
             # Unpack the data
             (
-                balance,
-                profit,
-                prices,
-                wear_level,
-                gun_float,
-                weapon_name,
-                weapon_pattern,
-                weapon_image,
-                is_stattrak,
-                is_souvenir,
-                color,
-                user_nickname,
-            ) = data.values()
+            balance,
+            profit,
+            weapon,
+            weapon_info,
+            price,
+            wear_level,
+            gun_float,
+            weapon_name,
+            weapon_pattern,
+            is_stattrak,
+            is_souvenir,
+            color,
+            user_nickname,
+        ) = data.values()
 
             embed = discord.Embed(
                 title="🎉 Case Opening Results 🎉", color=discord.Colour(color)
@@ -444,7 +445,7 @@ class EmbedMessage():
                 value=f"**{weapon_name}** | *{weapon_pattern}*",
                 inline=False,
             )
-            embed.set_thumbnail(url=weapon_image)
+            embed.set_thumbnail(url=weapon_info["image"])
 
             # Add stats
             embed.add_field(name="🛠️ Wear Level", value=f"**{wear_level}**", inline=True)
@@ -457,7 +458,7 @@ class EmbedMessage():
 
             # Add price and profit/loss
             embed.add_field(
-                name="💵 Weapon Price", value=f"$**{float(prices):.2f}**", inline=True
+                name="💵 Weapon Price", value=f"$**{float(price):.2f}**", inline=True
             )
             embed.add_field(
                 name="📈 Profit" if profit > 0 else "📉 Loss",
