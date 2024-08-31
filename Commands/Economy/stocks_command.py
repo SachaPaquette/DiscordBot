@@ -7,7 +7,7 @@ from Config.config import conf
 # Create a logger for this file
 logger = setup_logging("stocks.py", conf.LOGS_PATH)
 from enum import Enum
-from Commands.finances import Finance
+from Commands.Economy.finances import Finance
 class Options(Enum):
     BUY = "buy"
     SELL = "sell"

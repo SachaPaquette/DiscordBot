@@ -7,30 +7,30 @@ import discord
 from discord.ext import commands
 
 # Commands import
-from Commands.balance_command import Balance
-from Commands.blackjack_command import BlackJack
-from Commands.case_command import Case
-from Commands.capsule_command import Capsule
-from Commands.coinflip_command import CoinFlip
-from Commands.finances import Finance
-from Commands.gambling_command import Gambling
-from Commands.give_command import Give
-from Commands.health_command import HealthCheck
-from Commands.inventory_command import Inventory
-from Commands.leaderboard_command import Leaderboard
-from Commands.link_message_event import LinkMessage
-from Commands.lyrics_command import LyricsOperations
-from Commands.music import SongSession
-from Commands.nowplaying_command import NowPlaying
-from Commands.portfolio_command import Portfolio
-from Commands.profanity_event import Profanity
-from Commands.queue_command import QueueOperations
-from Commands.roll_command import Roll
-from Commands.rockpaperscissors_command import RockPaperScissors, Choices
-from Commands.stocks_command import Stocks, Options
-from Commands.user_info_command import UserInfo
+from Commands.Economy.balance_command import Balance
+from Commands.Games.blackjack_command import BlackJack
+from Commands.Games.case_command import Case
+from Commands.Games.capsule_command import Capsule
+from Commands.Games.coinflip_command import CoinFlip
+from Commands.Economy.finances import Finance
+from Commands.Games.gambling_command import Gambling
+from Commands.Economy.give_command import Give
+from Commands.Information.health_command import HealthCheck
+from Commands.Inventory.inventory_command import Inventory
+from Commands.Inventory.leaderboard_command import Leaderboard
+from Commands.Information.link_message_event import LinkMessage
+from Commands.Music.lyrics_command import LyricsOperations
+from Commands.Music.music import SongSession
+from Commands.Music.nowplaying_command import NowPlaying
+from Commands.Economy.portfolio_command import Portfolio
+from Commands.Profanity.profanity_event import Profanity
+from Commands.Music.queue_command import QueueOperations
+from Commands.Games.roll_command import Roll
+from Commands.Games.rockpaperscissors_command import RockPaperScissors, Choices
+from Commands.Economy.stocks_command import Stocks, Options
+from Commands.Information.user_info_command import UserInfo
 from Commands.utility import Utility, EmbedMessage
-from Commands.work_command import Work
+from Commands.Economy.work_command import Work
 
 # Config imports
 from Config.config import conf

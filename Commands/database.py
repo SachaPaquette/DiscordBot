@@ -14,13 +14,12 @@ class Database():
     __instance = None
     @staticmethod
     def getInstance():
-        """ Static access method. """
         if Database.__instance == None:
             Database()
         return Database.__instance
     def __init__(self):
         try:
-            """ Virtually private constructor. """
+            # If the instance does not exist, create it
             if Database.__instance == None:
                 Database.__instance = self
                 self.client = MongoClient("mongodb://localhost:27017/")

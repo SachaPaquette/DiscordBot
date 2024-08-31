@@ -1,5 +1,5 @@
 import re
-from .Scripts import azlyrics
+from ..Scripts import azlyrics
 from Config.logging import setup_logging
 from Config.config import conf
 # Create a logger for this file

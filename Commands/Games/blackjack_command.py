@@ -1,6 +1,6 @@
 from Commands.database import Database
 from Commands.utility import Utility
-from .UserProfile.user import User
+from ..UserProfile.user import User
 import random
 import time
 from Config.logging import setup_logging
