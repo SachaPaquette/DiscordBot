@@ -1,13 +1,18 @@
 # Used to interact with the mongodb database
-import pymongo, time
+import pymongo, time, os, re
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from .UserProfile.user import User
-import re
 from Config.logging import setup_logging
 from Config.config import conf
+ 
+# Load the .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Create a logger for this file
 logger = setup_logging("database.py", conf.LOGS_PATH)
+
 # Connect to the database
 class Database():
     # Instatiate a singleton instance of the database
@@ -22,7 +27,7 @@ class Database():
             # If the instance does not exist, create it
             if Database.__instance == None:
                 Database.__instance = self
-                self.client = MongoClient("mongodb://localhost:27017/")
+                self.client = MongoClient(os.getenv("MONGO_DB_ADDRESS"))
                 self.db = self.client["discord"]
                 self.collections = {}
                 
@@ -34,7 +39,7 @@ class Database():
     def connect(self):
         try:
             # Connect to the database
-            self.client = MongoClient("mongodb://localhost:27017/")
+            self.client = MongoClient(os.getenv("MONGO_DB_ADDRESS"))
             # if the database does not exist, it will be created    
             self.db = self.client["discord"]
             
