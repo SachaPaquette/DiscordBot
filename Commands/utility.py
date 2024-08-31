@@ -408,58 +408,67 @@ class EmbedMessage():
     def create_case_embed(self, data):
         try:
             # Unpack the data
-            balance, profit, prices, wear_level, gun_float, weapon_name, weapon_pattern, weapon_image, is_stattrak, is_souvenir, color, user_nickname = data.values()
-            
+            (
+                balance,
+                profit,
+                prices,
+                wear_level,
+                gun_float,
+                weapon_name,
+                weapon_pattern,
+                weapon_image,
+                is_stattrak,
+                is_souvenir,
+                color,
+                user_nickname,
+            ) = data.values()
+
             embed = discord.Embed(
-                title=f"🎉 Case Opening Results 🎉", color=discord.Colour(color))
+                title="🎉 Case Opening Results 🎉", color=discord.Colour(color)
+            )
 
             # Add username to the embed message
             embed.add_field(
-                name="👤 User", value=f"**{user_nickname}**", inline=False)
+                name="👤 User", value=f"**{user_nickname}**", inline=False
+            )
 
+            # Format weapon name
             if is_stattrak and not is_souvenir:
-                weapon_name = "StatTrak™ " + weapon_name
+                weapon_name = f"StatTrak™ {weapon_name}"
             elif is_souvenir:
-                weapon_name = "Souvenir " + weapon_name
-                
-            
+                weapon_name = f"Souvenir {weapon_name}"
 
-            # Add weapon name and pattern
+            # Add weapon info
             embed.add_field(
-                name="🔫 Weapon", value=f"**{weapon_name}** | *{weapon_pattern}*", inline=False)
-
-            # Add weapon image
+                name="🔫 Weapon",
+                value=f"**{weapon_name}** | *{weapon_pattern}*",
+                inline=False,
+            )
             embed.set_thumbnail(url=weapon_image)
 
-            # Add wear level
-            embed.add_field(name="🛠️ Wear Level",
-                            value=f"**{wear_level}**", inline=True)
+            # Add stats
+            embed.add_field(name="🛠️ Wear Level", value=f"**{wear_level}**", inline=True)
+            embed.add_field(
+                name="💰 Current Balance", value=f"**${balance:.2f}**", inline=True
+            )
+            embed.add_field(
+                name="📊 Float Value", value=f"**{gun_float:.5f}**", inline=True
+            )
 
-            # Add user balance
-            embed.add_field(name="💰 Current Balance",
-                            value=f"**${balance:.2f}**", inline=True)
-
-            # Add profit or loss
-            if profit > 0:
-                embed.add_field(name="📈 Profit",
-                                value=f"+$**{profit:.2f}**", inline=True)
-            else:
-                embed.add_field(
-                    name="📉 Loss", value=f"-$**{-profit:.2f}**", inline=True)
-
-            # Add weapon price
-            embed.add_field(name="💵 Weapon Price",
-                            value=f"$**{float(prices):.2f}**", inline=True)
-
-            # Add gun float value
-            embed.add_field(name="📊 Float Value",
-                            value=f"**{gun_float:.5f}**", inline=True)
+            # Add price and profit/loss
+            embed.add_field(
+                name="💵 Weapon Price", value=f"$**{float(prices):.2f}**", inline=True
+            )
+            embed.add_field(
+                name="📈 Profit" if profit > 0 else "📉 Loss",
+                value=f"+$**{profit:.2f}**" if profit > 0 else f"-$**{-profit:.2f}**",
+                inline=True,
+            )
 
             return embed
 
         except Exception as e:
-            logger.error(
-                f"Error while trying to create an embed message in case.py: {e}")
+            logger.error(f"Error creating embed message: {e}")
             return None
 
     def create_keep_message(self, user_name, weapon):

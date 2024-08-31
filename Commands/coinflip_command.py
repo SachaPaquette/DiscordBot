@@ -37,7 +37,7 @@ class CoinFlip():
                 return
 
             command_user = self.database.get_user(interactions)
-            opposing_user = self.database.get_user(interactions.guild.id, opponent.id)
+            opposing_user = self.database.get_user(interactions, opponent.id)
 
             # Check if both users have enough money
             if not self.utility.has_sufficient_balance(command_user, bet):
