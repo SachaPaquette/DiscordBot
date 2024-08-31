@@ -4,3 +4,4 @@ Config/Logs/*
 Dockerfile
 docker-compose.yml
 discord
+__pycache__
