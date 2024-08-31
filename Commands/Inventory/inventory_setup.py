@@ -1,4 +1,9 @@
 from Commands.Services.database import Database
+from Config.logging import setup_logging
+from Config.config import conf
+
+logger = setup_logging("inventory.py", conf.LOGS_PATH)
+
 class Inventory_class():
     def __init__(self, server_id):
         self.database = Database.getInstance()
@@ -15,8 +20,11 @@ class Inventory_class():
         return user.get("inventory", [])
     
     def add_or_remove_item_to_inventory(self, interactions, item, condition: str):
-        operator = "$push" if condition == "add" else "$pull"
-        self.collection.update_one({"user_id": interactions.user.id}, {operator: {"inventory": item}}, upsert=True)
-        
+        try:
+            operator = "$push" if condition == "add" else "$pull"  
+            self.collection.update_one({"user_id": interactions.user.id}, {operator: {"inventory": item}}, upsert=True)
+        except Exception as e:
+            logger.error(f"Error adding or removing item to inventory: {e}")
+            return
     
     

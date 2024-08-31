@@ -39,7 +39,7 @@ class Gambling():
 
             symbols = self.get_slot_symbols()
             payout = self.calculate_payout(symbols, bet)
-            self.update_user_balance(interactions, user, payout, bet)
+            await self.update_user_balance(interactions, user, payout, bet)
 
             if payout > 0:
                 self.update_user_experience(interactions, payout)

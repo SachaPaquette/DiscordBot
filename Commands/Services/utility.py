@@ -122,9 +122,9 @@ class Utility():
                              label="Keep", custom_id="keep")
         sell_button = Button(style=discord.ButtonStyle.red,
                              label="Sell", custom_id="sell")
-
-        # Add functions to the buttons
+        
         async def keep_callback(interactions):
+            print("Keep button clicked")
             await function_keep(interactions, weapon, message)
 
         async def sell_callback(interactions):

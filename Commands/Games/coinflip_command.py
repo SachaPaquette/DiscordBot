@@ -28,7 +28,7 @@ class CoinFlip():
                 await interactions.edit_original_response(content='Both users cannot choose the same option. The game is canceled.')
                 return
             winner, winnings = await self.determine_winner(interactions, reactions, bet)
-            await self.update_balances(interactions, command_user, opposing_user, winner, winnings, bet)
+            self.update_balances(interactions, command_user, opposing_user, winner, winnings, bet)
             await self.send_result_message(interactions, bet, winner, winnings, CoinChoices(reactions[0][0].emoji), reactions[0][0].emoji, command_user, opposing_user)
         except asyncio.TimeoutError:
             await interactions.edit_original_response(content='The game timed out. Both users need to react within 60 seconds.')
@@ -93,7 +93,7 @@ class CoinFlip():
         except Exception as e:
             logger.error(f"Error determining the winner: {e}")
             return None, None  # Return None explicitly
-    async def update_balances(self, interactions, command_user, opposing_user, winner, winnings, bet):
+    def update_balances(self, interactions, command_user, opposing_user, winner, winnings, bet):
         try:
             
             command_user["balance"] -= bet

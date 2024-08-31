@@ -119,7 +119,7 @@ class Capsule():
 
             sticker_price = self.get_formatted_sticker_price(sticker)
             profit = self.calculate_profit(sticker_price)
-            self.update_user_balance(user, profit)
+            await self.update_user_balance(user, profit)
             if profit > 0:
                 self.add_experience(interactions, profit)
 
