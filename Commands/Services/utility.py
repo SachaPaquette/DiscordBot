@@ -217,6 +217,10 @@ class Utility():
             # Update the user's experience
             self.database.update_user_experience(interactions, payout)
 
+    def check_user(self, interactions, saved_id):
+        if interactions.user.id != saved_id:
+            return False
+        return True
 
 class EmbedMessage():
     def __init__(self):

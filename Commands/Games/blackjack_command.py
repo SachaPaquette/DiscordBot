@@ -124,8 +124,10 @@ class BlackJack():
             # Initialize the game
             self.initialize_game(bet, user, interactions)
             
+            
+            user["balance"] -= bet
             # Update the user's balance
-            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"] - bet, bet)
+            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
             
             # Check if the player has blackjack
             await self.check_blackjack()
@@ -146,7 +148,7 @@ class BlackJack():
         
     async def hold(self, interactions):
         try:
-            if not self.check_user(interactions):
+            if not self.utility.check_user(interactions, self.interactions.user.id):
                 return
             
             await interactions.response.defer()
@@ -164,7 +166,7 @@ class BlackJack():
 
     async def hit(self, interactions):
         try:
-            if not self.check_user(interactions):
+            if not self.utility.check_user(interactions, self.interactions.user.id):
                 return
             
             await interactions.response.defer()
@@ -198,6 +200,7 @@ class BlackJack():
                 result = self.determine_result()
                 await result()
 
+            self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"])
             await self.remove_buttons()
 
         except Exception as e:
@@ -258,7 +261,7 @@ class BlackJack():
         
     async def replay(self, interactions):
         # Check if the user is the same
-        if not self.check_user(interactions):
+        if not self.utility.check_user(interactions, self.interactions.user.id):
             return
         
         # Acknowledge the interaction
@@ -273,7 +276,3 @@ class BlackJack():
         
         await self.blackjack_command(interactions, self.bet)
         
-    def check_user(self, interactions):
-        if interactions.user.id != self.interactions.user.id:
-            return False
-        return True
