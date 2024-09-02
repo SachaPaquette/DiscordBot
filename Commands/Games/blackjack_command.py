@@ -146,24 +146,14 @@ class BlackJack():
         
     async def hold(self, interactions):
         try:
-            # Check if the interaction is from the same user
             if not self.check_user(interactions):
                 return
             
             await interactions.response.defer()
-
-            # Dealer's turn
-            dealer_busted = self.dealer_turn()
-
-            # Determine the outcome
-            if dealer_busted:
-                await self.blackjack_win()
-            else:
-                await self.blackjack_results()
+            await (self.blackjack_win() if self.dealer_turn() else self.blackjack_results())
 
         except Exception as e:
             print(f"Error in the hold function in blackjack.py: {e}")
-            return
 
     def dealer_turn(self):
         while self.dealer_score < 17:
@@ -174,29 +164,16 @@ class BlackJack():
 
     async def hit(self, interactions):
         try:
-            # Check if the interaction is from the same user
-            if interactions.user.id != self.interactions.user.id:
+            if not self.check_user(interactions):
                 return
-
-            # Acknowledge the interaction
+            
             await interactions.response.defer()
-
-            # Player hits
             self.player_hand, self.player_score = self.calculate_hit(self.player_hand, self.player_score)
-
-            # Check if player has busted or got blackjack
-            if self.player_score > 21:
-                await self.blackjack_results()
-            elif self.player_score == 21:
-                await self.blackjack_results()
-            else:
-                # Update player's hand
-                await self.send_player_hand_update()
+            await (self.blackjack_results() if self.player_score >= 21 else self.send_player_hand_update())
 
         except Exception as e:
-            print(f"Error in the hit function in blackjack.py: {e}")
+            logger.error(f"Error in the hit function in blackjack.py: {e}")
             return
-        
     def calculate_hit(self, hand, score):
         hand.append(self.deck.pop())
         score = self.calculate_score(hand)
@@ -211,28 +188,30 @@ class BlackJack():
         await self.send_or_edit_message(self.interactions, f'Your hand is {players_hand} and is worth {self.player_score}. The dealer\'s hand is {self.dealer_hand[0]} and a hidden card.')
     
     async def blackjack_results(self):
-
-        # Check player status
-        if self.player_score > 21:
-            await self.blackjack_lose()
-        elif self.player_score == 21:
-            await self.hold(self.interactions)
-        else:
-            # Dealer's turn
-            self.dealer_turn()
-
-            # Determine result
-            if self.dealer_score > 21:
-                await self.blackjack_win()
-            elif self.player_score > self.dealer_score:
-                await self.blackjack_win()
-            elif self.player_score == self.dealer_score:
-                await self.blackjack_tie()
-            else:
+        try:
+            if self.player_score > 21:
                 await self.blackjack_lose()
+            elif self.player_score == 21:
+                await self.hold(self.interactions)
+            else:
+                self.dealer_turn()
+                result = self.determine_result()
+                await result()
 
-        # Remove buttons after game result
-        await self.remove_buttons()
+            await self.remove_buttons()
+
+        except Exception as e:
+            print(f"Error in the blackjack_results function in blackjack.py: {e}")
+
+    def determine_result(self):
+        if self.dealer_score > 21:
+            return self.blackjack_win
+        elif self.player_score > self.dealer_score:
+            return self.blackjack_win
+        elif self.player_score == self.dealer_score:
+            return self.blackjack_tie
+        else:
+            return self.blackjack_lose
 
     async def blackjack_win(self):
         self.user["balance"] += self.bet * 2
