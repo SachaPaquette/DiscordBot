@@ -43,6 +43,8 @@ class BlackJack():
     def calculate_score(self, hand):
         score = 0
         aces = 0
+
+        # Calculate initial score
         for card in hand:
             value = card[:-1]
             if value in ['J', 'Q', 'K']:
@@ -51,11 +53,15 @@ class BlackJack():
                 aces += 1
             else:
                 score += int(value)
-        for i in range(aces):
+
+        # Adjust score for aces
+        while aces:
             if score + 11 <= 21:
                 score += 11
             else:
                 score += 1
+            aces -= 1
+
         return score
     
     async def send_or_edit_message(self, interactions, message):
@@ -65,46 +71,64 @@ class BlackJack():
             await interactions.response.send_message(message)
             self.message = await interactions.original_response()
         
-    
-    async def blackjack_command(self, interactions, bet: float):
-        try: 
-            
-            # Check if the bet is positive
-            if bet <= 0:
-                await self.send_or_edit_message(interactions, f'{interactions.user.mention}, you must bet a positive amount.')
-                return
-            
-            # Check if the user has enough money
-            user = self.database.get_user(interactions)
-            if self.utility.has_sufficient_balance(user, bet) == False:
-                await self.send_or_edit_message(interactions,f'{interactions.user.mention}, you don\'t have enough money to bet that amount.')
-                return
-            
-            # Create the deck
+        
+    def initialize_game(self, bet, user, interactions):
             self.create_deck()
-            
-            # Deal the cards
             self.deal_cards()
             
             # Set the bet, user, and interactions
             self.bet = bet
             self.user = user
             self.interactions = interactions
-            
-            # Calculate the score of the player and dealer
+
             self.player_score = self.calculate_score(self.player_hand)
             self.dealer_score = self.calculate_score(self.dealer_hand)
             
-            # Remove the bet from the user's balance
-            user["balance"] -= bet
+    async def check_blackjack(self):
+        if self.player_score == 21:
+            await self.blackjack_win()
+            return
+        if self.dealer_score == 21:
+            await self.blackjack_lose()
+            return
+        return
+    
+    def validate_bet(self, bet):
+        try:
+            if bet <= 0:
+                return False
+            return True
+        except Exception as e:
+            print(f"Error in the validate_bet function in blackjack.py: {e}")
+            return False
+            
+    async def check_user_balance(self, user, bet):
+        if not self.utility.has_sufficient_balance(user, bet):
+            await self.send_or_edit_message(self.interactions, f'{self.interactions.user.mention}, you don\'t have enough money to bet that amount.')
+            return False
+        return True
+    
+    async def blackjack_command(self, interactions, bet: float):
+        try: 
+            
+            # Check if the bet is positive
+            if self.validate_bet(bet) == False:
+                await self.send_or_edit_message(interactions, f'{interactions.user.mention}, you must bet a positive amount.')
+                return
+            
+            # Check if the user has enough money
+            user = self.database.get_user(interactions)
+            if not await self.check_user_balance(user, bet):
+                return
+            
+            # Initialize the game
+            self.initialize_game(bet, user, interactions)
             
             # Update the user's balance
-            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"], bet)
+            self.database.update_user_balance(interactions.guild.id, interactions.user.id, user["balance"] - bet, bet)
             
             # Check if the player has blackjack
-            if self.player_score == 21:
-                await self.blackjack_win()
-                return
+            await self.check_blackjack()
             
             # Send the initial message
             await self.send_or_edit_message(interactions,f'{interactions.user.mention} has bet {bet} dollars. Your hand is {self.player_hand[0]} and {self.player_hand[1]} and is worth {self.calculate_score(self.player_hand)}. The dealer\'s hand is {self.dealer_hand[0]} and a hidden card.')
@@ -116,74 +140,110 @@ class BlackJack():
             # Add the buttons
             await self.add_buttons(interactions, self.message)
             
-            
-
         except Exception as e:
             print(f"Error in the blackjack function in blackjack.py: {e}")
             return
+        
     async def hold(self, interactions):
         try:
+            # Check if the interaction is from the same user
+            if not self.check_user(interactions):
+                return
+            
+            await interactions.response.defer()
+
+            # Dealer's turn
+            dealer_busted = await self.dealer_turn()
+
+            # Determine the outcome
+            if dealer_busted:
+                await self.blackjack_win()
+            else:
+                await self.blackjack_results()
+
+        except Exception as e:
+            print(f"Error in the hold function in blackjack.py: {e}")
+            return
+
+    async def dealer_turn(self):
+        while self.dealer_score < 17:
+            self.dealer_hand.append(self.deck.pop())
+            self.dealer_score = self.calculate_score(self.dealer_hand)
+            if self.dealer_score > 21:
+                return True
+        return False
+
+    async def hit(self, interactions):
+        try:
+            # Check if the interaction is from the same user
             if interactions.user.id != self.interactions.user.id:
                 return
+
             # Acknowledge the interaction
             await interactions.response.defer()
-            while self.dealer_score < 17:
-                self.dealer_hand.append(self.deck.pop())
-                self.dealer_score = self.calculate_score(self.dealer_hand)
-                if self.dealer_score > 21:
-                    await self.blackjack_win()
-                    return
-            if self.player_score > self.dealer_score:
+
+            # Player hits
+            await self.player_hit()
+
+            # Check if player has busted or got blackjack
+            if self.player_score > 21:
+                await self.blackjack_results()
+            elif self.player_score == 21:
+                await self.blackjack_results()
+            else:
+                # Update player's hand
+                await self.send_player_hand_update()
+
+        except Exception as e:
+            print(f"Error in the hit function in blackjack.py: {e}")
+            return
+        
+    async def player_hit(self):
+        self.player_hand.append(self.deck.pop())
+        self.player_score = self.calculate_score(self.player_hand)
+
+    async def send_player_hand_update(self):
+        players_hand = " ".join(self.player_hand)
+        await self.send_or_edit_message(self.interactions, f'Your hand is {players_hand} and is worth {self.player_score}. The dealer\'s hand is {self.dealer_hand[0]} and a hidden card.')
+    
+    async def blackjack_results(self):
+
+        # Check player status
+        if self.player_score > 21:
+            await self.blackjack_lose()
+        elif self.player_score == 21:
+            await self.hold(self.interactions)
+        else:
+            # Dealer's turn
+            await self.dealer_turn()
+
+            # Determine result
+            if self.dealer_score > 21:
+                await self.blackjack_win()
+            elif self.player_score > self.dealer_score:
                 await self.blackjack_win()
             elif self.player_score == self.dealer_score:
                 await self.blackjack_tie()
             else:
                 await self.blackjack_lose()
-            
-            return
-        except Exception as e:
-            print(f"Error in the hold function in blackjack.py: {e}")
-            return
-        
-    async def hit(self, interactions):
-        try:
-            if interactions.user.id != self.interactions.user.id:
-                return
-            # Acknowledge the interaction
-            await interactions.response.defer()
-            self.player_hand.append(self.deck.pop())
-            self.player_score = self.calculate_score(self.player_hand)
-            if self.player_score > 21:
-                await self.blackjack_lose()
-            elif self.player_score == 21:
-                await self.hold(interactions)
-            else:
-                players_hand = ""
-                for card in self.player_hand:
-                    players_hand += card + " "
-                    
-                await self.send_or_edit_message(self.interactions, f'Your hand is {players_hand} and is worth {self.calculate_score(self.player_hand)}. The dealer\'s hand is {self.dealer_hand[0]} and a hidden card.')
-            
-            return
-        
-        except Exception as e:
-            print(f"Error in the hit function in blackjack.py: {e}")
-            return
+
+        # Remove buttons after game result
+        await self.remove_buttons()
+
     async def blackjack_win(self):
         self.user["balance"] += self.bet * 2
-        self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"], self.bet)
-        await self.send_or_edit_message(self.interactions, f'The dealer had: {self.dealer_score}, {self.interactions.user.mention} won {self.bet * 2} dollars!')
-        await self.remove_buttons()
+        await self.send_or_edit_message(self.interactions, f'You had: {self.player_score}. The dealer had: {self.dealer_score}, {self.interactions.user.mention} won {self.bet * 2} dollars!')
+        return  
+    
     async def blackjack_lose(self):
-        self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"], self.bet)
-        await self.send_or_edit_message(self.interactions, f'The dealer had: {self.dealer_score}, {self.interactions.user.mention} lost {self.bet} dollars!')
-        await self.remove_buttons()
-        
+        await self.send_or_edit_message(self.interactions, f'You had: {self.player_score}. The dealer had: {self.dealer_score}, {self.interactions.user.mention} lost {self.bet} dollars!')
+        return
+    
     async def blackjack_tie(self):
         self.user["balance"] += self.bet
-        self.database.update_user_balance(self.interactions.guild.id, self.interactions.user.id, self.user["balance"], self.bet)
         await self.send_or_edit_message(self.interactions, f'{self.interactions.user.mention} tied with the dealer!')
-        await self.remove_buttons()
+        return
+        
     async def add_buttons(self, interactions, message):
         hit_button = Button(style=discord.ButtonStyle.green, label="Hit", custom_id="hit")
         hold_button = Button(style=discord.ButtonStyle.red, label="Hold", custom_id="hold")
@@ -215,7 +275,7 @@ class BlackJack():
         
     async def replay(self, interactions):
         # Check if the user is the same
-        if interactions.user.id != self.interactions.user.id:
+        if not self.check_user(interactions):
             return
         
         # Acknowledge the interaction
@@ -229,3 +289,8 @@ class BlackJack():
     
         
         await self.blackjack_command(interactions, self.bet)
+        
+    def check_user(self, interactions):
+        if interactions.user.id != self.interactions.user.id:
+            return False
+        return True

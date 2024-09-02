@@ -53,7 +53,7 @@ class Case():
             logger.error(f"Error processing case opening: {e}")
 
     async def wait_and_sell_if_needed(self, interactions, weapon):
-        await asyncio.sleep(3)
+        await asyncio.sleep(5)
         if not self.is_item_sold_or_kept:
             await self.process_action(interactions, weapon, self.first_message, "sell")
 
@@ -149,7 +149,6 @@ class Case():
         
     async def process_action(self, interactions, weapon, message, action_type):
         try:
-            print("Processing action")
             if interactions.user.id != self.user_id:
                 return
 
@@ -163,7 +162,6 @@ class Case():
             await self.utility.disable_buttons(interactions, message)
 
             if action_type == "keep":
-                print("Adding item to inventory")
                 self.inventory.add_or_remove_item_to_inventory(interactions, weapon, "add")
             elif action_type == "sell":
                 self.database.update_user_balance(self.server_id, interactions.user.id, bet=weapon["price"])
