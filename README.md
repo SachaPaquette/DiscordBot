@@ -30,7 +30,6 @@ Create a .env file that is in the root of the project and add your discord token
 ```bash
 # .env file content
 DISCORD_TOKEN="your_discord_token"
-TESTING_GUILD_ID="your_guild_id" (This lets the commands sync automatically and without any cooldown)
 BOT_OWNER_ID="your_id" (This lets you use commands that are only for the admin)
 GENERAL_CHANNEL_NAME="your_discord_general_channel"
 MONGO_DB_ADDRESS="your_mongo_db_address" (local address is: "mongodb://localhost:27017")
