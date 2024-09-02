@@ -653,7 +653,7 @@ class EmbedMessage():
 
             # Add the total bet amount to the embed message
             embed.add_field(name="Total Bet",
-                            value=f"$**{total_bet}**", inline=False)
+                            value=f"$**{total_bet:.2f}**", inline=False)
 
             return embed
 
@@ -693,22 +693,28 @@ class EmbedMessage():
 
 
     def create_work_embed(self, interactions, job, amount_earned, balance):
-        # Create an embed message for the work command
         try:
+            # Create the embed message
             embed = discord.Embed(
                 title="Work Results",
-                description=f"You worked as a {job['title']} {job['icon']} and earned ${amount_earned}!",
+                description=f"You worked as a {job['title']} {job['icon']} and earned **${amount_earned:.2f}**!",
                 color=discord.Color.green()
             )
-            embed.add_field(name="💰 Balance",
-                            value=f"**${balance:.2f}**", inline=False)
-            # Add the minimum and maximum amount of money that can be earned
-            embed.add_field(name="💼 Salary Range", value=f"**${job['min_earnings']} - ${job['max_earnings']}**", inline=False)
-            # Add the user's picture to the embed
+
+            # Add balance field
+            embed.add_field(name="💰 Balance", value=f"**${balance:.2f}**", inline=False)
+
+            # Add salary range field
+            salary_range = f"${job['min_earnings']:.2f} - ${job['max_earnings']:.2f}"
+            embed.add_field(name="💼 Salary Range", value=f"**{salary_range}**", inline=False)
+
+            # Set user avatar as the thumbnail
             embed.set_thumbnail(url=interactions.user.avatar)
+
             return embed
+
         except Exception as e:
-            logger.error(
-                f"Error while trying to create an embed message in work.py: {e}")
+            logger.error(f"Error creating work embed message: {e}")
             return None
+
         
