@@ -226,35 +226,46 @@ class EmbedMessage():
     def __init__(self):
         self.utility = Utility()
 
-    def create_coinflip_embed_message(self, interactions, bet, result, result_emoji, winner, winnings, balance, opponent_balance):
-        # Embed message for the coinflip command
-        embed = discord.Embed(
-            title="Coinflip Results",
-            color=discord.Color.gold()
-        )
-        # Add the user's name and the opponent to the embed message
-        embed.add_field(
-            name="👤 User", value=f"**{interactions.user.name}**", inline=False)
-        embed.add_field(name="👤 Opponent", value=f"**{winner}**", inline=False)
+    def create_coinflip_embed_message(self,interactions, bet, coin, result_emoji, command_user, opposing_user, winner, winnings):
+        try:
+            
+            balance = command_user["balance"]
+            opponent_balance = opposing_user["balance"]
+            
+            # Find the opposing user name 
+            
+            
+            # Embed message for the coinflip command
+            embed = discord.Embed(
+                title="Coinflip Results",
+                color=discord.Color.gold()
+            )
+            # Add the user's name and the opponent to the embed message
+            embed.add_field(name="👤 User", value=f"**{interactions.user.display_name}**", inline=False)
+            embed.add_field(name="👤 Opponent", value=f"**{opposing_user["user_name"]}**", inline=False)
 
-        # Add the bet amount and the coin result to the embed message
-        embed.add_field(name="💰 Bet Amount", value=f"**${bet}**", inline=True)
-        embed.add_field(name="🪙 Coin Result",
-                        value=f"**{result}**", inline=True)
+            # Add the bet amount and the coin result to the embed message
+            embed.add_field(name="💰 Bet Amount", value=f"**${bet}**", inline=True)
+            embed.add_field(name="🪙 Coin Result",
+                            value=f"**{result_emoji}**", inline=True)
 
-        # Add the user and opponents balance to the embed message
-        embed.add_field(name="🏦 Your Balance",
-                        value=f"**${balance:.2f}**", inline=False)
-        embed.add_field(name="🏦 Opponent Balance",
-                        value=f"**${opponent_balance:.2f}**", inline=True)
+            # Add the user and opponents balance to the embed message
+            embed.add_field(name="🏦 Your Balance",
+                            value=f"**${balance:.2f}**", inline=False)
+            embed.add_field(name="🏦 Opponent Balance",
+                            value=f"**${opponent_balance:.2f}**", inline=True)
 
-        # Add the winner of the coinflip to the embed message
-        embed.add_field(name="🎉 Winner", value=f"**{winner}**", inline=False)
-        embed.add_field(name="💰 Winnings",
-                        value=f"**${winnings}**", inline=False)
+            # Add the winner of the coinflip to the embed message
+            embed.add_field(name="🎉 Winner", value=f"**{winner}**", inline=False)
+            embed.add_field(name="💰 Winnings",
+                            value=f"**${winnings}**", inline=False)
 
-        return embed
-
+            return embed
+        except Exception as e:
+            logger.error(
+                f"Error while creating an embed message in coinflip.py: {e}")
+            return None
+        
     def create_roll_embed_message(self, interactions, bet, number, rolled_number, winnings, balance):
         color, value = self.get_result_color_and_value(winnings, bet)
 
@@ -556,19 +567,7 @@ class EmbedMessage():
     def create_gambling_embed_message(self, symbols, profit, balance):
         try:
             # Determine color and result message based on profit
-            if profit > 0:
-                color = discord.Color.green()
-                result_message = "YOU WON!"
-                profit_loss_message = f"**Profit:** ${profit:.2f} :moneybag:"
-            elif profit < 0:
-                color = discord.Color.red()
-                result_message = "YOU LOST!"
-                profit_loss_message = f"**Loss:** ${-profit:.2f} :money_with_wings:"
-            else:
-                color = discord.Color.gold()
-                result_message = "No Profit or Loss"
-                profit_loss_message = "**No Profit or Loss**"
-
+            color, result_message, profit_loss_message = self.determine_gambling_color_message(profit)
             # Create the embed
             embed = discord.Embed(title="Slot Machine", color=color)
 
@@ -593,6 +592,24 @@ class EmbedMessage():
         except Exception as e:
             logger.error(f"Error while creating an embed message in gambling.py: {e}")
             return None
+
+    def determine_gambling_color_message(self, profit):
+        # Determine the color and message based on the profit
+        if profit > 0:
+            color = discord.Color.green()
+            message = "YOU WON!"
+            profit_loss_message = f"**Profit:** ${profit:.2f} :moneybag:"
+
+        elif profit < 0:
+            color = discord.Color.red()
+            message = "YOU LOST!"
+            profit_loss_message = f"**Loss:** ${-profit:.2f} :money_with_wings:"
+
+        else:
+            color = discord.Color.gold()
+            message = "No Profit or Loss"
+            profit_loss_message = "**No Profit or Loss**"
+        return color, message, profit_loss_message
 
 
     async def create_leaderboard_embed(self, interactions, users):
@@ -625,7 +642,7 @@ class EmbedMessage():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']}",
+                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']:.2f}",
                     inline=False
                 )
 
@@ -635,9 +652,10 @@ class EmbedMessage():
                 f"Error while trying to create an embed message in leaderboard.py: {e}")
             return None
 
-    def create_rank_embed(self, interactions,  rank, total_bet):
+    def create_rank_embed(self, interactions, user):
         try:
-
+            rank, total_bet = user["level"], user["total_bet"]
+                
             # Create an embed message that contains the user's rank
             embed = discord.Embed(title="Rank", color=discord.Color.gold())
 

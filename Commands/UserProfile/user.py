@@ -5,14 +5,16 @@ from io import BytesIO
 import discord
 class User():
     # The constructor method for the User class
-    def __init__(self, user_id: int, user_name:str, balance: int, experience: int):
+    def __init__(self, user_id: int = None, user_name: str = None, balance: int = None, experience: int = None, **kwargs):
         self.user_id = user_id
         self.user_name = user_name
         self.balance = balance
         self.experience = experience 
-        self.level = self.calculate_level()
-        
-        
+        if experience is not None:
+            self.level = self.calculate_level()
+        else:
+            self.level = 0
+
     def levels(self):
         """
         Returns a list of experience points required for each level from the JSON file.
@@ -21,23 +23,19 @@ class User():
             return json.load(f)['levels']
         
         
-    def calculate_level(self):
+    def calculate_level(self, experience=None):
         """
         Calculates the user's level based on their experience points. Using Runescape's formula.
         """
         
-        low = 0
+        experience = experience or self.experience
         levels = self.levels()
-        high = len(levels) - 1
         
-        while low <= high:
-            mid = (low + high) // 2
-            if self.experience < levels[mid]:
-                high = mid - 1
-            elif self.experience >= levels[mid]:
-                low = mid + 1
+        for i, level_experience in enumerate(levels):
+            if experience < level_experience:
+                return i - 1
         
-        return high
+        return len(levels) - 1
     
     def return_user(self):
         """

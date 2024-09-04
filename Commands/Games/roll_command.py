@@ -67,3 +67,6 @@ class Roll():
     async def send_roll_embed_message(self, interactions, bet, number, rolled_number, winnings, balance):
         embed = self.embedMessage.create_roll_embed_message(interactions, bet, number, rolled_number, winnings, balance)
         await interactions.response.send_message(embed=embed)
+        
+        
+        

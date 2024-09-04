@@ -34,20 +34,6 @@ class Database():
         except Exception as e:
             print(f"Error connecting to the database: {e}")
             raise e
-
-            
-    def connect(self):
-        try:
-            # Connect to the database
-            self.client = MongoClient(os.getenv("MONGO_DB_ADDRESS"))
-            # if the database does not exist, it will be created    
-            self.db = self.client["discord"]
-            
-            
-            print("Database connected.")
-        except Exception as e:
-            print(f"Error connecting to the database: {e}")
-            raise e
         
     def get_collection(self, server_id):
         if server_id not in self.collections:
@@ -55,39 +41,62 @@ class Database():
             print(f"Connected to collection for server_id: {server_id}")
         return self.collections[server_id]
         
-    def close(self):
+    def insert_user(self, interactions, user_id, user_name=None):
         try:
-            self.client.close()
+            collection = self.get_collection(interactions.guild.id)
+            collection.insert_one(User(user_id=user_id, user_name=user_name or interactions.user.name, balance=100, experience=0).return_user())
         except Exception as e:
-            print(f"Error closing the database connection: {e}")
-            raise e
+            logger.error(f"Error inserting user: {e}")
+            return    
         
-    def insert_user(self, interactions, user_id):
-        collection = self.get_collection(interactions.guild.id)
-        # Insert a user into the database
-        collection.insert_one(User(user_id=user_id, user_name=interactions.user.display_name, balance=100, experience=0).return_user())
-        
-    def get_user(self, interactions, user_id=None):
+    def get_user(self, interactions, user_id=None, user_name=None, fields=None):
         """
         Retrieves a user from the database.
 
         Parameters:
         - user_id: The id of the user to retrieve.
+        - user_name: The name of the user to retrieve (optional).
+        - fields: A list of fields to retrieve (optional).
 
         Returns:
         - user: The user object.
         """
         user_id = user_id or interactions.user.id
         collection = self.get_collection(interactions.guild.id)
-        user = collection.find_one({"user_id": user_id})
-        
-        if not user:
-            self.insert_user(interactions, user_id)
-            user = collection.find_one({"user_id": user_id})
+
+        # Fetch only the specified fields if provided
+        if fields:
+            print(fields)
             
-        # Define the required fields and their default values
+            # Fetch the user's data with the specified fields
+            user = collection.find_one({"user_id": user_id}, {"_id": 0, **{field: 1 for field in fields}})
+            print(user)
+            # If fields have level, recalculate the user's level
+            if "level" in fields:
+                # Recalculate the user's level based on their experience
+                # Fetch the user's experience if not already fetched
+                if "experience" not in user:
+                    user["experience"] = collection.find_one({"user_id": user_id}, {"experience": 1})["experience"]
+                
+                # Calculate the level without including the level field in the user data
+                level = User().calculate_level(user["experience"])
+                print(level)
+                # Update the user's level in the database
+                collection.update_one({"user_id": user_id}, {"$set": {"level": level}})
+                
+                # Update the user's level in the local data
+                user["level"] = level
+            
+            print(user)
+        else:
+            user = collection.find_one({"user_id": user_id})
+
+        if not user:
+            user_name = user_name or interactions.user.name
+            user = self.insert_user(interactions, user_id, user_name)
+        
         required_fields = {
-            "user_name": interactions.user.name,
+            "user_name": user_name or interactions.user.name,
             "balance": 0,
             "experience": 0,
             "total_bet": 0,
@@ -95,21 +104,27 @@ class Database():
             "last_work": 0,
             "level": 0
         }
-        
-        # Check if required fields are missing and update the user document
-        update_fields = {}
-        for field, default_value in required_fields.items():
-            if field not in user:
-                user[field] = default_value
-                update_fields[field] = default_value
-        
-        if update_fields:
-            collection.update_one({"user_id": user_id}, {"$set": update_fields})
-        
-        user["level"] = User(user_id=user["user_id"], user_name=user["user_name"], balance=user["balance"], experience=user["experience"]).calculate_level()
-        
+
+        user = self.update_user_fields(user, required_fields)
+        print(user)
+        user["level"] = User(**user).calculate_level()
+
         return user
 
+    def update_user_fields(self, user, required_fields):
+        """
+        Updates the fields of a user.
+
+        Parameters:
+        - user: The user object to update.
+        - required_fields: The fields to add to the user object.
+
+        Returns:
+        - user: The updated user object.
+        """
+        for field, value in required_fields.items():
+            user.setdefault(field, value)
+        return user
     
 
     def update_user_balance(self, server_id, user_id, balance=None, bet=0, update_last_work_time=False):

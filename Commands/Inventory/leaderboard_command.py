@@ -31,10 +31,10 @@ class Leaderboard():
     async def rank_command(self, interactions):
         try:
             # Get the user's rank
-            user = self.database.get_user(interactions)
+            user = self.database.get_user(interactions, fields=["level", "total_bet"])
 
             # Create an embed message that contains the user's rank
-            embed = self.embedMessage.create_rank_embed(interactions, user["level"], user["total_bet"])
+            embed = self.embedMessage.create_rank_embed(interactions, user)
                 
             # Send the embed
             await interactions.response.send_message(embed=embed)
