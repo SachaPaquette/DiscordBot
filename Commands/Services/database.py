@@ -63,31 +63,20 @@ class Database():
         """
         user_id = user_id or interactions.user.id
         collection = self.get_collection(interactions.guild.id)
-
         # Fetch only the specified fields if provided
         if fields:
-            print(fields)
-            
             # Fetch the user's data with the specified fields
             user = collection.find_one({"user_id": user_id}, {"_id": 0, **{field: 1 for field in fields}})
-            print(user)
             # If fields have level, recalculate the user's level
             if "level" in fields:
-                # Recalculate the user's level based on their experience
-                # Fetch the user's experience if not already fetched
                 if "experience" not in user:
                     user["experience"] = collection.find_one({"user_id": user_id}, {"experience": 1})["experience"]
-                
                 # Calculate the level without including the level field in the user data
                 level = User().calculate_level(user["experience"])
-                print(level)
                 # Update the user's level in the database
-                collection.update_one({"user_id": user_id}, {"$set": {"level": level}})
-                
+                collection.update_one({"user_id": user_id}, {"$set": {"level": level}})    
                 # Update the user's level in the local data
                 user["level"] = level
-            
-            print(user)
         else:
             user = collection.find_one({"user_id": user_id})
 
@@ -106,7 +95,6 @@ class Database():
         }
 
         user = self.update_user_fields(user, required_fields)
-        print(user)
         user["level"] = User(**user).calculate_level()
 
         return user

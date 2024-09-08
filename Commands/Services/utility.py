@@ -124,7 +124,6 @@ class Utility():
                              label="Sell", custom_id="sell")
         
         async def keep_callback(interactions):
-            print("Keep button clicked")
             await function_keep(interactions, weapon, message)
 
         async def sell_callback(interactions):
@@ -723,7 +722,7 @@ class EmbedMessage():
             embed.add_field(name="💰 Balance", value=f"**${balance:.2f}**", inline=False)
 
             # Add salary range field
-            salary_range = f"${job['min_earnings']:.2f} - ${job['max_earnings']:.2f}"
+            salary_range = f"${job["earnings_range"][0]:.2f} - ${job["earnings_range"][1]:.2f}"
             embed.add_field(name="💼 Salary Range", value=f"**{salary_range}**", inline=False)
 
             # Set user avatar as the thumbnail

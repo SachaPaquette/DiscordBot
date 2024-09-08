@@ -20,11 +20,7 @@ class UserInfo:
             None
             """
             try:
-                # If no member is mentioned, default to the author of the command
-                if member is None:
-                    member = interactions.user
-        
-                # Send the embed
+                member = member or interactions.user
                 await interactions.response.send_message(embed=self.embedMessage.create_embed_user_information(member))
 
             except Exception as e:
