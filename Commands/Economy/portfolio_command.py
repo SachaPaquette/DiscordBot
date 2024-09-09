@@ -15,31 +15,28 @@ class Portfolio():
     async def portfolio_command(self, interactions):
         try:
             user = self.database.get_user(interactions)
-            
-            # Get the stocks that the user owns and the quantity of each stock
             stocks = user.get("stocks", {})
-            if len(stocks) == 0:
+
+            if not stocks:
                 await interactions.response.send_message(f"{interactions.user.mention}, you do not own any stocks.")
                 return
-            
-            embed = discord.Embed(title=f"{interactions.user.display_name}'s Portfolio", color=discord.Color.blue())
-            
+
+            embed = discord.Embed(
+                title=f"{interactions.user.display_name}'s Portfolio",
+                color=discord.Color.blue()
+            )
+
             for stock_symbol, stock in stocks.items():
-                # Get the stock data
                 stock_data = yf.Ticker(stock['symbol'])
                 stock_info = stock_data.info
-
-                # Determine the current price of the stock
                 current_price = stock_info.get('currentPrice') or stock_info.get('regularMarketDayHigh')
-                
-                # If the current price is not available, send a message to the user
+
                 if current_price is None:
                     await interactions.response.send_message(f"{interactions.user.mention}, price information for {stock['symbol']} is unavailable.")
                     return
 
-                # Calculate the change in price (in percentage) since the stock was bought
-                change = (((current_price * stock['amount'])  - stock['total_price']) / stock['total_price']) * 100
-                # Add field for each stock in the embed
+                change = (((current_price * stock['amount']) - stock['total_price']) / stock['total_price']) * 100
+
                 embed.add_field(
                     name=f"{stock_info['symbol']}",
                     value=(
@@ -50,9 +47,8 @@ class Portfolio():
                     ),
                     inline=False
                 )
-            # Send the embed to the user
+
             await interactions.response.send_message(embed=embed)
         except Exception as e:
             await interactions.response.send_message(f"{interactions.user.mention}, there was an error processing your request.")
             logger.error(f"Error in the portfolio_command function: {e}")
-            return
