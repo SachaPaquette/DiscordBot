@@ -4,47 +4,46 @@ from Config.logging import setup_logging
 from Commands.Services.database import Database
 from Config.config import conf
 # Create a logger for this file
-logger = setup_logging("give.py", conf.LOGS_PATH)
+logger = setup_logging("give_command.py", conf.LOGS_PATH)
 
-
-class Give():
+class Give:
     def __init__(self):
         self.database = Database.getInstance()
 
-    async def give_command(self, interactions, destination_user: discord.Member, amount: float):
+    async def check_conditions(self, interactions, destination_user: discord.Member, amount: float):
         try:
-            # Check if the destination user is a bot
-            if destination_user.bot:
-                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to a bot.')
+            if not destination_user or not amount:
+                await interactions.response.send_message(f'{interactions.user.mention}, you must specify a user and an amount to give.')
                 return
 
-            # Check if the destination user is the same as the user
-            if destination_user.id == interactions.user.id:
-                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to yourself.')
+            if destination_user.bot or destination_user.id == interactions.user.id:
+                await interactions.response.send_message(f'{interactions.user.mention}, you can\'t give money to a bot or yourself.')
                 return
 
-            # Check if the amount is positive
             if amount <= 0:
                 await interactions.response.send_message(f'{interactions.user.mention}, you must give a positive amount.')
                 return
+        except Exception as e:
+            logger.error(
+                f"Error in the check_conditions function in give_command.py: {e}")
 
-            user = self.database.get_user(interactions)
+    async def give_command(self, interactions, destination_user: discord.Member, amount: float):
+        try:
+            await self.check_conditions(interactions, destination_user, amount)
 
+            user = self.database.get_user(interactions, fields=["balance"])
             if user["balance"] < amount:
                 await interactions.response.send_message("You don't have enough money to give that amount.")
                 return
 
-            user["balance"] -= amount
-            self.database.update_user_balance(
-                interactions.guild.id, interactions.user.id, user["balance"])
-
-            receiving_user = self.database.get_user(
-                interactions, destination_user.id)
-            receiving_user["balance"] += amount
-            self.database.update_user_balance(
-                interactions.guild.id, destination_user.id, receiving_user["balance"])
+            self.database.transfer_money(
+                interactions.guild.id,
+                interactions.user.id,
+                destination_user.id,
+                amount
+            )
 
             await interactions.response.send_message(f'{interactions.user.mention} gave {destination_user.mention} {amount} dollars.')
         except Exception as e:
-            logger.error(f"Error in the give function in gambling.py: {e}")
+            logger.error(f"Error in the give function in give_command.py: {e}")
             return

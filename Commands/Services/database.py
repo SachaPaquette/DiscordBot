@@ -222,3 +222,14 @@ class Database():
         except Exception as e:
             logger.error(f"Error selling stocks: {e}")
             return
+        
+        
+    def transfer_money(self, guild_id, sender_id, receiver_id, amount):
+        try:
+            sender = self.get_user({"guild_id": guild_id, "user_id": sender_id})
+            receiver = self.get_user({"guild_id": guild_id, "user_id": receiver_id})
+            self.update_user_balance(guild_id, sender_id, sender["balance"] - amount)
+            self.update_user_balance(guild_id, receiver_id, receiver["balance"] + amount)
+        except Exception as e:
+            logger.error(f"Error in the transfer_money function in give_command.py: {e}")
+            return
