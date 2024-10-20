@@ -46,10 +46,18 @@ python discordbot.py
 
 ## Commands Available
 
-- /health: Health check for the bot.
-- /join: Join the voice channel.
-- /leave: Leave the voice channel.
-- /ping &lt;username&gt;: Ping a user.
+### Games
+- /case: Open a Counter-Strike case.
+- /sticker: Open a Counter-Strike capsule of stickers.
+- /gamble &lt;amount&gt;: Gamble your money.
+- /slots &lt;bet&gt;: Play the slots.
+- /blackjack: Play a game of blackjack.
+- /stocks &lt;option&gt; : Buy or sell a stock.
+- /portfolio: Display your stocks owned.
+- /work: Work to earn money.
+- /balance: Display your bank balance.
+
+### Music
 - /play &lt;url&gt;: Play a song.
 - /skip: Skip the current song.
 - /nowplaying: Display the current song.
@@ -59,18 +67,15 @@ python discordbot.py
 - /resume: Resume the current song.
 - /shuffle: Shuffle the queue.
 - /lyrics: Display the lyrics of the current song.
+
+### Users
 - /userinfo &lt;member&gt;: Display user information.
-- /gamble &lt;amount&gt;: Gamble your money.
-- /leaderboard: Display the leaderboard.
 - /rank: Display your rank.
-- /work: Work to earn money.
-- /balance: Display your bank balance.
-- /slots &lt;bet&gt;: Play the slots.
-- /case: Open a Counter-Strike case.
-- /sticker: Open a Counter-Strike capsule of stickers.
-- /blackjack: Play a game of blackjack.
-- /stocks &lt;option&gt; : Buy or sell a stock.
-- /portfolio: Display your stocks owned.
+- /ping &lt;username&gt;: Ping a user.
+- /leaderboard: Display the leaderboard.
+
+### Extra
+- /health: Health check for the bot (Also syncs the slash commands with Discord).
 
 ## Dependencies
 
