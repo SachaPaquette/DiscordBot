@@ -42,20 +42,21 @@ class HealthCheck():
                 title="**Bot Health Check**", color=discord.Color.green())
             embed.add_field(name="Bot Status",
                             value="I am alive and functioning!", inline=False)
-            embed.add_field(name="Latency", 
+            embed.add_field(name="Latency",
                             value=f"{round(bot.latency * 1000)} ms", inline=False)
             embed.add_field(
                 name="Uptime", value=self.create_bot_uptime(), inline=False)
-            embed.add_field(name="Channels", value=len(self.bot.guilds), inline=True)
-            embed.add_field(name="Users", value=sum([guild.member_count for guild in self.bot.guilds]), inline=True)
+            embed.add_field(name="Channels", value=len(
+                self.bot.guilds), inline=True)
+            embed.add_field(name="Users", value=sum(
+                [guild.member_count for guild in self.bot.guilds]), inline=True)
             # Send the embed as a response
             await interactions.response.send_message(embed=embed)
         except Exception as e:
             logger.error(f"Error in the health command in health.py: {e}")
             raise e
 
-    @staticmethod
-    def calculate_time_components(delta):
+    def calculate_time_components(self, delta):
         """
         Calculate days, hours, minutes, and seconds from a timedelta object.
 

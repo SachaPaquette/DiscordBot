@@ -99,7 +99,8 @@ class Utility():
 
     def format_inexistant_prices(self, sticker_price):
 
-        time_periods = ["last_24h", "last_7d", "last_30d", "last_90d", "last_ever"]
+        time_periods = ["last_24h", "last_7d",
+                        "last_30d", "last_90d", "last_ever"]
         # Iterate over the time periods
         for i in range(len(time_periods)):
             current_period = time_periods[i]
@@ -122,7 +123,7 @@ class Utility():
                              label="Keep", custom_id="keep")
         sell_button = Button(style=discord.ButtonStyle.red,
                              label="Sell", custom_id="sell")
-        
+
         async def keep_callback(interactions):
             await function_keep(interactions, weapon, message)
 
@@ -221,30 +222,33 @@ class Utility():
             return False
         return True
 
+
 class EmbedMessage():
     def __init__(self):
         self.utility = Utility()
 
-    def create_coinflip_embed_message(self,interactions, bet, coin, result_emoji, command_user, opposing_user, winner, winnings):
+    def create_coinflip_embed_message(self, interactions, bet, coin, result_emoji, command_user, opposing_user, winner, winnings):
         try:
-            
+
             balance = command_user["balance"]
             opponent_balance = opposing_user["balance"]
-            
-            # Find the opposing user name 
-            
-            
+
+            # Find the opposing user name
+
             # Embed message for the coinflip command
             embed = discord.Embed(
                 title="Coinflip Results",
                 color=discord.Color.gold()
             )
             # Add the user's name and the opponent to the embed message
-            embed.add_field(name="👤 User", value=f"**{interactions.user.display_name}**", inline=False)
-            embed.add_field(name="👤 Opponent", value=f"**{opposing_user["user_name"]}**", inline=False)
+            embed.add_field(
+                name="👤 User", value=f"**{interactions.user.display_name}**", inline=False)
+            embed.add_field(
+                name="👤 Opponent", value=f"**{opposing_user['user_name']}**", inline=False)
 
             # Add the bet amount and the coin result to the embed message
-            embed.add_field(name="💰 Bet Amount", value=f"**${bet}**", inline=True)
+            embed.add_field(name="💰 Bet Amount",
+                            value=f"**${bet}**", inline=True)
             embed.add_field(name="🪙 Coin Result",
                             value=f"**{result_emoji}**", inline=True)
 
@@ -255,7 +259,8 @@ class EmbedMessage():
                             value=f"**${opponent_balance:.2f}**", inline=True)
 
             # Add the winner of the coinflip to the embed message
-            embed.add_field(name="🎉 Winner", value=f"**{winner}**", inline=False)
+            embed.add_field(name="🎉 Winner",
+                            value=f"**{winner}**", inline=False)
             embed.add_field(name="💰 Winnings",
                             value=f"**${winnings}**", inline=False)
 
@@ -264,7 +269,7 @@ class EmbedMessage():
             logger.error(
                 f"Error while creating an embed message in coinflip.py: {e}")
             return None
-        
+
     def create_roll_embed_message(self, interactions, bet, number, rolled_number, winnings, balance):
         color, value = self.get_result_color_and_value(winnings, bet)
 
@@ -273,7 +278,8 @@ class EmbedMessage():
             color=color
         )
 
-        embed.add_field(name="👤 User", value=f"**{interactions.user.name}**", inline=False)
+        embed.add_field(
+            name="👤 User", value=f"**{interactions.user.name}**", inline=False)
         embed.add_field(name="Result", value=value, inline=False)
 
         fields = [
@@ -305,9 +311,12 @@ class EmbedMessage():
             color=color
         )
 
-        embed.add_field(name=f"👤 {user_name}'s Choice", value=f"**{user_choice.capitalize()}**", inline=True)
-        embed.add_field(name="🤖 My Choice", value=f"**{bot_choice.capitalize()}**", inline=True)
-        embed.add_field(name="🎲 Result", value=f"**{result.capitalize()}**", inline=False)
+        embed.add_field(name=f"👤 {user_name}'s Choice",
+                        value=f"**{user_choice.capitalize()}**", inline=True)
+        embed.add_field(name="🤖 My Choice",
+                        value=f"**{bot_choice.capitalize()}**", inline=True)
+        embed.add_field(name="🎲 Result",
+                        value=f"**{result.capitalize()}**", inline=False)
 
         fields = [
             ("💰 Bet Amount", f"**${amount_betted:.2f}**", True),
@@ -330,22 +339,23 @@ class EmbedMessage():
             "you win!": (discord.Color.green(), "Congratulations! You won!"),
             "you lose!": (discord.Color.red(), "Sorry, you lost.")
         }
-        
+
         # Determine the color and value based on the result
         return result_colors.get(result, (discord.Color.gold(), "It's a draw!"))
-
 
     def create_inventory_embed_message(self, user_inventory, page, username):
         embed = discord.Embed(title="🎒 Inventory", color=discord.Color.gold())
         embed.add_field(name="👤 User", value=f"**{username}**", inline=False)
 
         if not user_inventory:
-            embed.add_field(name="No items", value="Your inventory is empty.", inline=False)
+            embed.add_field(name="No items",
+                            value="Your inventory is empty.", inline=False)
             return embed
 
         try:
             # Sort inventory by price in descending order
-            user_inventory = sorted(user_inventory, key=lambda x: x["price"], reverse=True)
+            user_inventory = sorted(
+                user_inventory, key=lambda x: x["price"], reverse=True)
 
             # Calculate pagination
             start_index = page * 10
@@ -353,7 +363,8 @@ class EmbedMessage():
             items = user_inventory[start_index:end_index]
 
             if not items:
-                embed.add_field(name="Invalid Page", value="There are no items on this page.", inline=False)
+                embed.add_field(
+                    name="Invalid Page", value="There are no items on this page.", inline=False)
                 return embed
 
             # Add items to embed
@@ -367,30 +378,33 @@ class EmbedMessage():
 
             # Calculate total value
             total_value = sum(item["price"] for item in user_inventory)
-            embed.add_field(name="💰 Total Value", value=f"**${total_value:.2f}**", inline=False)
-            
+            embed.add_field(name="💰 Total Value",
+                            value=f"**${total_value:.2f}**", inline=False)
+
         except Exception as e:
-            logger.error(f"Error while creating an inventory embed message: {e}")
+            logger.error(
+                f"Error while creating an inventory embed message: {e}")
             return None
 
         return embed
 
-
     def create_sticker_embed(self, sticker, balance, sticker_price, profit, color):
         try:
             embed = discord.Embed(
-                title="🎉 Sticker Opening Results 🎉", 
+                title="🎉 Sticker Opening Results 🎉",
                 color=discord.Color(color)
             )
 
             # Add sticker details
-            embed.add_field(name="🎨 Sticker", value=f'**{sticker["name"]}**', inline=False)
+            embed.add_field(name="🎨 Sticker",
+                            value=f'**{sticker["name"]}**', inline=False)
             embed.set_thumbnail(url=sticker["image"])
 
             # Add balance, profit/loss, and sticker price
             fields = [
                 ("💰 Current Balance", f"**${balance:.2f}**", True),
-                ("📈 Profit" if profit > 0 else "📉 Loss", f"{'+' if profit > 0 else '-'}${abs(profit):.2f}", True),
+                ("📈 Profit" if profit > 0 else "📉 Loss",
+                 f"{'+' if profit > 0 else '-'}${abs(profit):.2f}", True),
                 ("💵 Sticker Price", f"**${sticker_price:.2f}**", True)
             ]
 
@@ -398,11 +412,11 @@ class EmbedMessage():
                 embed.add_field(name=name, value=value, inline=inline)
 
         except Exception as e:
-            logger.error(f"Error while creating an embed message in sticker.py: {e}")
+            logger.error(
+                f"Error while creating an embed message in sticker.py: {e}")
             return None
 
         return embed
-
 
     def create_open_case_embed_message(self, case, title: str, price: float):
         # Create the embed message with a gold color
@@ -410,14 +424,13 @@ class EmbedMessage():
             title=f"🎉 {title} Opening 🎉",
             color=discord.Color.gold()
         )
-        
+
         # Add the case image and details
         embed.set_image(url=case["image"])
         embed.add_field(name="Case", value=f'**{case["name"]}**', inline=False)
         embed.add_field(name="Price", value=f"**${price:.2f}**", inline=True)
-        
-        return embed
 
+        return embed
 
     def create_case_embed(self, data):
         try:
@@ -440,12 +453,13 @@ class EmbedMessage():
 
             # Create the embed message
             embed = discord.Embed(
-                title="🎉 Case Opening Results 🎉", 
+                title="🎉 Case Opening Results 🎉",
                 color=discord.Color(color)
             )
 
             # Add user nickname to the embed message
-            embed.add_field(name="👤 User", value=f"**{user_nickname}**", inline=False)
+            embed.add_field(
+                name="👤 User", value=f"**{user_nickname}**", inline=False)
 
             # Format weapon name
             if is_stattrak:
@@ -467,8 +481,8 @@ class EmbedMessage():
                 ("💰 Current Balance", f"**${balance:.2f}**"),
                 ("📊 Float Value", f"**{gun_float:.5f}**"),
                 ("💵 Weapon Price", f"**${price:.2f}**"),
-                ( "📈 Profit" if profit > 0 else "📉 Loss",
-                f"+$**{profit:.2f}**" if profit > 0 else f"-$**{-profit:.2f}**")
+                ("📈 Profit" if profit > 0 else "📉 Loss",
+                 f"+$**{profit:.2f}**" if profit > 0 else f"-$**{-profit:.2f}**")
             ]
 
             for name, value in stats:
@@ -479,7 +493,6 @@ class EmbedMessage():
         except Exception as e:
             logger.error(f"Error creating embed message: {e}")
             return None
-
 
     def create_keep_message(self, user_name, weapon):
         # Create a message to keep the weapon
@@ -495,7 +508,8 @@ class EmbedMessage():
             # Create an embed message
             embed = discord.Embed(
                 title="Welcome to the server!",
-                description=f"Welcome to the server, {member.display_name}! We're glad to have you here.",
+                description=f"""Welcome to the server, {
+                    member.display_name}! We're glad to have you here.""",
                 color=discord.Color.green()
             )
 
@@ -554,7 +568,8 @@ class EmbedMessage():
 
             # Optionally add the duration field
             if song_duration:
-                embed.add_field(name="Duration", value=song_duration, inline=False)
+                embed.add_field(name="Duration",
+                                value=song_duration, inline=False)
 
             return embed
 
@@ -562,16 +577,17 @@ class EmbedMessage():
             logger.error(f"Error creating 'Now Playing' embed message: {e}")
             return None
 
-
     def create_gambling_embed_message(self, symbols, profit, balance):
         try:
             # Determine color and result message based on profit
-            color, result_message, profit_loss_message = self.determine_gambling_color_message(profit)
+            color, result_message, profit_loss_message = self.determine_gambling_color_message(
+                profit)
             # Create the embed
             embed = discord.Embed(title="Slot Machine", color=color)
 
             # Add slot symbols
-            embed.add_field(name="Slot Symbols", value=f"```{' | '.join(symbols)}```", inline=True)
+            embed.add_field(name="Slot Symbols", value=f"""```{
+                            ' | '.join(symbols)}```""", inline=True)
 
             # Prepare fields for result, profit/loss, and balance
             fields = [
@@ -589,7 +605,8 @@ class EmbedMessage():
             return embed
 
         except Exception as e:
-            logger.error(f"Error while creating an embed message in gambling.py: {e}")
+            logger.error(
+                f"Error while creating an embed message in gambling.py: {e}")
             return None
 
     def determine_gambling_color_message(self, profit):
@@ -609,7 +626,6 @@ class EmbedMessage():
             message = "No Profit or Loss"
             profit_loss_message = "**No Profit or Loss**"
         return color, message, profit_loss_message
-
 
     async def create_leaderboard_embed(self, interactions, users):
         try:
@@ -641,7 +657,8 @@ class EmbedMessage():
                 # Add the user to the embed with their rank, level, and experience
                 embed.add_field(
                     name=f"{rank_emoji} {user_obj.display_name}",
-                    value=f"**Level:** {user['level']} | **Experience:** {user['experience']:.2f} | **Total Bet:** {user['total_bet']:.2f}",
+                    value=f"""**Level:** {user['level']} | **Experience:** {
+                        user['experience']:.2f} | **Total Bet:** {user['total_bet']:.2f}""",
                     inline=False
                 )
 
@@ -654,7 +671,7 @@ class EmbedMessage():
     def create_rank_embed(self, interactions, user):
         try:
             rank, total_bet = user["level"], user["total_bet"]
-                
+
             # Create an embed message that contains the user's rank
             embed = discord.Embed(title="Rank", color=discord.Color.gold())
 
@@ -662,7 +679,8 @@ class EmbedMessage():
             embed.set_thumbnail(url=interactions.user.avatar)
 
             # Add the user's name to the embed message
-            embed.add_field(name="Your Name", value=f"{interactions.user.name}", inline=False)
+            embed.add_field(name="Your Name", value=f""" {
+                            interactions.user.name} """, inline=False)
 
             # Add the user's rank to the embed message
             embed.add_field(name="Your level",
@@ -683,7 +701,7 @@ class EmbedMessage():
         try:
             # Create the embed for user information
             embed = discord.Embed(
-                title=f'User Information - {member.display_name}', 
+                title=f'User Information - {member.display_name}',
                 color=member.color
             )
 
@@ -708,22 +726,25 @@ class EmbedMessage():
             logger.error(f"Error creating user information embed: {e}")
             return None
 
-
     def create_work_embed(self, interactions, job, amount_earned, balance):
         try:
             # Create the embed message
             embed = discord.Embed(
                 title="Work Results",
-                description=f"You worked as a {job['title']} {job['icon']} and earned **${amount_earned:.2f}**!",
+                description=f"""You worked as a **{job['title']}** {
+                    job['icon']} and earned **${amount_earned:.2f}**!""",
                 color=discord.Color.green()
             )
 
             # Add balance field
-            embed.add_field(name="💰 Balance", value=f"**${balance:.2f}**", inline=False)
+            embed.add_field(name="💰 Balance",
+                            value=f"**${balance:.2f}**", inline=False)
 
             # Add salary range field
-            salary_range = f"${job["earnings_range"][0]:.2f} - ${job["earnings_range"][1]:.2f}"
-            embed.add_field(name="💼 Salary Range", value=f"**{salary_range}**", inline=False)
+            salary_range = f"""${job['earnings_range'][0]:.2f} - ${job['earnings_range'][1]:.2f}"""
+
+            embed.add_field(name="💼 Salary Range",
+                            value=f"**{salary_range}**", inline=False)
 
             # Set user avatar as the thumbnail
             embed.set_thumbnail(url=interactions.user.avatar)
@@ -733,5 +754,3 @@ class EmbedMessage():
         except Exception as e:
             logger.error(f"Error creating work embed message: {e}")
             return None
-
-        
