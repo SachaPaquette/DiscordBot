@@ -4,9 +4,12 @@ from Config.config import conf
 from Commands.Services.database import Database
 # Create a logger for this file
 logger = setup_logging("balance.py", conf.LOGS_PATH)
+
+
 class Balance():
-    def __init__(self): 
+    def __init__(self):
         self.database = Database.getInstance()
+
     async def balance_command(self, interactions):
         try:
             # Get the user from the database

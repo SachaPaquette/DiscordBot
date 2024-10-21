@@ -7,7 +7,6 @@ from Config.config import conf
 # Create a logger for this file
 logger = setup_logging("stocks.py", conf.LOGS_PATH)
 from enum import Enum
-from Commands.Economy.finances import Finance
 class Options(Enum):
     BUY = "buy"
     SELL = "sell"
@@ -15,7 +14,6 @@ class Options(Enum):
 class Stocks():
     def __init__(self):
         self.database = Database.getInstance()
-        self.finance = Finance()
         
     async def stocks_command(self, interactions, option: Options, stock: str, quantity: float):
         try:

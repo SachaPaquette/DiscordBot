@@ -12,7 +12,6 @@ from Commands.Games.blackjack_command import BlackJack
 from Commands.Games.case_command import Case
 from Commands.Games.capsule_command import Capsule
 from Commands.Games.coinflip_command import CoinFlip
-from Commands.Economy.finances import Finance
 from Commands.Games.gambling_command import Gambling
 from Commands.Economy.give_command import Give
 from Commands.Information.health_command import HealthCheck
