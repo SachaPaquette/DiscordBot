@@ -330,7 +330,7 @@ async def volume( interactions, volume: int):
         raise e
 
 @bot.tree.command(name="userinfo", description="Get information about a user.")
-async def user_information( interactions, *, member: discord.Member = None):
+async def user_information(interactions, member: discord.Member = None):
     """
     Fetches and displays information about a user.
 
@@ -358,7 +358,7 @@ async def user_information( interactions, *, member: discord.Member = None):
     """
     try:
         # Create the embed message that will display the user information (username, ID, join date, account creation date)
-        await UserInfo.fetch_user_information( interactions, member=member)
+        await UserInfo.fetch_user_information(interactions, member=member)
     except Exception as e:
         logger.error(f"Error in the user info command: {e}")
         raise e

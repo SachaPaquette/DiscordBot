@@ -265,7 +265,8 @@ class SongSession:
                     print("Added to queue")
             else:
                 embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
-                await interactions.response.send_message(embed=embed)
+                print(embed)
+                await interactions.response.send_message(embed)
                 # Use the instance to play the song
                 await self.play(URL, vc, None, song_title,
                                   song_duration, thumbnail)
