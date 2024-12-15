@@ -36,68 +36,71 @@ class Database():
             raise e
         
     def get_collection(self, server_id):
+        """
+        Get or create a MongoDB collection for the given server ID.
+        
+        Parameters:
+        - server_id (str): The server ID for which to retrieve the collection.
+
+        Returns:
+        - Collection: The MongoDB collection for the server.
+        """
         if server_id not in self.collections:
             self.collections[server_id] = self.db[str(server_id)]
             print(f"Connected to collection for server_id: {server_id}")
+            
         return self.collections[server_id]
+
         
     def insert_user(self, interactions, user_id, user_name=None):
         try:
             collection = self.get_collection(interactions.guild.id)
-            collection.insert_one(User(user_id=user_id, user_name=user_name or interactions.user.name, balance=100, experience=0).return_user())
+            collection.insert_one(User(user_id=user_id, user_name=user_name or interactions.user.name).return_user())
         except Exception as e:
             logger.error(f"Error inserting user: {e}")
             return    
         
     def get_user(self, interactions, user_id=None, user_name=None, fields=None):
-        """
-        Retrieves a user from the database.
+            """
+            Retrieves a user from the database.
+            """
+            try:
+                user_id = user_id or interactions.user.id
+                collection = self.get_collection(interactions.guild.id)
 
-        Parameters:
-        - user_id: The id of the user to retrieve.
-        - user_name: The name of the user to retrieve (optional).
-        - fields: A list of fields to retrieve (optional).
+                # Fetch user with specified fields
+                projection = {"_id": 0}
+                if fields:
+                    projection.update({field: 1 for field in fields})
+                user = collection.find_one({"user_id": user_id}, projection)
 
-        Returns:
-        - user: The user object.
-        """
-        user_id = user_id or interactions.user.id
-        collection = self.get_collection(interactions.guild.id)
-        # Fetch only the specified fields if provided
-        if fields:
-            # Fetch the user's data with the specified fields
-            user = collection.find_one({"user_id": user_id}, {"_id": 0, **{field: 1 for field in fields}})
-            # If fields have level, recalculate the user's level
-            if "level" in fields:
-                if "experience" not in user:
-                    user["experience"] = collection.find_one({"user_id": user_id}, {"experience": 1})["experience"]
-                # Calculate the level without including the level field in the user data
-                level = User().calculate_level(user["experience"])
-                # Update the user's level in the database
-                collection.update_one({"user_id": user_id}, {"$set": {"level": level}})    
-                # Update the user's level in the local data
-                user["level"] = level
-        else:
-            user = collection.find_one({"user_id": user_id})
+                # Create user if not found
+                if not user:
+                    logger.info(f"User not found. Creating a new user with user_id: {user_id}.")
+                    user_name = user_name or interactions.user.name
+                    self.insert_user(interactions, user_id, user_name)
+                    user = collection.find_one({"user_id": user_id}, projection)
 
-        if not user:
-            user_name = user_name or interactions.user.name
-            user = self.insert_user(interactions, user_id, user_name)
-        
-        required_fields = {
-            "user_name": user_name or interactions.user.name,
-            "balance": 0,
-            "experience": 0,
-            "total_bet": 0,
-            "stocks": {},
-            "last_work": 0,
-            "level": 0
-        }
+                # Ensure required fields are present
+                required_fields = {
+                    "user_name": user_name or interactions.user.name,
+                    "balance": 100,
+                    "experience": 0,
+                    "total_bet": 0,
+                    "stocks": {},
+                    "last_work": 0,
+                    "level": 0,
+                }
+                user = self.update_user_fields(user, required_fields)
 
-        user = self.update_user_fields(user, required_fields)
-        user["level"] = User(**user).calculate_level()
+                # Recalculate level
+                user["level"] = User(**user).calculate_level()
 
-        return user
+                return user
+            except Exception as e:
+                logger.error(f"Error retrieving user: {e}")
+                return None
+
 
     def update_user_fields(self, user, required_fields):
         """
@@ -120,21 +123,34 @@ class Database():
         Updates the balance of a user.
 
         Parameters:
-        - user_id: The id of the user to update.
+        - server_id: The ID of the server (guild).
+        - user_id: The ID of the user.
         - balance: The new balance of the user (optional).
-        - bet: The amount to increment the total bet by (default: 0).
+        - bet: The amount to adjust the balance by (default: 0).
         - update_last_work_time: Whether to update the last work time (default: False).
         """
-        collection = self.get_collection(server_id)
-        update_fields = {}
-        if balance is not None:
-            update_fields["balance"] = balance
-        if update_last_work_time:
-            update_fields["last_work"] = time.time()
-        update = {"$set": update_fields}
-        if bet != 0:
-            update["$inc"] = {"total_bet": bet}
-        collection.update_one({"user_id": user_id}, update)
+        try:
+            collection = self.get_collection(server_id)
+            if bet != 0:
+                collection.update_one(
+                    {"user_id": user_id},
+                    {"$inc": {"balance": bet, "total_bet": bet}}
+                )
+            update_fields = {}
+            if balance is not None:
+                update_fields["balance"] = balance
+            if update_last_work_time:
+                update_fields["last_work"] = time.time()
+
+            if update_fields:
+                collection.update_one(
+                    {"user_id": user_id},
+                    {"$set": update_fields}
+                )
+
+        except Exception as e:
+            logger.error(f"Error updating user balance: {e}")
+
             
     def update_user_experience(self,interactions, payout):
         """

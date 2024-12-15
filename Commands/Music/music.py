@@ -268,21 +268,11 @@ class SongSession:
                 self.queue_operations.add_to_queue(URL, song_title, interactions.guild.voice_client, song_duration, thumbnail)
                 await result_message.edit(content=f"Added {song_title} to the queue.")
             else:
-<<<<<<< HEAD:Commands/music.py
-                embed = Utility.now_playing_song_embed(song_title, thumbnail, song_duration)
-                print(embed)
-                await interactions.response.send_message(embed)
-                # Use the instance to play the song
-                await self.play(URL, vc, None, song_title,
-                                  song_duration, thumbnail)
-                
-=======
                 # Send the now playing message
                 embed = self.embedMessage.now_playing_song_embed(song_title, thumbnail, song_duration)
                 await result_message.edit(embed=embed, content=None)
                 # Play the song
                 await self.play(source=URL, song_title=song_title, song_duration=song_duration, thumbnail=thumbnail)
->>>>>>> 222dc3a057e0e82b87f8d3925bf948b0f4d329f7:Commands/Music/music.py
         except Exception as e:
             # Handle any errors gracefully
             print(f"An error occurred when trying to play the song: {e}")

@@ -4,16 +4,15 @@ import requests
 from io import BytesIO
 import discord
 class User():
-    # The constructor method for the User class
-    def __init__(self, user_id: int = None, user_name: str = None, balance: int = None, experience: int = None, **kwargs):
+    def __init__(self, user_id: int = None, user_name: str = None, balance: int = 100, experience: int = 0, **kwargs):
         self.user_id = user_id
         self.user_name = user_name
         self.balance = balance
         self.experience = experience 
-        if experience is not None:
-            self.level = self.calculate_level()
-        else:
-            self.level = 0
+        self.level = self.calculate_level() if experience else 0
+        
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def levels(self):
         """

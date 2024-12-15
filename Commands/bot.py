@@ -415,11 +415,7 @@ async def volume(interactions, volume: int):
 
 
 @bot.tree.command(name="userinfo", description="Get information about a user.")
-<<<<<<< HEAD
-async def user_information(interactions, member: discord.Member = None):
-=======
 async def user_information(interactions, *, member: discord.Member = None):
->>>>>>> 222dc3a057e0e82b87f8d3925bf948b0f4d329f7
     """
     Fetches and displays information about a user.
 
@@ -448,11 +444,7 @@ async def user_information(interactions, *, member: discord.Member = None):
     try:
         user_info = UserInfo()
         # Create the embed message that will display the user information (username, ID, join date, account creation date)
-<<<<<<< HEAD
-        await UserInfo.fetch_user_information(interactions, member=member)
-=======
         await user_info.fetch_user_information(interactions=interactions, member=member)
->>>>>>> 222dc3a057e0e82b87f8d3925bf948b0f4d329f7
     except Exception as e:
         logger.error(f"Error in the user info command: {e}")
         raise e
@@ -592,7 +584,6 @@ async def case(interactions):
     """
     try:
         case = Case(interactions.guild.id)
-        # Call the case function in Gambling
         await case.open_case(interactions)
     except Exception as e:
         logger.error(f"Error in the case command: {e}")
@@ -783,9 +774,12 @@ async def run_bot(token):
         except ConnectionResetError as e:
             print(f"Connection error: {e}")
             await asyncio.sleep(5)  # Wait for 5 seconds before reconnecting
+        except discord.LoginFailure as e:
+            print(f"Login error: {e}")
+            break
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
-            await asyncio.sleep(5)  # Wait for 5 seconds before reconnecting
+            raise e
 
 
 def main():
@@ -793,7 +787,7 @@ def main():
     Main function that runs the bot.
     """
     try:
-        if os.environ.get("DISCORD_TOKEN") is None:
+        if not os.environ.get("DISCORD_TOKEN"):
             raise Exception("No token found in the environment variables.")
         asyncio.get_event_loop().run_until_complete(
             run_bot(os.environ.get("DISCORD_TOKEN")))
