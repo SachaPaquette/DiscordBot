@@ -1,0 +1,12 @@
+{
+    "1": {"title": "Cashier", "icon": "🛒", "earnings_range": [1, 100], "description": "You work as a cashier in a small store. You earn between $1 and $100."},
+    "11": {"title": "Waiter", "icon": "🍽️", "earnings_range": [101, 200], "description": "You work as a waiter in a restaurant. You earn between $101 and $200."},
+    "21": {"title": "Bartender", "icon": "🍹", "earnings_range": [201, 300], "description": "You work as a bartender in a bar. You earn between $201 and $300."},
+    "31": {"title": "Chef", "icon": "🍳", "earnings_range": [500, 700], "description": "You work as a chef in a restaurant. You earn between $500 and $700."},
+    "41": {"title": "Manager", "icon": "🗂️", "earnings_range": [800, 1000], "description": "You work as a manager in a store. You earn between $800 and $1000."},
+    "51": {"title": "CEO", "icon": "💼", "earnings_range": [1000, 2000], "description": "You work as a CEO in a company. You earn between $1000 and $2000."},
+    "61": {"title": "President", "icon": "🏛️", "earnings_range": [2000, 3000], "description": "You work as a president in a company. You earn between $2000 and $3000."},
+    "71": {"title": "King", "icon": "👑", "earnings_range": [3000, 4000], "description": "You work as a king in a kingdom. You earn between $3000 and $4000."},
+    "81": {"title": "God", "icon": "⚡", "earnings_range": [4000, 5000], "description": "You work as a god in a universe. You earn between $4000 and $5000."},
+    "91": {"title": "Creator", "icon": "🌌", "earnings_range": [5000, 6000], "description": "You work as a creator of the universe. You earn between $5000 and $6000."}
+}

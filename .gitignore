@@ -1,3 +1,7 @@
 # Ignore python files that are not supposed to be in the repo
 .env
 Config/Logs/*
+Dockerfile
+docker-compose.yml
+discord
+__pycache__

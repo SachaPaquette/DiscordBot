@@ -41,62 +41,45 @@ def parseLyric(page):
 
 def googleGet(search_engine, acc, get_func, artist='', title='', _type=0, proxies={}):
         # Encode artist and title to avoid url encoding errors
-        data = artist + ' ' * (title != '' and artist != '') + title
-        encoded_data = quote(data.replace(' ', '+'))
-
-        # Perform a search (for accuracy) [Custom search engine]
         search_engines = {
             'google': 'https://www.google.com/search?q=',
             'duckduckgo': 'https://duckduckgo.com/html/?q='
         }
 
-        selected_search_engine = 'google'
-        if search_engine in search_engines:
-            selected_search_engine = search_engine
+        # Choose the selected search engine or default to Google
+        selected_search_engine = search_engines.get(search_engine, search_engines['google'])
 
-        google_page = get_func('{}{}+site%3Aazlyrics.com'.format(
-                                        search_engines[selected_search_engine],
-                                        encoded_data
-                                        ),
-                                proxies
-                                )
-        
-        # Choose between lyrics or song according to function used
-        regex = [
+        # Encode artist and title for URL
+        query = f"{artist} {title}".strip().replace(' ', '+')
+        encoded_query = quote(query)
+
+        # Perform the search using the selected search engine
+        search_url = f"{selected_search_engine}{encoded_query}+site%3Aazlyrics.com"
+        search_results = get_func(search_url, proxies)
+            
+        # Define regex patterns for matching Azlyrics URLs
+        regex_patterns = [
             r'(azlyrics\.com\/lyrics\/(\w+)\/(\w+).html)',
             r'(azlyrics\.com\/[a-z0-9]+\/(\w+).html)'
         ]
-        
-        # ex result: [('azlyrics.com/t/taylorswift.html', 'taylorswift')]
-        # result[0][0] = 'azlyrics.com/t/taylorswift.html'
-        results = re.findall(
-                            regex[_type],
-                            google_page.text
-                            )
 
-        if len(results):
-            # calculate jaro similarity for artist and title
-            jaro_artist = 1.0
-            jaro_title = 1.0
+        # Extract results matching the regex patterns from the search page content
+        results = re.findall(regex_patterns[_type], search_results.text)
+
+
+        if results:
+            # Calculate Jaro similarity for artist and title
+            jaro_artist = jaro_distance(artist.replace(' ', ''), results[0][1]) if artist else 1.0
+            jaro_title = jaro_distance(title.replace(' ', ''), results[0][2]) if title else 1.0
             
-            if artist:
-                jaro_artist = jaro_distance(
-                                            artist.replace(' ', ''),
-                                            results[0][1]
-                                            )
-            if title:
-                jaro_title = jaro_distance(
-                                            title.replace(' ', ''),
-                                            results[0][2]
-                                            )
-            
+            # Check if Jaro similarities meet or exceed the accuracy threshold
             if jaro_artist >= acc and jaro_title >= acc:
-                return 'https://www.' + results[0][0]
+                return f"https://www.{results[0][0]}"
             else:
                 print('Similarity <', acc)
         else:
-            print(search_engine.title(), 'found nothing!')
-        
+            print(f"{search_engine.title()} found nothing!")
+
         return 0
     
     
