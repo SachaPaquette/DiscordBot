@@ -139,7 +139,7 @@ class Utility():
         view.add_item(sell_button)
         await message.edit(view=view)
 
-    async def disable_buttons(self, interactions, message):
+    async def disable_buttons(self, message):
         # Disable the buttons
         view = View()
         await message.edit(view=view, embed=None)
