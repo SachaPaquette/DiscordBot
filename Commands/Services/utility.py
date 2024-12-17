@@ -434,32 +434,20 @@ class EmbedMessage():
 
     def create_case_embed(self, data):
         try:
-            # Unpack the data
-            (
-                balance,
-                profit,
-                weapon,
-                weapon_info,
-                price,
-                wear_level,
-                gun_float,
-                weapon_name,
-                weapon_pattern,
-                is_stattrak,
-                is_souvenir,
-                color,
-                user_nickname,
-            ) = data.values()
-
-            # Create the embed message
-            embed = discord.Embed(
-                title="🎉 Case Opening Results 🎉",
-                color=discord.Color(color)
-            )
-
-            # Add user nickname to the embed message
-            embed.add_field(
-                name="👤 User", value=f"**{user_nickname}**", inline=False)
+            # Safely extract data with defaults
+            balance = data.get("balance", 0.0)
+            profit = data.get("profit", 0.0)
+            weapon = data.get("weapon", {})
+            weapon_info = data.get("info", {})
+            price = data.get("price", 0.0)
+            wear_level = data.get("wear", "Unknown")
+            gun_float = data.get("float", 0.0)
+            weapon_name = data.get("name", "Unknown Weapon")
+            weapon_pattern = data.get("pattern", "Unknown Pattern")
+            is_stattrak = data.get("stattrak", False)
+            is_souvenir = data.get("is_souvenir", False)
+            color = data.get("color", 0xFFFFFF)  # Default white color
+            user_nickname = data.get("user_nickname", "Unknown User")
 
             # Format weapon name
             if is_stattrak:
@@ -467,22 +455,27 @@ class EmbedMessage():
             if is_souvenir:
                 weapon_name = f"Souvenir {weapon_name}"
 
-            # Add weapon details
+            # Create the embed message
+            embed = discord.Embed(
+                title="🎉 Case Opening Results 🎉",
+                color=discord.Color(color)
+            )
+
+            embed.add_field(name="👤 User", value=f"**{user_nickname}**", inline=False)
             embed.add_field(
                 name="🔫 Weapon",
                 value=f"**{weapon_name}** | *{weapon_pattern}*",
                 inline=False
             )
-            embed.set_thumbnail(url=weapon_info["image"])
+            embed.set_thumbnail(url=weapon_info.get("image", ""))
 
-            # Add stats to the embed message
             stats = [
                 ("🛠️ Wear Level", f"**{wear_level}**"),
                 ("💰 Current Balance", f"**${balance:.2f}**"),
                 ("📊 Float Value", f"**{gun_float:.5f}**"),
                 ("💵 Weapon Price", f"**${price:.2f}**"),
                 ("📈 Profit" if profit > 0 else "📉 Loss",
-                 f"+$**{profit:.2f}**" if profit > 0 else f"-$**{-profit:.2f}**")
+                f"+$**{profit:.2f}**" if profit > 0 else f"-$**{-profit:.2f}**")
             ]
 
             for name, value in stats:
@@ -493,6 +486,8 @@ class EmbedMessage():
         except Exception as e:
             logger.error(f"Error creating embed message: {e}")
             return None
+
+
 
     def create_keep_message(self, user_name, weapon):
         # Create a message to keep the weapon

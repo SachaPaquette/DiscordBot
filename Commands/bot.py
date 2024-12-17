@@ -584,7 +584,7 @@ async def case(interactions):
     """
     try:
         case = Case(interactions.guild.id)
-        await case.open_case(interactions)
+        await case.process_case(interactions)
     except Exception as e:
         logger.error(f"Error in the case command: {e}")
         raise e

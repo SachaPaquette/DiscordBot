@@ -24,6 +24,7 @@ class Case:
         self.case_price = 5
         self.user_id = None
         self.is_item_sold_or_kept = False
+        self.first_message = None
 
     def init_database(self):
         try:
@@ -50,18 +51,22 @@ class Case:
         return random.choice(self.cases)
 
 
-    async def open_case(self, interactions):
-        if not self.case:
-            return await interactions.response.send_message("No valid case available to open.")
+    async def send_initial_message(self, interactions):
+        embed = self.create_embed(interactions.user, {}, interactions)
+        if embed is None:
+            await interactions.response.send_message("An error occurred while creating the embed.")
+        else:
+            await interactions.response.send_message(embed=embed)
+            self.first_message = await interactions.original_response()
+
+
+
+    async def process_case(self, interactions):
+        if not self.case or not self.weapon_generator:
+            return await interactions.response.send_message("An error occurred while processing the case.")
         await self.send_initial_message(interactions)
+        case_data = self.weapon_generator.generate_weapon_data()
         user = await self.get_user_and_check_balance(interactions)
-        if not user:
-            return
-        await self.process_case(user, interactions)
-
-
-    async def process_case(self, user, interactions):
-        case_data = self.weapon_generator.open_case_get_weapon()
         if not case_data:
             return await interactions.response.send_message("An error occurred while opening the case.")
         embed = self.create_embed(user, case_data, interactions)
@@ -69,15 +74,20 @@ class Case:
 
     async def process_case_opening(self, interactions, user, case_data, embed):
         try:
+            if not embed:
+                logger.error("Embed is None or invalid. Cannot send message.")
+                return await interactions.response.send_message("An error occurred while creating the case embed.")
+
             tasks = [
                 self.send_embed_message(embed, case_data["weapon"]),
                 self.wait_and_sell_if_needed(interactions, case_data["weapon"]),
-                asyncio.to_thread(self.update_user_balance, user),
                 asyncio.to_thread(self.add_user_experience, interactions, case_data["price"]),
             ]
             await asyncio.gather(*tasks)
         except Exception as e:
+            logger.error(f"Error in process_case_opening: {e}")
             await self.handle_exception(e)
+
 
 
     async def wait_and_sell_if_needed(self, interactions, weapon):
@@ -124,14 +134,25 @@ class Case:
         self.utility.add_experience(interactions=interactions, payout=profit)
 
     def create_embed(self, user, case_data, interactions):
-        return self.embedMessage.create_case_embed({
-            "balance": user["balance"],
-            "profit": self.utility.calculate_profit(float(case_data["price"]), self.case_price),
-            **case_data,
-            "is_souvenir": self.weapon_generator.is_souvenir,
-            "color": self.weapon_generator.color,
-            "user_nickname": interactions.user.display_name
-        })
+        try:
+            case_data["price"] = float(case_data.get("price", 0.0))
+            case_data["balance"] = float(user.get("balance", 0.0))
+            case_data["profit"] = float(
+                self.utility.calculate_profit(case_data["price"], self.case_price))
+            case_data["gun_float"] = float(case_data.get("gun_float", 0.0))
+
+            return self.embedMessage.create_case_embed({
+                "balance": case_data["balance"],
+                "profit": case_data["profit"],
+                **case_data,
+                "is_souvenir": self.weapon_generator.is_souvenir,
+                "color": self.weapon_generator.color,
+                "user_nickname": interactions.user.display_name,
+            })
+        except Exception as e:
+            logger.error(f"Error creating embed: {e}")
+            return None
+
         
     async def button_callback(self, interactions, weapon, message, action_type):
         await self.process_action(interactions, weapon, message, action_type)
@@ -159,17 +180,16 @@ class Case:
         await self.handle_action(interactions.user.display_name, action_type, weapon, message)
 
     async def handle_action(self,username, action_type, weapon, message):
+        if action_type == "keep":
+            self.inventory.add_or_remove_item_to_inventory(weapon, "add")
+        elif action_type == "sell":
+            self.database.update_user_balance(self.server_id, self.user_id, bet=weapon["price"])
         update_method = {"keep": self.embedMessage.create_keep_message, "sell": self.embedMessage.create_sell_message}[action_type]
         await self.update_message(message, weapon, update_method, username)
         await self.utility.disable_buttons(message)
         # Remove the weapon text from the message
-        await message.edit(content="")
-        
-        if action_type == "keep":
-            self.inventory.add_or_remove_item_to_inventory(weapon, "add")
-        else:
-            self.database.update_user_balance(self.server_id, self.user_id, bet=weapon["price"])
-
+        await message.edit(content="")            
+            
     async def update_message(self, message, weapon, update_method, username):
         content = update_method(username, weapon)
         await message.edit(content=content)
@@ -181,17 +201,43 @@ class Case:
 
 
 class WeaponGenerator():
+    skins_data = None
+    latest_data = None
     def __init__(self, case=None, is_souvenir=False):
         self.utility = Utility()
         self.embedMessage = EmbedMessage()
         self.caseDir = "./Commands/CaseData/"
         self.is_souvenir = is_souvenir
         self.case = case
-        self.weapon_rarity = self.get_weapon_rarity()
+        self.RARITY_WEIGHTS = {
+            "Mil-Spec Grade": 0.7997,
+            "Restricted": 0.1598,
+            "Classified": 0.032,
+            "Covert": 0.0064,
+            "Rare Special Item": 0.0026,
+        }
+
+        self.SOUVENIR_RARITY_WEIGHTS = {
+            "Consumer Grade": 0.7997,
+            "Industrial Grade": 0.1598,
+            "Mil-Spec Grade": 0.7997,
+            "Restricted": 0.1598,
+            "Classified": 0.0013,
+            "Covert": 0.00027,
+            "Rare Special Item": 0.0, 
+        }
+        self.weapon_rarity = self.RARITY_WEIGHTS if not self.is_souvenir else self.SOUVENIR_RARITY_WEIGHTS
         self.rarity_colors = self.get_rarity_colors()
         self.wear_levels = self.get_wear_levels()
-        self.skins_data = self.load_json_file(f"{self.caseDir}skins.json")
-        self.latest_data = self.load_json_file(f"{self.caseDir}latest_data.json")
+        if WeaponGenerator.skins_data is None:
+            logger.info("Loading skins data...")
+            WeaponGenerator.skins_data = self.load_json_file(f"{self.caseDir}skins.json")
+        if WeaponGenerator.latest_data is None:
+            logger.info("Loading latest weapon data...")
+            WeaponGenerator.latest_data = self.load_json_file(f"{self.caseDir}latest_data.json")
+        self.skins_data = WeaponGenerator.skins_data
+        self.latest_data = WeaponGenerator.latest_data
+
         self.preprocessed_weapons = self.preprocess_weapons()
 
     def preprocess_weapons(self):
@@ -212,24 +258,32 @@ class WeaponGenerator():
             return {}
 
 
-    def get_weapon_rarity(self):
+    def get_weapon_rarity(self) -> dict:
         try:
+            # Base rarities
             base_rarities = {
-                "Mil-Spec Grade": 0.7997,
+                "Consumer Grade": 0.7997,
+                "Industrial Grade": 0.1598,
+                "Mil-Spec Grade": 0.0799,
                 "Restricted": 0.1598,
                 "Classified": 0.032 if not self.is_souvenir else 0.0013,
                 "Covert": 0.0064 if not self.is_souvenir else 0.00027,
             }
+            
+            # Rare special item only for non-souvenir cases
             additional_rarities = {
-                "Consumer Grade": 0.7997,
-                "Industrial Grade": 0.1598,
-            } if self.is_souvenir else {
                 "Rare Special Item": 0.0026,
             }
-            return {**base_rarities, **additional_rarities}
+            
+            # Combine both dictionaries
+            rarities = {**base_rarities, **(additional_rarities if not self.is_souvenir else {})}
+            
+            logger.debug(f"Weapon rarities generated: {rarities}")
+            return rarities
         except Exception as e:
             logger.error(f"Error getting weapon rarity: {e}")
             return {}
+
 
     def get_rarity_colors(self):
         try:
@@ -276,10 +330,14 @@ class WeaponGenerator():
 
     def calculate_weapon_float(self, weapon):
         try:
-            return random.uniform(weapon.get("min_float", 0.0), weapon.get("max_float", 1.0))
+            return float(random.uniform(
+                float(weapon.get("min_float", 0.0)), 
+                float(weapon.get("max_float", 1.0))
+            ))
         except Exception as e:
             logger.error(f"Error calculating weapon float: {e}")
-            return 0.0
+            return 0.0  # Default to 0.0 on error
+
 
 
     def calculate_wear_level(self, gun_float):
@@ -314,14 +372,14 @@ class WeaponGenerator():
             rarity = self.gamble_rarity()
             possible_guns_list = self.preprocessed_weapons.get(rarity, [])
 
-            if not possible_guns_list:
-                logger.warning(f"No weapons available for rarity '{rarity}'.")
-                return None, False
-
-            return random.choice(possible_guns_list), rarity == "Rare Special Item"
+            if possible_guns_list:
+                return random.choice(possible_guns_list), rarity == "Rare Special Item"
+            else:
+                logger.warning(f"No weapons available for rarity '{rarity}', rerolling.")
+                return self.get_weapon_from_case()
         except Exception as e:
             logger.error(f"Error getting weapon from case: {e}")
-            raise e
+            return None, False
 
     def create_weapon(self, weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices):
         try:
@@ -354,27 +412,31 @@ class WeaponGenerator():
             "is_stattrak": is_stattrak,
         }
 
-    def open_case_get_weapon(self):
+    def generate_weapon_data(self):
         try:
             weapon, is_rare = self.get_weapon_from_case()
             weapon_info = self.get_weapon_information(weapon)
             gun_float = self.calculate_weapon_float(weapon_info)
             wear_level = self.calculate_wear_level(gun_float)
-            weapon_name = weapon_info.get("weapon", {}).get("name", "")
-            weapon_pattern = weapon_info.get("pattern", {}).get("name", "")
-            if not weapon_name or not weapon_pattern:
-                raise ValueError("Invalid weapon name or pattern.")
-            
-            # 10% chance of StatTrak if weapon has "stattrak" enabled
+            weapon_name = weapon_info.get("weapon", {}).get("name", "Unknown")
+            weapon_pattern = weapon_info.get("pattern", {}).get("name", "Unknown")
             is_stattrak = weapon.get("stattrak") and random.random() < 0.1
-            
-            prices = self.get_weapon_prices(
-                weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
+            prices = self.get_weapon_prices(weapon_name, weapon_pattern, wear_level, is_rare, is_stattrak)
 
-            return self.create_weapon_data(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices)
-        except ValueError as ve:
-            logger.error(f"Value error in open_case_get_weapon: {ve}")
-            return None
+            return {
+                "weapon": self.create_weapon(weapon_info, gun_float, wear_level, weapon_name, weapon_pattern, is_stattrak, prices),
+                "info": weapon_info,
+                "name": weapon_name,
+                "pattern": weapon_pattern,
+                "float": gun_float,
+                "wear": wear_level,
+                "stattrak": is_stattrak,
+                "price": prices,
+                "is_souvenir": self.is_souvenir,
+                "color": self.color,
+            }
         except Exception as e:
-            logger.error(f"Unexpected error in open_case_get_weapon: {e}")
-            return None
+            logger.error(f"Error generating weapon data: {e}")
+            return {}
+        
+
