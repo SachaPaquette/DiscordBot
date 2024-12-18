@@ -1,4 +1,6 @@
 import json
+
+import discord
 from Commands.Inventory.inventory_setup import Inventory_class
 from Commands.Services.database import Database
 import random
@@ -51,28 +53,33 @@ class Case:
         return random.choice(self.cases)
 
 
-    async def send_initial_message(self, interactions):
-        embed = self.create_embed(interactions.user, {}, interactions)
-        if embed is None:
-            await interactions.response.send_message("An error occurred while creating the embed.")
-        else:
-            await interactions.response.send_message(embed=embed)
-            self.first_message = await interactions.original_response()
 
 
+    async def process_case(self, interaction: discord.Interaction):
+        try:
+            if not self.case or not self.weapon_generator:
+                raise Exception("Case or weapon generator is not available.")
 
-    async def process_case(self, interactions):
-        if not self.case or not self.weapon_generator:
-            return await interactions.response.send_message("An error occurred while processing the case.")
-        await self.send_initial_message(interactions)
-        case_data = self.weapon_generator.generate_weapon_data()
-        user = await self.get_user_and_check_balance(interactions)
-        if not case_data:
-            return await interactions.response.send_message("An error occurred while opening the case.")
-        embed = self.create_embed(user, case_data, interactions)
-        await self.process_case_opening(interactions, user, case_data, embed)
+            # Send initial message
+            await self.send_initial_message(interaction)
 
-    async def process_case_opening(self, interactions, user, case_data, embed):
+            # Generate case data
+            case_data = self.weapon_generator.generate_weapon_data()
+            user = await self.get_user_and_check_balance(interaction)
+
+            if not case_data:
+                raise Exception("Error generating weapon data.")
+
+            # Create and process the case embed
+            embed = self.create_embed(user, case_data, interaction)
+            await self.process_case_opening(interaction, case_data, embed)
+
+        except Exception as e:
+            logger.error(f"Error in process_case: {e}")
+            await interaction.followup.send("An error occurred while processing the case.")
+
+            
+    async def process_case_opening(self, interactions, case_data, embed):
         try:
             if not embed:
                 logger.error("Embed is None or invalid. Cannot send message.")
@@ -96,12 +103,19 @@ class Case:
             await self.process_action(interactions, weapon, self.first_message, "sell")
 
     async def send_initial_message(self, interactions):
-        embed = self.embedMessage.create_open_case_embed_message(self.case, "Case", self.case_price)
-        if embed is None:
-            await interactions.response.send_message("Failed to load the case details.")
-        else:
-            await interactions.response.send_message(embed=embed)
-            self.first_message = await interactions.original_response()
+        try:
+            embed = self.embedMessage.create_open_case_embed_message(self.case, "Case", self.case_price)
+            if embed is None or not embed.to_dict():
+                # Send follow-up message since initial response is deferred
+                await interactions.followup.send("Failed to load the case details.")
+            else:
+                await interactions.followup.send(embed=embed)
+                self.first_message = await interactions.original_response()
+
+        except Exception as e:
+            logger.error(f"Error sending initial message: {e}")
+            # Handle follow-up error response
+            await interactions.followup.send("An error occurred while sending the initial message.")
 
 
     async def get_user_and_check_balance(self, interactions):

@@ -22,7 +22,6 @@ class UserInfo:
             try:
                 member = member or interactions.user
                 await interactions.response.send_message(embed=self.embedMessage.create_embed_user_information(member))
-
             except Exception as e:
                 logger.error(f"Error: {e}")
                 raise e

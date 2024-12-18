@@ -5,8 +5,10 @@ from Config.config import conf
 from Commands.Music.queue_command import QueueOperations
 from Commands.ErrorHandling.handling import CommandErrorHandler
 from Commands.Music.ytdl import YTDLSource
-from Commands.Services.utility import Utility, EmbedMessage
+from Commands.Services.utility import Utility, EmbedMessage, VoiceManager
 import asyncio
+from discord.ext import commands
+
 # Load the .env file
 load_dotenv()
 
@@ -49,6 +51,7 @@ class SongSession:
         self.thumbnail = None
         self.utility = Utility()
         self.embedMessage = EmbedMessage()
+        self.voice_manager = VoiceManager()
         self.source = None
 
     async def stop(self, vc):
@@ -242,7 +245,7 @@ class SongSession:
                 return
 
             # Check if the bot is already in the correct channel
-            if await self.utility.join(interactions, result_message) is False:
+            if await self.voice_manager.join(interactions, result_message) is False:
                 return
 
             # Extract information from the URL
@@ -277,7 +280,7 @@ class SongSession:
             # Handle any errors gracefully
             print(f"An error occurred when trying to play the song: {e}")
             # Leave the channel if an error occurs
-            await self.utility.leave(interactions)
+            await self.voice_manager.leave(interactions)
             raise e
 
     async def play_next(self):

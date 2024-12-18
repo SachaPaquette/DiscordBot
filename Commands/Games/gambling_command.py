@@ -36,19 +36,21 @@ class Gambling():
             if not self.has_sufficient_balance(user, bet):
                 await self.send_insufficient_balance_message(interactions)
                 return
-
             symbols = self.get_slot_symbols()
             payout = self.calculate_payout(symbols, bet)
-            await self.update_user_balance(interactions, user, payout, bet)
+            self.update_user_balance(interactions, user, payout, bet)
 
             if payout > 0:
                 self.update_user_experience(interactions, payout)
 
-            result_message = await self.send_initial_message(interactions)
-            await self.edit_result_message(result_message, symbols, payout, user["balance"])
+            # Send the initial result as a follow-up message
+            embed = self.embedMessage.create_gambling_embed_message(symbols, payout, user["balance"])
+            await interactions.followup.send(embed=embed)
 
         except Exception as e:
             logger.error(f"Error in the gamble function in gambling.py: {e}")
+            await interactions.followup.send("An unexpected error occurred while processing your gamble.")
+
 
     async def is_valid_bet(self, interactions, bet):
         if bet <= 0:

@@ -61,45 +61,50 @@ class Database():
             return    
         
     def get_user(self, interactions, user_id=None, user_name=None, fields=None):
-            """
-            Retrieves a user from the database.
-            """
-            try:
-                user_id = user_id or interactions.user.id
-                collection = self.get_collection(interactions.guild.id)
+        """
+        Retrieves a user from the database.
+        """
+        try:
+            user_id = user_id or interactions.user.id
+            collection = self.get_collection(interactions.guild.id)
 
-                # Fetch user with specified fields
-                projection = {"_id": 0}
-                if fields:
-                    projection.update({field: 1 for field in fields})
+            # Fetch user with specified fields
+            projection = {"_id": 0}
+            if fields:
+                projection.update({field: 1 for field in fields})
+            user = collection.find_one({"user_id": user_id}, projection)
+
+            # Create user if not found
+            if not user:
+                logger.info(f"User not found. Creating a new user with user_id: {user_id}.")
+                user_name = user_name or interactions.user.name
+                self.insert_user(interactions, user_id, user_name)
                 user = collection.find_one({"user_id": user_id}, projection)
 
-                # Create user if not found
-                if not user:
-                    logger.info(f"User not found. Creating a new user with user_id: {user_id}.")
-                    user_name = user_name or interactions.user.name
-                    self.insert_user(interactions, user_id, user_name)
-                    user = collection.find_one({"user_id": user_id}, projection)
+            # Ensure required fields are present
+            required_fields = {
+                "user_name": user_name or interactions.user.name,
+                "balance": 100,
+                "experience": 0,
+                "total_bet": 0,
+                "stocks": {},
+                "last_work": 0,
+                "level": 0,
+            }
+            user = self.update_user_fields(user, required_fields)
 
-                # Ensure required fields are present
-                required_fields = {
-                    "user_name": user_name or interactions.user.name,
-                    "balance": 100,
-                    "experience": 0,
-                    "total_bet": 0,
-                    "stocks": {},
-                    "last_work": 0,
-                    "level": 0,
-                }
-                user = self.update_user_fields(user, required_fields)
+            # Recalculate level
+            user_obj = User(**user)
+            user["level"] = user_obj.calculate_level()
 
-                # Recalculate level
-                user["level"] = User(**user).calculate_level()
-
-                return user
-            except Exception as e:
-                logger.error(f"Error retrieving user: {e}")
-                return None
+            # Update the level in the database if it has changed
+            if user["level"] != user_obj.calculate_level():
+                collection.update_one({"user_id": user_id}, {"$set": {"level": user["level"]}})
+                
+            return user
+        except Exception as e:
+            logger.error(f"Error retrieving user: {e}")
+            return None
 
 
     def update_user_fields(self, user, required_fields):

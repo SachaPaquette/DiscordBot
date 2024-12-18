@@ -8,11 +8,7 @@ from Commands.Services.database import Database
 # Create a logger for this file
 logger = setup_logging("utility.py", conf.LOGS_PATH)
 
-
-class Utility():
-    def __init__(self):
-        self.database = Database.getInstance()
-
+class VoiceManager:
     async def join(self, interactions: discord.Interaction, message=None):
         """
         Join the voice channel.
@@ -24,10 +20,8 @@ class Utility():
         """
         try:
 
-            # Get the voice channel of the user who sent the command
-            channel = interactions.channel
 
-            if not channel:
+            if not interactions.channel:
                 if message is None:
                     await interactions.response.send_message(interactions.user.mention + " is not in a voice channel.")
                 else:
@@ -40,11 +34,9 @@ class Utility():
             logger.error("User is not in a voice channel.")
             return
         try:
-            # Create a user voice variable
-            user_voice = interactions.user.voice
 
             # Check if the user is in a voice channel
-            if not user_voice:
+            if not interactions.user.voice:
                 await message.edit(content=interactions.user.mention + " is not in a voice channel.")
                 return
 
@@ -54,11 +46,11 @@ class Utility():
             # Check if the bot is in a voice channel
             if voice_client:
                 # Check if the bot is in the correct channel
-                if voice_client.channel.id == user_voice.channel.id:
+                if voice_client.channel.id == interactions.user.voice.channel.id:
                     return
 
             # Connect to the voice channel
-            await user_voice.channel.connect(reconnect=True)
+            await interactions.user.voice.channel.connect(reconnect=True)
             # Send a message that the bot joined the channel
             # await interactions.response.send_message(f"Joined {channel}")
         except Exception as e:
@@ -81,14 +73,16 @@ class Utility():
             if interactions.guild.voice_client is None:
                 await interactions.response.send_message("I'm not in a voice channel.")
                 return
-
-            # Send a message that the bot is leaving
-            await interactions.response.send_message("Leaving voice channel.")
             # Disconnect the bot from the voice channel
             await interactions.guild.voice_client.disconnect()
         except Exception as e:
             logger.error(f"Error in the leave command: {e}")
             raise e
+
+class Utility():
+    def __init__(self):
+        self.database = Database.getInstance()
+
 
     def is_emoji(self, message):
         # Check if the message is a custom Discord emoji reaction
@@ -98,7 +92,8 @@ class Utility():
         return False
 
     def format_inexistant_prices(self, sticker_price):
-
+        DEFAULT_PRICE = 1200
+        
         time_periods = ["last_24h", "last_7d",
                         "last_30d", "last_90d", "last_ever"]
         # Iterate over the time periods
@@ -114,7 +109,7 @@ class Utility():
                         break
                 else:
                     # If no non-None value is found, set it to 0
-                    sticker_price[current_period] = 1200
+                    sticker_price[current_period] = DEFAULT_PRICE
 
         return sticker_price["last_24h"]
 
@@ -124,11 +119,11 @@ class Utility():
         sell_button = Button(style=discord.ButtonStyle.red,
                              label="Sell", custom_id="sell")
 
-        async def keep_callback(interactions):
-            await function_keep(interactions, weapon, message)
+        async def keep_callback(interaction):
+            await function_keep(interaction, weapon, message)
 
-        async def sell_callback(interactions):
-            await function_sell(interactions, weapon, message)
+        async def sell_callback(interaction):
+            await function_sell(interaction, weapon, message)
 
         keep_button.callback = keep_callback
         sell_button.callback = sell_callback
@@ -140,7 +135,6 @@ class Utility():
         await message.edit(view=view)
 
     async def disable_buttons(self, message):
-        # Disable the buttons
         view = View()
         await message.edit(view=view, embed=None)
 
@@ -160,14 +154,13 @@ class Utility():
         color_text = ""
         # Blue text
         if hex(color) == "0x4b69ff":
-            color_text = "🟦"  # Blue square emoji
+            color_text = "🟦" 
         # Purple text
         elif hex(color) == "0x8847ff":
-            color_text = "🟪"  # Purple square emoji
+            color_text = "🟪"  
         # Pink text
         elif hex(color) == "0xd32ce6":
-            # Pink square emoji (no exact pink emoji available)
-            color_text = "🟩"
+            color_text = "🟪" 
         # Red text
         elif hex(color) == "0xeb4b4b":
             color_text = "🟥"  # Red square emoji
@@ -419,18 +412,27 @@ class EmbedMessage():
         return embed
 
     def create_open_case_embed_message(self, case, title: str, price: float):
-        # Create the embed message with a gold color
-        embed = discord.Embed(
-            title=f"🎉 {title} Opening 🎉",
-            color=discord.Color.gold()
-        )
+        try:
+            # Validate case data
+            if not case or "image" not in case or "name" not in case:
+                raise ValueError("Invalid case data provided.")
 
-        # Add the case image and details
-        embed.set_image(url=case["image"])
-        embed.add_field(name="Case", value=f'**{case["name"]}**', inline=False)
-        embed.add_field(name="Price", value=f"**${price:.2f}**", inline=True)
+            # Create the embed message with a gold color
+            embed = discord.Embed(
+                title=f"🎉 {title} Opening 🎉",
+                color=discord.Color.gold()
+            )
 
-        return embed
+            # Add the case image and details
+            embed.set_image(url=case["image"])
+            embed.add_field(name="Case", value=f'**{case["name"]}**', inline=False)
+            embed.add_field(name="Price", value=f"**${price:.2f}**", inline=True)
+
+            return embed
+        except Exception as e:
+            logger.error(f"Error creating open case embed: {e}")
+            return None  
+
 
     def create_case_embed(self, data):
         try:
