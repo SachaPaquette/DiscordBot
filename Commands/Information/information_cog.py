@@ -107,7 +107,7 @@ class Information(commands.Cog):
         try:
             health_check = HealthCheck(self.bot)
             await health_check.health_command(interactions, self.bot, self.start_time)
-            await self.bot.tree.sync()
+            await self.bot.tree.sync(guild=discord.Object(id=interactions.guild.id))
         except Exception as e:
             print(f"Error in the health command: {e}")
             raise e

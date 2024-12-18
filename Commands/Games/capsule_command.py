@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 from Commands.Services.database import Database
@@ -35,9 +36,16 @@ class Capsule():
         }
     
     def get_random_sticker_case(self):
-        with open(f"{self.caseDir}sticker_cases.json", "r") as f:
-            sticker_cases = json.load(f)
-        return random.choice(sticker_cases)
+        try:
+            with open(f"{self.caseDir}sticker_cases.json", "r", encoding="utf-8") as f:
+                sticker_cases = json.load(f)
+            if not sticker_cases:
+                raise ValueError("No sticker cases available in the JSON file.")
+            return random.choice(sticker_cases)
+        except Exception as e:
+            logger.error(f"Error getting random sticker case: {e}")
+            return None
+
         
     def get_sticker_rarity(self, sticker_case):
         """
@@ -91,7 +99,7 @@ class Capsule():
         """
         try:
             sticker_name = f"Sticker | {sticker['name']}"
-            with open("./Commands/Case/latest_data.json", "r") as f:
+            with open("./Commands/CaseData/latest_data.json", "r", encoding="utf-8") as f:
                 latest_data = json.load(f)
             return latest_data.get(sticker_name, {}).get("steam", 0)
         except Exception as e:
@@ -101,34 +109,56 @@ class Capsule():
     async def open_capsule(self, interactions):
         try:
             user = self.get_user(interactions)
-            
-            if not self.has_sufficient_balance(user):
-                await self.send_insufficient_balance_message(interactions)
+            if not user:
+                await interactions.followup.send("User data could not be retrieved.")
                 return
 
+            if not self.has_sufficient_balance(user):
+                await interactions.followup.send("You don't have enough balance to open this sticker capsule.")
+                return
+
+            # Get a random sticker case
             sticker_case = self.get_random_sticker_case()
-            await self.send_opening_message(interactions, sticker_case)
+            if not sticker_case:
+                await interactions.followup.send("No sticker cases are available at the moment.")
+                return
 
-            first_message = await interactions.original_response()
-            time.sleep(0.5)
+            # Send initial opening message
+            try:
+                await self.send_opening_message(interactions, sticker_case)
+                first_message = await interactions.original_response()
+            except Exception as e:
+                logger.error(f"Error during initial message send: {e}")
+                await interactions.followup.send("An error occurred while opening the capsule.")
+                return
 
+            # Pause for animation effect
+            await asyncio.sleep(0.5)
+
+            # Get the sticker from the case
             sticker = self.get_sticker_from_case(sticker_case)
             if not sticker:
-                await self.send_error_message(first_message)
+                await first_message.edit(content="An error occurred while opening the sticker case.")
                 return
 
+            # Process sticker details
             sticker_price = self.get_formatted_sticker_price(sticker)
             profit = self.calculate_profit(sticker_price)
-            await self.update_user_balance(user, profit)
+
+            # Update the user's balance
+            self.update_user_balance(user, profit)
             if profit > 0:
                 self.add_experience(interactions, profit)
 
+            # Create and send final embed
             embed = self.create_sticker_embed(sticker, user, sticker_price, profit)
-            await self.edit_message_with_embed(first_message, embed)
-            
+            await first_message.edit(embed=embed)
+
         except Exception as e:
-            print(f"Error buying stickers: {e}")
-            await interactions.followup.send("An error occurred while buying the stickers.")
+            logger.error(f"Error buying stickers: {e}")
+            await interactions.followup.send("An error occurred while opening the stickers.", ephemeral=True)
+
+
 
     def get_user(self, interactions):
         return self.database.get_user(interactions)
@@ -140,8 +170,13 @@ class Capsule():
         await interactions.followup.send("Not enough balance")
 
     async def send_opening_message(self, interactions, sticker_case):
-        embed_first_message = self.embedMessage.create_open_case_embed_message(sticker_case, "Capsule", self.sticker_capsule_price)
-        await interactions.response.send_message(embed=embed_first_message)
+        try:
+            embed_first_message = self.embedMessage.create_open_case_embed_message(sticker_case, "Capsule", self.sticker_capsule_price)
+            await interactions.followup.send(embed=embed_first_message)
+        except Exception as e:
+            logger.error(f"Failed to send opening message: {e}")
+            raise e
+
 
     async def send_error_message(self, first_message):
         await first_message.edit(content="An error occurred while opening the capsule.")

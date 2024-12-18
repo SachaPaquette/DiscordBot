@@ -48,10 +48,11 @@ class Games(commands.Cog):
             await interaction.followup.send("An error occurred while opening a case.")
             print(f"Error in case command: {e}")
 
-    @app_commands.command(name="capsule", description="Open a Counter-Strike sticker capsule.")
+    @app_commands.command(name="sticker", description="Open a Counter-Strike sticker capsule.")
     async def capsule(self, interaction: discord.Interaction):
         try:
-            await interaction.response.defer()
+            await interaction.response.defer(thinking=True)
+
             capsule = Capsule(interaction.guild.id)
             await capsule.open_capsule(interaction)
         except Exception as e:
