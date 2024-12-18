@@ -95,6 +95,10 @@ class Information(commands.Cog):
         Check if the bot is alive and provide detailed health information.
         Used to sync the commands with the guild.
         """
+        # Check if the BOT_OWNER_ID is set in the environment variables
+        if not os.environ.get("BOT_OWNER_ID"):
+            await interactions.response.send_message("The BOT_OWNER_ID is not set in the environment variables.")
+            return
         # Make sure the user has the correct permissions (by having the userid of the bot owner)
         if interactions.user.id != int(os.environ.get("BOT_OWNER_ID")):
             await interactions.response.send_message("You do not have permission to run this command.")

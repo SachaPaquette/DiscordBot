@@ -33,7 +33,6 @@ DISCORD_TOKEN="your_discord_token"
 BOT_OWNER_ID="your_id" (This lets you use commands that are only for the admin)
 GENERAL_CHANNEL_NAME="your_discord_general_channel"
 MONGO_DB_ADDRESS="your_mongo_db_address" (local address is: "mongodb://localhost:27017")
-TESTING_GUILD_ID="your_testing_server_guild_id" (Changes to slash commands will be 'instant' in this server, they won't need to 'sync' with Discord)
 ```
 
 ##### Usage

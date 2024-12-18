@@ -27,7 +27,8 @@ class Database():
             # If the instance does not exist, create it
             if Database.__instance == None:
                 Database.__instance = self
-                self.client = MongoClient(os.getenv("MONGO_DB_ADDRESS"))
+                mongo_db_address = os.getenv("MONGO_DB_ADDRESS", "mongodb://localhost:27017/")
+                self.client = MongoClient(mongo_db_address)
                 self.db = self.client["discord"]
                 self.collections = {}
                 

@@ -9,7 +9,8 @@ import os
 class EventHandlers(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.GENERAL_CHANNEL_NAME = os.getenv("GENERAL_CHANNEL_NAME")
+        
     @commands.Cog.listener()
     async def on_ready(self):
         await self.bot.change_presence(activity=discord.Game(name="with your heart"))
@@ -24,14 +25,21 @@ class EventHandlers(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        channel = discord.utils.get(member.guild.text_channels, name=os.getenv("GENERAL_CHANNEL_NAME"))
+
+        if not self.GENERAL_CHANNEL_NAME:
+            print("GENERAL_CHANNEL_NAME is not set in the .env file.")
+            return
+        channel = discord.utils.get(member.guild.text_channels, name=self.GENERAL_CHANNEL_NAME)
         if channel:
             embed_message = EmbedMessage()
             await channel.send(embed=await embed_message.on_member_join_message(member))
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        channel = discord.utils.get(member.guild.text_channels, name=os.getenv("GENERAL_CHANNEL_NAME"))
+        if not self.GENERAL_CHANNEL_NAME:
+            print("GENERAL_CHANNEL_NAME is not set in the .env file.")
+            return
+        channel = discord.utils.get(member.guild.text_channels, name=self.GENERAL_CHANNEL_NAME)
         if channel:
             embed_message = EmbedMessage()
             await channel.send(embed=await embed_message.on_member_leave_message(member))
