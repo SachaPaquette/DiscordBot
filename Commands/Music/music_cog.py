@@ -5,6 +5,8 @@ from Commands.Music.music import SongSession
 from Commands.Music.queue_command import QueueOperations
 from Commands.Music.lyrics_command import LyricsOperations
 from Commands.Music.nowplaying_command import NowPlaying
+from Commands.Services.utility import VoiceManager
+
 from Config.logging import setup_logging
 
 
@@ -113,7 +115,13 @@ class Music(commands.Cog):
             await queue_operations.clear_command(ctx)
         else:
             await ctx.send("The music queue is already empty.")
-
-
+            
+    @commands.command(name='leave', description='Makes the bot leave the voice channel.')
+    async def leave(self, interactions):
+        try:
+            voice_manager = VoiceManager()
+            await voice_manager.leave(interactions)
+        except Exception as e:
+            raise e
 async def setup(bot):
     await bot.add_cog(Music(bot))

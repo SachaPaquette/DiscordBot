@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from Commands.Economy.balance_command import Balance
+from Commands.Economy.portfolio_command import Portfolio
+from Commands.Economy.stocks_command import Options, Stocks
 from Commands.Economy.work_command import Work
 from Commands.Economy.give_command import Give
 
@@ -36,7 +38,44 @@ class Economy(commands.Cog):
         except Exception as e:
             await interaction.response.send_message("An error occurred while giving money.", ephemeral=True)
             print(f"Error in /give: {e}")
+            
+    @app_commands.command(name="stocks", description="Buy or sell stocks.")
+    async def stocks(self, interactions, option: Options, stock: str, quantity: float):
+        """
+        Buy or sell stocks.
 
+        Parameters:
+        - interactions (Context): The context object representing the invocation context of the command.
+        - option (Options): The option to buy or sell stocks.
+        - stock (str): The stock to buy or sell.
+        - quantity (int): The quantity of stocks to buy or sell.
+
+        Returns:
+        - None
+        """
+        try:
+            stocks = Stocks()
+            await stocks.stocks_command(interactions, option, stock, quantity)
+        except Exception as e:
+            raise e
+
+
+    @app_commands.command(name='portfolio', description='Display your stock portfolio.')
+    async def portfolio(self, interactions):
+        """
+        Display the user's stock portfolio.
+
+        Parameters:
+        - interactions (Context): The context object representing the invocation context of the command.
+
+        Returns:
+        - None
+        """
+        try:
+            portfolio = Portfolio()
+            await portfolio.portfolio_command(interactions)
+        except Exception as e:
+            raise e
 
 async def setup(bot):
     await bot.add_cog(Economy(bot))
